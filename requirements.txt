@@ -1,0 +1,4 @@
+scrapy>=2.11.0
+scrapy-user-agents>=0.1.1
+pydantic>=2.0.0
+python-dotenv>=1.0.0

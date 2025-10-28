@@ -1,0 +1,107 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for 80s neon effect -->
+    <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff00ff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#00ffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff00ff;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Text glow -->
+    <filter id="textGlow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="400" fill="#0a0a1f"/>
+  
+  <!-- Grid lines (80s aesthetic) -->
+  <g opacity="0.15" stroke="#00ffff" stroke-width="1">
+    <line x1="0" y1="100" x2="800" y2="100"/>
+    <line x1="0" y1="150" x2="800" y2="150"/>
+    <line x1="0" y1="200" x2="800" y2="200"/>
+    <line x1="0" y1="250" x2="800" y2="250"/>
+    <line x1="0" y1="300" x2="800" y2="300"/>
+  </g>
+  
+  <!-- Left code bracket -->
+  <g filter="url(#glow)">
+    <path d="M 120 120 L 80 120 L 80 280 L 120 280" 
+          stroke="url(#neonGradient)" 
+          stroke-width="6" 
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
+  
+  <!-- Pulse/heartbeat line -->
+  <g filter="url(#glow)">
+    <path d="M 140 200 L 200 200 L 220 150 L 240 250 L 260 120 L 280 280 L 300 200 L 560 200 L 580 150 L 600 250 L 620 200 L 660 200" 
+          stroke="#ff00ff" 
+          stroke-width="4" 
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    
+    <!-- Secondary cyan pulse for depth -->
+    <path d="M 140 200 L 200 200 L 220 150 L 240 250 L 260 120 L 280 280 L 300 200 L 560 200 L 580 150 L 600 250 L 620 200 L 660 200" 
+          stroke="#00ffff" 
+          stroke-width="2" 
+          fill="none"
+          opacity="0.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
+  
+  <!-- Right code bracket -->
+  <g filter="url(#glow)">
+    <path d="M 680 120 L 720 120 L 720 280 L 680 280" 
+          stroke="url(#neonGradient)" 
+          stroke-width="6" 
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
+  
+  <!-- DevPulse Text -->
+  <g filter="url(#textGlow)">
+    <!-- "Dev" in magenta -->
+    <text x="400" y="340" 
+          font-family="'Courier New', monospace" 
+          font-size="72" 
+          font-weight="bold"
+          fill="#ff00ff" 
+          text-anchor="middle"
+          letter-spacing="4">Dev</text>
+    
+    <!-- "Pulse" in cyan -->
+    <text x="400" y="340" 
+          font-family="'Courier New', monospace" 
+          font-size="72" 
+          font-weight="bold"
+          fill="#00ffff" 
+          text-anchor="middle"
+          letter-spacing="4">
+      <tspan dx="105">Pulse</tspan>
+    </text>
+  </g>
+  
+  <!-- Scanline effect -->
+  <rect width="800" height="2" y="0" fill="#00ffff" opacity="0.1">
+    <animate attributeName="y" from="0" to="400" dur="3s" repeatCount="indefinite"/>
+  </rect>
+</svg>
