@@ -181,12 +181,19 @@ class GithubSpider(scrapy.Spider):
         if not stars_link:
             return None
 
-        stars_text = stars_link.css('::text').get()
+        # Get all text nodes and filter out whitespace
+        stars_texts = stars_link.css('::text').getall()
+        stars_text = None
+        for text in stars_texts:
+            if text.strip():  # Skip empty/whitespace-only
+                stars_text = text.strip()
+                break
+
         if not stars_text:
             return None
 
         # Remove commas and "k" suffix, convert to int
-        stars_text = stars_text.strip().replace(',', '')
+        stars_text = stars_text.replace(',', '')
 
         # Handle "k" suffix (e.g., "12.5k" -> 12500)
         if 'k' in stars_text.lower():
