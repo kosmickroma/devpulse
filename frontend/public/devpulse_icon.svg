@@ -1,0 +1,71 @@
+<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff00ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00ffff;stop-opacity:1" />
+    </linearGradient>
+    
+    <filter id="iconGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="256" height="256" fill="#0a0a1f" rx="32"/>
+  
+  <!-- Grid effect -->
+  <g opacity="0.1" stroke="#00ffff" stroke-width="1">
+    <line x1="0" y1="64" x2="256" y2="64"/>
+    <line x1="0" y1="128" x2="256" y2="128"/>
+    <line x1="0" y1="192" x2="256" y2="192"/>
+  </g>
+  
+  <!-- Main pulse design -->
+  <g filter="url(#iconGlow)">
+    <!-- Left bracket -->
+    <path d="M 40 80 L 20 80 L 20 176 L 40 176" 
+          stroke="url(#iconGrad)" 
+          stroke-width="5" 
+          fill="none"
+          stroke-linecap="round"/>
+    
+    <!-- Pulse heartbeat -->
+    <path d="M 50 128 L 80 128 L 90 100 L 105 156 L 120 80 L 135 176 L 150 128 L 166 128 L 176 100 L 186 156 L 196 128 L 206 128" 
+          stroke="#ff00ff" 
+          stroke-width="4" 
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    
+    <!-- Cyan echo -->
+    <path d="M 50 128 L 80 128 L 90 100 L 105 156 L 120 80 L 135 176 L 150 128 L 166 128 L 176 100 L 186 156 L 196 128 L 206 128" 
+          stroke="#00ffff" 
+          stroke-width="2" 
+          fill="none"
+          opacity="0.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    
+    <!-- Right bracket -->
+    <path d="M 216 80 L 236 80 L 236 176 L 216 176" 
+          stroke="url(#iconGrad)" 
+          stroke-width="5" 
+          fill="none"
+          stroke-linecap="round"/>
+  </g>
+  
+  <!-- "DP" monogram -->
+  <g filter="url(#iconGlow)" opacity="0.9">
+    <text x="128" y="220" 
+          font-family="'Courier New', monospace" 
+          font-size="32" 
+          font-weight="bold"
+          fill="#ff00ff" 
+          text-anchor="middle"
+          letter-spacing="2">D<tspan fill="#00ffff">P</tspan></text>
+  </g>
+</svg>
