@@ -1,6 +1,6 @@
 <div align="center">
 
-![[DevPulse Logo](.github/devpulse_logo.svg)](https://github.com/kosmickroma/devpulse)
+![DevPulse Logo](.github/devpulse_logo.svg)
 
 **Track the pulse of developer trends**
 
