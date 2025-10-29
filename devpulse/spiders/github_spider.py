@@ -1,4 +1,15 @@
-"""GitHub Trending spider with robust selector fallbacks."""
+"""
+GitHub Trending spider with robust selector fallbacks.
+
+EXPERIMENTAL: This spider is currently blocked by GitHub's robots.txt.
+GitHub's trending page explicitly disallows automated scraping.
+
+For production use, we recommend using GitHub's official API instead.
+See: https://docs.github.com/en/rest/repos/repos#list-public-repositories
+
+This code demonstrates the scraping architecture and will be replaced
+with API integration in v1.1.
+"""
 
 from typing import Generator, Optional
 import re
@@ -11,7 +22,11 @@ class GithubSpider(scrapy.Spider):
     """
     Spider for scraping trending repositories from GitHub.
 
+    ⚠️ EXPERIMENTAL: Currently blocked by robots.txt
+    Will be replaced with official GitHub API in v1.1
+
     Uses multiple selector strategies to handle GitHub's frequently changing HTML.
+    Kept as reference implementation for scraping architecture.
     """
 
     name = "github"

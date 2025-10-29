@@ -16,16 +16,26 @@
 
 ## Overview
 
-**DevPulse** is a professional web scraping tool that aggregates trending developer content from GitHub, Hacker News, and Dev.to. Stay current with what's hot in tech by tracking trending repositories, popular discussions, and top articles—all in one place.
+**DevPulse** is a professional web scraping tool that aggregates trending developer content from multiple platforms. Stay current with what's hot in tech by tracking popular discussions and top articles—all in one place.
 
-Built with Scrapy and designed with SOLID principles, DevPulse demonstrates production-ready architecture while providing genuinely useful data for developers who want to stay on top of industry trends.
+Built with Scrapy and designed with SOLID principles for scalability, DevPulse provides genuinely useful data for developers who want to stay on top of industry trends.
+
+### Platform Status
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| 🟢 Hacker News | **Live** | Front page stories with scores and comments |
+| 🟢 Dev.to | **Live** | Trending posts with reactions and tags |
+| 🟡 GitHub | **Coming Soon** | Will use official API for reliability |
+
+**Note:** GitHub's trending page blocks automated scrapers via robots.txt. We're implementing official GitHub API integration for v1.1 to provide reliable, production-ready GitHub trending data.
 
 ## Features
 
 ✨ **Multi-Platform Tracking**
-- GitHub trending repositories (with language filtering)
-- Hacker News front page stories
-- Dev.to trending posts (with tag filtering)
+- ✅ Hacker News front page stories (live)
+- ✅ Dev.to trending posts with tag filtering (live)
+- 🔜 GitHub trending repositories via official API (coming in v1.1)
 
 🛡️ **Production-Ready**
 - Pydantic data validation
@@ -293,16 +303,41 @@ Check logs for Pydantic validation failures. Common issues:
 
 ## Roadmap
 
-Future enhancements:
+### v1.1 - GitHub Integration (Next)
+- [ ] Implement GitHub API integration for trending repos
+- [ ] Add language filtering via API
+- [ ] Support for daily/weekly/monthly trends
+- [ ] Better rate limit handling
 
-- [ ] Web dashboard for visualizing trends
+### v2.0 - Web UI/UX (High Priority)
+- [ ] React dashboard for visualizing trends
+- [ ] Real-time data updates
+- [ ] Interactive filters (language, time range, platform)
+- [ ] Saved searches and preferences
+- [ ] Trending charts and graphs
+
+### v2.x - Additional Platforms
+- [ ] Product Hunt integration
+- [ ] Reddit (r/programming, r/webdev, etc.)
+- [ ] Lobsters
+- [ ] Stack Overflow
+- [ ] More developer platforms
+
+### v3.0 - Advanced Features
 - [ ] Database storage (PostgreSQL/MongoDB)
-- [ ] Real-time updates via WebSocket
-- [ ] Email/Slack notifications
+- [ ] REST API for programmatic access
+- [ ] Email/Slack/Discord notifications
 - [ ] Trend analysis and insights
-- [ ] API endpoint for programmatic access
+- [ ] Personalized recommendations
+- [ ] Historical trend tracking
+
+### Infrastructure
 - [ ] Docker containerization
 - [ ] CI/CD pipeline
+- [ ] Automated testing
+- [ ] Performance monitoring
+
+See [ROADMAP.md](ROADMAP.md) for detailed plans and timeline.
 
 ## Contributing
 
