@@ -265,11 +265,6 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
         <div className="w-3 h-3 rounded-full bg-neon-green shadow-neon-green" />
         <div className="w-3 h-3 rounded-full bg-neon-cyan shadow-neon-cyan" />
         <span className="ml-4 text-neon-cyan font-mono text-sm">terminal://devpulse/interactive</span>
-        {!audioEnabled && (
-          <span className="ml-auto text-yellow-400 font-mono text-xs animate-pulse">
-            [Click terminal to enable audio]
-          </span>
-        )}
         {isScanning && (
           <span className="ml-auto text-neon-green font-mono text-xs animate-pulse">
             [SCANNING... {progress} items]
@@ -295,19 +290,22 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
 
         {/* Input line */}
         {!isScanning && (
-          <div className="flex items-center text-neon-cyan">
+          <div className="flex items-center text-neon-cyan mt-2">
             <span className="mr-2">{'>'}</span>
-            <input
-              ref={inputRef}
-              type="text"
-              value={currentInput}
-              onChange={(e) => setCurrentInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="flex-1 bg-transparent outline-none caret-neon-cyan"
-              autoFocus
-              spellCheck={false}
-            />
-            <span className="inline-block w-2 h-4 bg-neon-cyan animate-pulse ml-1" />
+            <div className="flex-1 flex items-center">
+              <input
+                ref={inputRef}
+                type="text"
+                value={currentInput}
+                onChange={(e) => setCurrentInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="flex-1 bg-transparent outline-none caret-neon-cyan text-neon-cyan"
+                autoFocus
+                spellCheck={false}
+                placeholder=""
+              />
+              <span className="inline-block w-2 h-4 bg-neon-cyan animate-pulse" />
+            </div>
           </div>
         )}
 
