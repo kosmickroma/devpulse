@@ -67,16 +67,19 @@ From trending GitHub repos to popular discussions, breaking tech news to emergin
 
 **Features:**
 
-**Interactive Terminal (🚧 90% Complete!):**
+**Interactive Terminal (🚧 95% Complete - Debugging!):**
 - ✅ Retro terminal interface with command parser
-- ✅ Real-time streaming of scraper results
+- ✅ Real-time streaming of scraper results via SSE
 - ✅ **Authentic Fallout 3 sound effects** - The real deal! 🎮
 - ✅ Commands: `scan`, `help`, `clear`
 - ✅ Auto-scrolling terminal output
-- ✅ Sounds: typing clicks, beeps, success/error
+- ✅ Sounds: typing clicks, beeps, success/error (when typing)
 - ✅ Terminal loads at top of page
-- [ ] Deploy backend API for live functionality (NEXT PRIORITY)
-- [ ] Auto-scan on page load (optional)
+- ✅ Backend API deployed on Render (free tier)
+- ✅ Auto-scan on page load (working!)
+- ✅ GitHub Actions keepalive (pings every 10 min)
+- ⚠️ Debugging: Auto-scan sounds (should play during scan)
+- ⚠️ Debugging: Cards not populating with data
 - [ ] More commands: `filter`, `search`, `theme`
 
 **Core UI:**

@@ -32,8 +32,22 @@ GitHub API integration is DONE! All 3 platforms (GitHub, Hacker News, Dev.to) ar
 - ✅ MIT licensed, legal to use
 - ✅ Terminal loads at top, sounds work immediately
 
-**Current State:**
-Frontend is live at https://devpulse-1z8l.vercel.app/ with terminal UI and WORKING Fallout sounds! Backend API needs deployment to enable actual scanning.
+**Current State (2025-10-30 - Late Session):**
+- ✅ Frontend: Live at https://devpulse-1z8l.vercel.app/
+- ✅ Backend: Live at https://devpulse-api.onrender.com (Render free tier)
+- ✅ GitHub Actions: Pinging every 10 min to keep backend awake
+- ✅ Auto-scan: Runs on page load, streams data from backend
+- ✅ Terminal: Typing commands works, typing sounds work
+- ✅ Scanning: Manual scan command works with success sounds
+
+**Issues to Fix:**
+- [ ] Auto-scan sounds: Should play during auto-scan, not just when typing
+- [ ] Cards: Data streams in but cards don't populate below terminal
+- [ ] Need to verify data flow from backend → frontend → cards
+
+**Architecture:**
+- Frontend (Vercel) → Backend API (Render) → Scrapy spiders → SSE streaming → Frontend
+- Two separate deployments communicating via HTTPS
 
 ---
 
