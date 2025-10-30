@@ -20,26 +20,37 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
   const [isScanning, setIsScanning] = useState(false)
   const [progress, setProgress] = useState(0)
   const [audioEnabled, setAudioEnabled] = useState(false)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const terminalContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const itemsRef = useRef<TrendingItem[]>([])
 
-  // Initialize audio on first user interaction
+  // Initialize audio on first keystroke
   const initializeAudio = () => {
     if (!audioEnabled && typeof window !== 'undefined') {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
-      setAudioEnabled(true)
+      try {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
+        setAudioEnabled(true)
+      } catch (e) {
+        console.log('Audio blocked by browser')
+      }
     }
   }
 
-  // Auto-scroll within terminal container only (not the whole page)
+  // Auto-scroll within terminal container only, but not on initial load
   useEffect(() => {
-    if (terminalContainerRef.current) {
+    if (terminalContainerRef.current && !isInitialLoad) {
       terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight
     }
-  }, [lines])
+  }, [lines, isInitialLoad])
+
+  // Mark initial load complete after boot sequence
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialLoad(false), 2500)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Initial boot sequence
   useEffect(() => {
@@ -239,6 +250,11 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
 
   // Handle key press
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // Enable audio on first keystroke
+    if (!audioEnabled) {
+      initializeAudio()
+    }
+
     if (e.key === 'Enter' && currentInput.trim() && !isScanning) {
       executeCommand(currentInput)
       setCurrentInput('')
@@ -276,7 +292,6 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
       <div
         ref={terminalContainerRef}
         className="p-6 font-mono text-sm h-96 overflow-y-auto custom-scrollbar"
-        onClick={initializeAudio}
       >
         {lines.map((line) => (
           <div
