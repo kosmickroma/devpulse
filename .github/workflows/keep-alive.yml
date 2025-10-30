@@ -12,5 +12,6 @@ jobs:
     steps:
       - name: Ping Render API
         run: |
+          echo "Pinging DevPulse API to keep it awake..."
           curl -f https://devpulse-api.onrender.com/api/health || echo "API not responding"
         continue-on-error: true

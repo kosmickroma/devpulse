@@ -67,6 +67,17 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
     return () => clearTimeout(timer)
   }, [])
 
+  // Auto-scan after boot sequence completes
+  useEffect(() => {
+    const autoScanTimer = setTimeout(() => {
+      addLine('> ', 'output')
+      addLine('> Auto-scanning all platforms...', 'output')
+      handleScan([]) // Scan all platforms
+    }, 2500) // Start after boot completes
+
+    return () => clearTimeout(autoScanTimer)
+  }, [])
+
   // Initial boot sequence
   useEffect(() => {
     const bootLines = [
@@ -174,8 +185,8 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
     addLine(`Initiating scan: ${platform}${language ? ` (${language})` : ''}...`, 'output')
 
     try {
-      // Connect to SSE endpoint
-      const url = `http://localhost:8000/api/scan?platform=${platform}${language ? `&language=${language}` : ''}`
+      // Connect to SSE endpoint (Render backend)
+      const url = `https://devpulse-api.onrender.com/api/scan?platform=${platform}${language ? `&language=${language}` : ''}`
       const eventSource = new EventSource(url)
 
       eventSource.onmessage = (event) => {
@@ -234,8 +245,8 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
       }
 
       eventSource.onerror = () => {
-        addLine('✗ Connection error. Is the API server running?', 'error')
-        addLine('  Run: python -m uvicorn api.main:app --reload', 'output')
+        addLine('✗ Connection error. Backend may be waking up...', 'error')
+        addLine('  (Render free tier sleeps after inactivity - try again in 30 sec)', 'output')
         playError()
         eventSource.close()
         setIsScanning(false)
