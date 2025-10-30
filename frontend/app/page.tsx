@@ -14,6 +14,11 @@ export default function Home() {
   const [selectedSource, setSelectedSource] = useState<string>('all')
   const [isLoading, setIsLoading] = useState(false)
 
+  // Force page to stay at top on load
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   const handleDataReceived = (items: TrendingItem[]) => {
     setTrends(items)
     setFilteredTrends(items)

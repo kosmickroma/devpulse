@@ -314,8 +314,8 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
                 value={currentInput}
                 onChange={(e) => setCurrentInput(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onFocus={(e) => e.preventDefault()}
                 className="flex-1 bg-transparent outline-none caret-neon-cyan text-neon-cyan"
-                autoFocus
                 spellCheck={false}
                 placeholder=""
               />
