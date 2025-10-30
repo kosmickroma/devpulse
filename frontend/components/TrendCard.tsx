@@ -102,22 +102,22 @@ export default function TrendCard({ trend, index }: TrendCardProps) {
               <span className="text-xs">●</span> {trend.language}
             </div>
           )}
-          {trend.stars !== undefined && (
+          {trend.stars != null && (
             <div className={`flex items-center gap-1 ${colors.text}`}>
-              ⭐ {trend.stars.toLocaleString()}
+              ⭐ {Number(trend.stars).toLocaleString()}
             </div>
           )}
-          {trend.score !== undefined && (
+          {trend.score != null && (
             <div className={`flex items-center gap-1 ${colors.text}`}>
               ▲ {trend.score}
             </div>
           )}
-          {trend.reactions !== undefined && (
+          {trend.reactions != null && (
             <div className={`flex items-center gap-1 ${colors.text}`}>
               ❤️ {trend.reactions}
             </div>
           )}
-          {trend.comments !== undefined && (
+          {trend.comments != null && (
             <div className="flex items-center gap-1 text-gray-400">
               💬 {trend.comments}
             </div>
