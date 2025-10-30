@@ -24,20 +24,35 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const terminalContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const audioContextRef = useRef<AudioContext | null>(null)
   const itemsRef = useRef<TrendingItem[]>([])
 
-  // Initialize audio on first keystroke
-  const initializeAudio = () => {
-    if (!audioEnabled && typeof window !== 'undefined') {
-      try {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
-        setAudioEnabled(true)
-      } catch (e) {
-        console.log('Audio blocked by browser')
+  // Fallout 3 sound effects
+  const sounds = useRef({
+    typing: null as HTMLAudioElement | null,
+    beep: null as HTMLAudioElement | null,
+    error: null as HTMLAudioElement | null,
+    success: null as HTMLAudioElement | null,
+  })
+
+  // Initialize sounds on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sounds.current = {
+        typing: new Audio('/sounds/ui_hacking_charenter_01.wav'),
+        beep: new Audio('/sounds/ui_hacking_charscroll.wav'),
+        error: new Audio('/sounds/ui_hacking_passbad.wav'),
+        success: new Audio('/sounds/ui_hacking_passgood.wav'),
       }
+      // Preload sounds
+      Object.values(sounds.current).forEach(sound => {
+        if (sound) {
+          sound.volume = 0.3 // Not too loud
+          sound.load()
+        }
+      })
+      setAudioEnabled(true)
     }
-  }
+  }, [])
 
   // Auto-scroll within terminal container only, but not on initial load
   useEffect(() => {
@@ -67,45 +82,40 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
     bootLines.forEach((line, index) => {
       setTimeout(() => {
         setLines(prev => [...prev, line])
-        playBeep(200 + index * 50, 0.05)
+        playBeep()
       }, line.timestamp - Date.now())
     })
   }, [])
 
-  // Play retro-style beep
-  const playBeep = (frequency: number = 800, duration: number = 0.1) => {
-    if (!audioContextRef.current || !audioEnabled) return
+  // Play sound helper
+  const playSound = (soundType: 'typing' | 'beep' | 'error' | 'success') => {
+    if (!audioEnabled || !sounds.current[soundType]) return
 
-    const oscillator = audioContextRef.current.createOscillator()
-    const gainNode = audioContextRef.current.createGain()
-
-    oscillator.connect(gainNode)
-    gainNode.connect(audioContextRef.current.destination)
-
-    oscillator.frequency.value = frequency
-    oscillator.type = 'square' // Retro square wave
-
-    gainNode.gain.setValueAtTime(0.1, audioContextRef.current.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration)
-
-    oscillator.start(audioContextRef.current.currentTime)
-    oscillator.stop(audioContextRef.current.currentTime + duration)
+    const sound = sounds.current[soundType]
+    if (sound) {
+      sound.currentTime = 0 // Reset to start
+      sound.play().catch(() => {}) // Ignore errors
+    }
   }
 
   // Play typing click
   const playTypingClick = () => {
-    playBeep(1200, 0.02)
+    playSound('typing')
+  }
+
+  // Play general beep
+  const playBeep = () => {
+    playSound('beep')
   }
 
   // Play error sound
   const playError = () => {
-    playBeep(200, 0.3)
+    playSound('error')
   }
 
   // Play success sound
   const playSuccess = () => {
-    playBeep(600, 0.1)
-    setTimeout(() => playBeep(800, 0.1), 100)
+    playSound('success')
   }
 
   // Handle command execution
@@ -122,7 +132,7 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
 
     switch (cmd) {
       case 'help':
-        playBeep(400, 0.1)
+        playBeep()
         addLine('Available commands:', 'output')
         addLine('  scan [all|github|hackernews|devto] - Scan platforms for trending content', 'output')
         addLine('  scan github [language] - Scan GitHub for specific language', 'output')
@@ -135,7 +145,7 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
         break
 
       case 'clear':
-        playBeep(300, 0.1)
+        playBeep()
         setLines([])
         addLine('> Terminal cleared', 'success')
         break
@@ -160,7 +170,7 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
     const platform = args[0] || 'all'
     const language = args[1] || ''
 
-    playBeep(500, 0.1)
+    playBeep()
     addLine(`Initiating scan: ${platform}${language ? ` (${language})` : ''}...`, 'output')
 
     try {
@@ -174,27 +184,27 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
         switch (data.type) {
           case 'status':
             addLine(`> ${data.message}`, 'output')
-            playBeep(400, 0.05)
+            playBeep()
             break
 
           case 'spider_start':
             addLine(`> Connecting to ${data.spider}...`, 'output')
-            playBeep(500, 0.1)
+            playBeep()
             break
 
           case 'connecting':
             addLine(`> ${data.message}`, 'output')
-            playBeep(450, 0.05)
+            playBeep()
             break
 
           case 'scanning':
             addLine(`> ${data.message}`, 'success')
-            playBeep(600, 0.1)
+            playBeep()
             break
 
           case 'item':
             itemsRef.current.push(data.data)
-            playBeep(700 + Math.random() * 200, 0.03) // Vary pitch slightly
+            playBeep()
             const item = data.data
             addLine(`  ✓ ${item.title.substring(0, 60)}...`, 'success')
             setProgress(prev => prev + 1)
@@ -202,7 +212,7 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
 
           case 'spider_complete':
             addLine(`> ${data.spider} scan complete`, 'success')
-            playBeep(650, 0.15)
+            playBeep()
             break
 
           case 'scan_complete':
@@ -250,11 +260,6 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
 
   // Handle key press
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    // Enable audio on first keystroke
-    if (!audioEnabled) {
-      initializeAudio()
-    }
-
     if (e.key === 'Enter' && currentInput.trim() && !isScanning) {
       executeCommand(currentInput)
       setCurrentInput('')
