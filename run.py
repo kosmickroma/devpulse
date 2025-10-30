@@ -17,7 +17,7 @@ from typing import List
 class DevPulseCLI:
     """CLI wrapper for DevPulse spiders."""
 
-    AVAILABLE_SPIDERS = ['github', 'hackernews', 'devto']
+    AVAILABLE_SPIDERS = ['github_api', 'hackernews', 'devto']
 
     def __init__(self):
         """Initialize the CLI."""
@@ -40,7 +40,7 @@ class DevPulseCLI:
         # Build command based on spider type
         cmd = ['scrapy', 'crawl', spider_name]
 
-        if spider_name == 'github':
+        if spider_name == 'github_api':
             time_range = kwargs.get('time_range', 'daily')
             language = kwargs.get('language', '')
             print(f"    Time range: {time_range}")
@@ -183,10 +183,10 @@ Examples:
     python run.py --all
 
   Run specific spider:
-    python run.py --spider github
+    python run.py --spider github_api
 
   GitHub with specific language:
-    python run.py --spider github --language python
+    python run.py --spider github_api --language python
 
   Hacker News with multiple pages:
     python run.py --spider hackernews --pages 2

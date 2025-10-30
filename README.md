@@ -26,16 +26,16 @@ Built with Scrapy and designed with SOLID principles for scalability, DevPulse p
 |----------|--------|-------|
 | 🟢 Hacker News | **Live** | Front page stories with scores and comments |
 | 🟢 Dev.to | **Live** | Trending posts with reactions and tags |
-| 🟡 GitHub | **Coming Soon** | Will use official API for reliability |
+| 🟢 GitHub | **Live** | Trending repos via official API (v1.1) |
 
-**Note:** GitHub's trending page blocks automated scrapers via robots.txt. We're implementing official GitHub API integration for v1.1 to provide reliable, production-ready GitHub trending data.
+**All platforms are now live and production-ready!** GitHub integration uses the official Search API with authentication for reliable, high-rate-limit access (5,000 requests/hour with token).
 
 ## Features
 
 ✨ **Multi-Platform Tracking**
 - ✅ Hacker News front page stories (live)
 - ✅ Dev.to trending posts with tag filtering (live)
-- 🔜 GitHub trending repositories via official API (coming in v1.1)
+- ✅ GitHub trending repositories via official API (live - v1.1)
 
 🛡️ **Production-Ready**
 - Pydantic data validation
@@ -93,13 +93,13 @@ python run.py --all
 
 ```bash
 # Daily trending (all languages)
-python run.py --spider github
+python run.py --spider github_api
 
 # Weekly trending Python repos
-python run.py --spider github --time-range weekly --language python
+python run.py --spider github_api --time-range weekly --language python
 
 # Daily trending JavaScript
-python run.py --spider github --language javascript
+python run.py --spider github_api --language javascript
 ```
 
 **Hacker News:**
@@ -127,7 +127,7 @@ python run.py --spider devto --time-range month --tag python
 **Run multiple spiders:**
 
 ```bash
-python run.py --spider github hackernews
+python run.py --spider github_api hackernews devto
 ```
 
 **Skip summary statistics:**
@@ -140,7 +140,7 @@ python run.py --all --no-summary
 
 ```bash
 # More control over scraping
-scrapy crawl github -a time_range=weekly -a language=rust
+scrapy crawl github_api -a time_range=weekly -a language=rust
 
 # Custom output format
 scrapy crawl hackernews -o custom_output.json -a page_limit=2
@@ -303,11 +303,11 @@ Check logs for Pydantic validation failures. Common issues:
 
 ## Roadmap
 
-### v1.1 - GitHub Integration (Next)
-- [ ] Implement GitHub API integration for trending repos
-- [ ] Add language filtering via API
-- [ ] Support for daily/weekly/monthly trends
-- [ ] Better rate limit handling
+### v1.1 - GitHub Integration ✅ (Complete)
+- [x] Implement GitHub API integration for trending repos
+- [x] Add language filtering via API
+- [x] Support for daily/weekly/monthly trends
+- [x] Better rate limit handling
 
 ### v2.0 - Web UI/UX (High Priority)
 - [ ] React dashboard for visualizing trends
