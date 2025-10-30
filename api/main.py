@@ -93,7 +93,9 @@ async def scan_stream(
                 language=language if spider_name == "github_api" else None,
                 time_range=time_range
             ):
-                total_items += 1
+                # Only count actual items, not status events
+                if event.get('type') == 'item':
+                    total_items += 1
                 yield f"data: {json.dumps(event)}\n\n"
                 await asyncio.sleep(0.05)  # Small delay for visual effect
 

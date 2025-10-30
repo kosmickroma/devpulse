@@ -44,8 +44,7 @@ class SpiderRunner:
             # Build Scrapy command
             cmd = [
                 "scrapy", "crawl", spider_name,
-                "-o", tmp_path,
-                "-t", "jsonlines",  # Use JSON Lines format for streaming
+                "-o", tmp_path,  # Scrapy auto-detects JSON Lines from .jsonl extension
             ]
 
             # Add spider-specific arguments
