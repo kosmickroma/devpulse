@@ -21,13 +21,14 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
   const [progress, setProgress] = useState(0)
   const [audioEnabled, setAudioEnabled] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [isSystemReady, setIsSystemReady] = useState(false) // NEW: tracks if user has initialized
-  const [showInitOverlay, setShowInitOverlay] = useState(true) // NEW: shows "press any key"
+  const [isSystemReady, setIsSystemReady] = useState(false)
+  const [showInitOverlay, setShowInitOverlay] = useState(true)
+  const [spinnerFrame, setSpinnerFrame] = useState(0) // NEW: for loading animation
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const terminalContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const itemsRef = useRef<TrendingItem[]>([])
-  const hasBooted = useRef(false) // NEW: prevent boot from running twice
+  const hasBooted = useRef(false)
 
   // Fallout 3 sound effects
   const sounds = useRef({
@@ -58,19 +59,13 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
 
   // Handle system initialization (unlock audio and start boot)
   const handleInitialize = async () => {
-    // Unlock audio by playing silent sound
-    if (sounds.current.beep) {
+    // Play iconic boot-up sound immediately (the "access granted" sound)
+    if (sounds.current.success) {
       try {
-        const beep = sounds.current.beep
-        const originalVolume = beep.volume
-        beep.volume = 0
-        await beep.play()
-        beep.pause()
-        beep.currentTime = 0
-        beep.volume = originalVolume
+        await sounds.current.success.play()
         setAudioEnabled(true)
       } catch (error) {
-        // Fallback: audio might still be blocked, but we tried
+        // Fallback: try to enable audio anyway
         setAudioEnabled(true)
       }
     }
@@ -92,6 +87,18 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
     const timer = setTimeout(() => setIsInitialLoad(false), 2500)
     return () => clearTimeout(timer)
   }, [])
+
+  // Spinner animation - rotates through cool retro characters when scanning
+  useEffect(() => {
+    if (!isScanning) return
+
+    const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+    const interval = setInterval(() => {
+      setSpinnerFrame(prev => (prev + 1) % spinnerFrames.length)
+    }, 80) // Fast rotation for smooth animation
+
+    return () => clearInterval(interval)
+  }, [isScanning])
 
   // Auto-scan after boot sequence completes
   const [hasAutoScanned, setHasAutoScanned] = useState(false)
@@ -335,8 +342,9 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
         <div className="w-3 h-3 rounded-full bg-neon-cyan shadow-neon-cyan" />
         <span className="ml-4 text-neon-cyan font-mono text-sm">terminal://devpulse/interactive</span>
         {isScanning && (
-          <span className="ml-auto text-neon-green font-mono text-xs animate-pulse">
-            [SCANNING... {progress} items]
+          <span className="ml-auto text-neon-green font-mono text-xs flex items-center gap-2">
+            <span className="text-lg">{['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'][spinnerFrame]}</span>
+            <span>[SCANNING... {progress} items]</span>
           </span>
         )}
       </div>
@@ -396,10 +404,10 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
               v1.1 - INITIALIZED
             </div>
             <div className="text-lg text-gray-300 font-mono mb-2">
-              [ PRESS ANY KEY TO BEGIN ]
+              [ CLICK TO INITIALIZE ]
             </div>
             <div className="text-sm text-gray-500 font-mono">
-              Audio systems will be activated
+              Boot sequence will begin with audio
             </div>
           </div>
         </div>
