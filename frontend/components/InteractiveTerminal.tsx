@@ -50,7 +50,35 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
           sound.load()
         }
       })
-      setAudioEnabled(true)
+
+      // Try to enable audio immediately (may be blocked by browser until user interaction)
+      // Play silent sound to "unlock" audio on supported browsers
+      const unlockAudio = () => {
+        if (sounds.current.beep) {
+          const originalVolume = sounds.current.beep.volume
+          sounds.current.beep.volume = 0
+          sounds.current.beep.play().then(() => {
+            sounds.current.beep!.pause()
+            sounds.current.beep!.currentTime = 0
+            sounds.current.beep!.volume = originalVolume
+            setAudioEnabled(true)
+          }).catch(() => {
+            // Audio blocked, will enable on first interaction
+            setAudioEnabled(false)
+          })
+        }
+      }
+
+      // Try unlocking on various user interactions
+      const events = ['click', 'touchstart', 'keydown']
+      const handler = () => {
+        unlockAudio()
+        events.forEach(event => document.removeEventListener(event, handler))
+      }
+      events.forEach(event => document.addEventListener(event, handler, { once: true }))
+
+      // Also try immediately (some browsers allow it)
+      unlockAudio()
     }
   }, [])
 
@@ -279,6 +307,7 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
       executeCommand(currentInput)
       setCurrentInput('')
     } else if (e.key.length === 1) {
+      // Audio will be enabled by event listener in useEffect
       playTypingClick()
     }
   }
