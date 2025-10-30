@@ -19,21 +19,26 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
   const [currentInput, setCurrentInput] = useState('')
   const [isScanning, setIsScanning] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [audioEnabled, setAudioEnabled] = useState(false)
   const terminalEndRef = useRef<HTMLDivElement>(null)
+  const terminalContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const itemsRef = useRef<TrendingItem[]>([])
 
-  // Initialize audio context for sound effects
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
+  // Initialize audio on first user interaction
+  const initializeAudio = () => {
+    if (!audioEnabled && typeof window !== 'undefined') {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
+      setAudioEnabled(true)
     }
-  }, [])
+  }
 
-  // Auto-scroll to bottom
+  // Auto-scroll within terminal container only (not the whole page)
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (terminalContainerRef.current) {
+      terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight
+    }
   }, [lines])
 
   // Initial boot sequence
@@ -56,9 +61,9 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
     })
   }, [])
 
-  // Play Fallout-style beep
+  // Play retro-style beep
   const playBeep = (frequency: number = 800, duration: number = 0.1) => {
-    if (!audioContextRef.current) return
+    if (!audioContextRef.current || !audioEnabled) return
 
     const oscillator = audioContextRef.current.createOscillator()
     const gainNode = audioContextRef.current.createGain()
@@ -260,6 +265,11 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
         <div className="w-3 h-3 rounded-full bg-neon-green shadow-neon-green" />
         <div className="w-3 h-3 rounded-full bg-neon-cyan shadow-neon-cyan" />
         <span className="ml-4 text-neon-cyan font-mono text-sm">terminal://devpulse/interactive</span>
+        {!audioEnabled && (
+          <span className="ml-auto text-yellow-400 font-mono text-xs animate-pulse">
+            [Click terminal to enable audio]
+          </span>
+        )}
         {isScanning && (
           <span className="ml-auto text-neon-green font-mono text-xs animate-pulse">
             [SCANNING... {progress} items]
@@ -268,7 +278,11 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
       </div>
 
       {/* Terminal Content */}
-      <div className="p-6 font-mono text-sm h-96 overflow-y-auto custom-scrollbar">
+      <div
+        ref={terminalContainerRef}
+        className="p-6 font-mono text-sm h-96 overflow-y-auto custom-scrollbar"
+        onClick={initializeAudio}
+      >
         {lines.map((line) => (
           <div
             key={line.id}
