@@ -68,15 +68,7 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
   }, [])
 
   // Auto-scan after boot sequence completes
-  useEffect(() => {
-    const autoScanTimer = setTimeout(() => {
-      addLine('> ', 'output')
-      addLine('> Auto-scanning all platforms...', 'output')
-      handleScan([]) // Scan all platforms
-    }, 2500) // Start after boot completes
-
-    return () => clearTimeout(autoScanTimer)
-  }, [])
+  const [hasAutoScanned, setHasAutoScanned] = useState(false)
 
   // Initial boot sequence
   useEffect(() => {
@@ -87,7 +79,7 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
       { id: '4', text: '> [✓] Hacker News: ONLINE', type: 'success' as const, timestamp: Date.now() + 900 },
       { id: '5', text: '> [✓] Dev.to: ONLINE', type: 'success' as const, timestamp: Date.now() + 1200 },
       { id: '6', text: '> ', type: 'output' as const, timestamp: Date.now() + 1500 },
-      { id: '7', text: '> Type "scan" to begin or "help" for commands', type: 'output' as const, timestamp: Date.now() + 1800 },
+      { id: '7', text: '> Auto-scan initiating...', type: 'output' as const, timestamp: Date.now() + 1800 },
     ]
 
     bootLines.forEach((line, index) => {
@@ -96,6 +88,11 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
         playBeep()
       }, line.timestamp - Date.now())
     })
+
+    // Trigger auto-scan after boot completes
+    setTimeout(() => {
+      setHasAutoScanned(true)
+    }, 2500)
   }, [])
 
   // Play sound helper
@@ -269,6 +266,13 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
     }])
   }
 
+  // Trigger auto-scan when flag is set
+  useEffect(() => {
+    if (hasAutoScanned && !isScanning) {
+      handleScan([]) // Scan all platforms
+    }
+  }, [hasAutoScanned])
+
   // Handle key press
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && currentInput.trim() && !isScanning) {
@@ -330,10 +334,9 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
                 value={currentInput}
                 onChange={(e) => setCurrentInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                onFocus={(e) => e.preventDefault()}
                 className="flex-1 bg-transparent outline-none caret-neon-cyan text-neon-cyan"
                 spellCheck={false}
-                placeholder=""
+                placeholder="Type command..."
               />
               <span className="inline-block w-2 h-4 bg-neon-cyan animate-pulse" />
             </div>
