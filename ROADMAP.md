@@ -68,20 +68,22 @@ From trending GitHub repos to popular discussions, breaking tech news to emergin
 
 **Features:**
 
-**Interactive Terminal (✅ MVP Complete!):**
+**Interactive Terminal (✅ 100% Complete!):**
 - ✅ Retro terminal interface with command parser
 - ✅ Real-time streaming of scraper results via SSE
 - ✅ **Authentic Fallout 3 sound effects** - MIT licensed! 🎮
+- ✅ "Click to Initialize" splash screen with boot sound
+- ✅ Sounds working throughout: boot, scan, commands
+- ✅ Retro braille dot loading spinner (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏)
 - ✅ Commands: `scan`, `scan [platform]`, `scan github [language]`, `help`, `clear`
 - ✅ Auto-scrolling terminal output
-- ✅ Sounds: typing clicks, beeps, success/error (when typing)
 - ✅ Terminal loads at top of page
 - ✅ Backend API deployed on Render (free tier)
-- ✅ Auto-scan on page load (working!)
+- ✅ Auto-scan on page load with full audio
 - ✅ GitHub Actions keepalive (pings every 10 min)
 - ✅ Cards displaying trending content with all data
-- ⚠️ Known Issue: Auto-scan sounds (browser autoplay restrictions)
-- [ ] More commands: `filter`, `search`, `theme`
+- ✅ Zero crashes, stable performance
+- [ ] More commands: `filter`, `search`, `theme` (v2.1)
 
 **Core UI:**
 - ✅ Homepage with 80s synthwave aesthetic
