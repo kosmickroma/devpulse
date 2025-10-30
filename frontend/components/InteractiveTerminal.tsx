@@ -242,7 +242,9 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
             itemsRef.current.push(data.data)
             playBeep()
             const item = data.data
-            addLine(`  ✓ ${item.title.substring(0, 60)}...`, 'success')
+            const title = item?.title || 'Untitled'
+            const displayTitle = title.length > 60 ? title.substring(0, 60) + '...' : title
+            addLine(`  ✓ ${displayTitle}`, 'success')
             setProgress(prev => prev + 1)
             break
 
