@@ -21,10 +21,13 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
   const [progress, setProgress] = useState(0)
   const [audioEnabled, setAudioEnabled] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [isSystemReady, setIsSystemReady] = useState(false) // NEW: tracks if user has initialized
+  const [showInitOverlay, setShowInitOverlay] = useState(true) // NEW: shows "press any key"
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const terminalContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const itemsRef = useRef<TrendingItem[]>([])
+  const hasBooted = useRef(false) // NEW: prevent boot from running twice
 
   // Fallout 3 sound effects
   const sounds = useRef({
@@ -46,41 +49,36 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
       // Preload sounds
       Object.values(sounds.current).forEach(sound => {
         if (sound) {
-          sound.volume = 0.3 // Not too loud
+          sound.volume = 0.3
           sound.load()
         }
       })
-
-      // Try to enable audio immediately (may be blocked by browser until user interaction)
-      // Play silent sound to "unlock" audio on supported browsers
-      const unlockAudio = () => {
-        if (sounds.current.beep) {
-          const originalVolume = sounds.current.beep.volume
-          sounds.current.beep.volume = 0
-          sounds.current.beep.play().then(() => {
-            sounds.current.beep!.pause()
-            sounds.current.beep!.currentTime = 0
-            sounds.current.beep!.volume = originalVolume
-            setAudioEnabled(true)
-          }).catch(() => {
-            // Audio blocked, will enable on first interaction
-            setAudioEnabled(false)
-          })
-        }
-      }
-
-      // Try unlocking on various user interactions
-      const events = ['click', 'touchstart', 'keydown']
-      const handler = () => {
-        unlockAudio()
-        events.forEach(event => document.removeEventListener(event, handler))
-      }
-      events.forEach(event => document.addEventListener(event, handler, { once: true }))
-
-      // Also try immediately (some browsers allow it)
-      unlockAudio()
     }
   }, [])
+
+  // Handle system initialization (unlock audio and start boot)
+  const handleInitialize = async () => {
+    // Unlock audio by playing silent sound
+    if (sounds.current.beep) {
+      try {
+        const beep = sounds.current.beep
+        const originalVolume = beep.volume
+        beep.volume = 0
+        await beep.play()
+        beep.pause()
+        beep.currentTime = 0
+        beep.volume = originalVolume
+        setAudioEnabled(true)
+      } catch (error) {
+        // Fallback: audio might still be blocked, but we tried
+        setAudioEnabled(true)
+      }
+    }
+
+    // Hide overlay and start system
+    setShowInitOverlay(false)
+    setIsSystemReady(true)
+  }
 
   // Auto-scroll within terminal container only, but not on initial load
   useEffect(() => {
@@ -98,8 +96,12 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
   // Auto-scan after boot sequence completes
   const [hasAutoScanned, setHasAutoScanned] = useState(false)
 
-  // Initial boot sequence
+  // Initial boot sequence - only runs after user initializes system
   useEffect(() => {
+    if (!isSystemReady || hasBooted.current) return // Don't run if not ready or already booted
+
+    hasBooted.current = true // Mark as booted
+
     const bootLines = [
       { id: '1', text: '> DevPulse Terminal v1.1', type: 'output' as const, timestamp: Date.now() },
       { id: '2', text: '> Initializing systems...', type: 'output' as const, timestamp: Date.now() + 300 },
@@ -113,7 +115,7 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
     bootLines.forEach((line, index) => {
       setTimeout(() => {
         setLines(prev => [...prev, line])
-        playBeep()
+        playBeep() // Audio is now unlocked, sounds will play!
       }, line.timestamp - Date.now())
     })
 
@@ -121,7 +123,7 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
     setTimeout(() => {
       setHasAutoScanned(true)
     }, 2500)
-  }, [])
+  }, [isSystemReady])
 
   // Play sound helper
   const playSound = (soundType: 'typing' | 'beep' | 'error' | 'success') => {
@@ -325,7 +327,7 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
   }
 
   return (
-    <div className="max-w-5xl mx-auto neon-border rounded-lg overflow-hidden bg-dark-card/90 backdrop-blur">
+    <div className="relative max-w-5xl mx-auto neon-border rounded-lg overflow-hidden bg-dark-card/90 backdrop-blur">
       {/* Terminal Header */}
       <div className="bg-dark-hover border-b border-neon-cyan/30 px-4 py-2 flex items-center gap-2">
         <div className="w-3 h-3 rounded-full bg-neon-magenta shadow-neon-magenta animate-pulse" />
@@ -376,6 +378,32 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
 
         <div ref={terminalEndRef} />
       </div>
+
+      {/* Initialization Overlay - "Press Any Key" */}
+      {showInitOverlay && (
+        <div
+          className="absolute inset-0 z-50 flex items-center justify-center bg-dark-bg/95 backdrop-blur-md"
+          onClick={handleInitialize}
+          onKeyDown={handleInitialize}
+          tabIndex={0}
+          style={{ cursor: 'pointer' }}
+        >
+          <div className="text-center animate-pulse">
+            <div className="text-4xl font-bold text-neon-cyan neon-text-cyan mb-4 font-mono">
+              DEVPULSE TERMINAL
+            </div>
+            <div className="text-xl text-neon-green neon-text-green font-mono mb-8">
+              v1.1 - INITIALIZED
+            </div>
+            <div className="text-lg text-gray-300 font-mono mb-2">
+              [ PRESS ANY KEY TO BEGIN ]
+            </div>
+            <div className="text-sm text-gray-500 font-mono">
+              Audio systems will be activated
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
