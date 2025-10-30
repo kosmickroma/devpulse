@@ -6,7 +6,31 @@ GitHub API integration is DONE! All 3 platforms (GitHub, Hacker News, Dev.to) ar
 
 ---
 
-## Next Session: Web UI/UX Work (v2.0)
+## 🚧 Interactive Terminal (In Progress - 2025-10-30)
+
+**What's Built:**
+- ✅ Interactive terminal component with command parser
+- ✅ FastAPI backend for running spiders via API
+- ✅ Real-time data streaming using Server-Sent Events (SSE)
+- ✅ Web Audio API sound effects (typing, beeps, success)
+- ✅ Commands: `scan`, `scan [platform]`, `scan github [language]`, `help`, `clear`
+- ✅ Terminal loads at top of page, stays there
+- ✅ Audio activates on first keystroke
+- ✅ Live on Vercel frontend
+
+**What's Left:**
+- [ ] Better retro terminal sound files (replace Web Audio beeps with actual samples)
+- [ ] Deploy backend API so terminal can actually run live scans
+- [ ] Add more commands: `filter`, `search`, `theme`
+- [ ] ASCII progress bars during scanning
+- [ ] Deploy backend to Railway/Render/Fly.io
+
+**Current State:**
+Frontend is live at https://devpulse-1z8l.vercel.app/ with terminal UI. Backend API needs deployment to enable actual scanning.
+
+---
+
+## Next Up: Complete Terminal Experience (v2.0)
 
 ### For You (Carol):
 
