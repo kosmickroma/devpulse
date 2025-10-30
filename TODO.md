@@ -1,199 +1,162 @@
 # DevPulse - Task List
 
-## ✅ v1.1 Complete! (2025-10-30)
+## ✅ v2.0 MVP Complete! (2025-10-30)
 
-GitHub API integration is DONE! All 3 platforms (GitHub, Hacker News, Dev.to) are now live and working.
+**The interactive web dashboard is LIVE!** 🎉
 
----
-
-## 🚧 Interactive Terminal (In Progress - 2025-10-30)
-
-**What's Built:**
-- ✅ Interactive terminal component with command parser
-- ✅ FastAPI backend for running spiders via API
-- ✅ Real-time data streaming using Server-Sent Events (SSE)
-- ✅ Web Audio API sound effects (typing, beeps, success)
-- ✅ Commands: `scan`, `scan [platform]`, `scan github [language]`, `help`, `clear`
-- ✅ Terminal loads at top of page, stays there
-- ✅ Audio activates on first keystroke
-- ✅ Live on Vercel frontend
-
-**What's Left:**
-- [ ] Deploy backend API so terminal can actually run live scans
-- [ ] Connect terminal to live backend
-- [ ] Decide: Auto-scan on page load vs manual scan
-- [ ] Add more commands: `filter`, `search`, `theme`
-- [ ] ASCII progress bars during scanning
-- [ ] Deploy backend to Railway/Render/Fly.io
-
-**Recent Wins:**
-- ✅ Authentic Fallout 3 terminal sounds integrated! (2025-10-30)
-- ✅ Sounds play on typing, commands, success/error
-- ✅ MIT licensed, legal to use
-- ✅ Terminal loads at top, sounds work immediately
-
-**Current State (2025-10-30 - Late Session):**
-- ✅ Frontend: Live at https://devpulse-1z8l.vercel.app/
-- ✅ Backend: Live at https://devpulse-api.onrender.com (Render free tier)
-- ✅ GitHub Actions: Pinging every 10 min to keep backend awake
-- ✅ Auto-scan: Runs on page load, streams data from backend
-- ✅ Terminal: Typing commands works, typing sounds work
-- ✅ Scanning: Manual scan command works with success sounds
-
-**Issues to Fix:**
-- [ ] Auto-scan sounds: Should play during auto-scan, not just when typing
-- [ ] Cards: Data streams in but cards don't populate below terminal
-- [ ] Need to verify data flow from backend → frontend → cards
-
-**Architecture:**
-- Frontend (Vercel) → Backend API (Render) → Scrapy spiders → SSE streaming → Frontend
-- Two separate deployments communicating via HTTPS
+- ✅ Frontend: https://devpulse-1z8l.vercel.app
+- ✅ Backend: https://devpulse-api.onrender.com
+- ✅ All 3 platforms scanning successfully (GitHub, Hacker News, Dev.to)
+- ✅ Real-time SSE streaming working
+- ✅ Cards displaying trending content
+- ✅ Auto-scan on page load
+- ✅ Authentic Fallout 3 terminal sounds (MIT licensed)
+- ✅ GitHub Actions keep-alive preventing backend sleep
 
 ---
 
-## Next Up: Complete Terminal Experience (v2.0)
+## 🐛 Known Issues
 
-### For You (Carol):
-
-**Before We Start:**
-- [ ] Review GitHub API docs: https://docs.github.com/en/rest/repos/repos
-- [ ] Create GitHub Personal Access Token (if needed for higher rate limits)
-  - Go to: https://github.com/settings/tokens
-  - Click "Generate new token (classic)"
-  - Select scopes: `public_repo` (read-only is fine)
-  - Save token somewhere safe
-- [ ] Test current working spiders to confirm baseline:
-  ```bash
-  cd C:\Users\carol\devpulse
-  python run.py --spider hackernews
-  python run.py --spider devto
-  ```
-
-**Nice to Have:**
-- [ ] Think about UI design ideas (wireframes, color schemes)
-- [ ] List any specific GitHub features you want (language filters, time ranges, etc.)
+### Sound Effects During Auto-Scan
+- **Issue:** Sounds play when typing commands, but NOT during the automatic scan on page load
+- **Root Cause:** Browser autoplay restrictions prevent audio before user interaction
+- **Current Status:** Attempted audio unlock pattern, but needs further work
+- **Potential Solutions:**
+  1. Require one click/keypress before enabling sounds
+  2. Play silent audio on first interaction
+  3. Use Web Audio API oscillator (less authentic feel)
+  4. Accept limitation and only play sounds on manual scans
+- **Priority:** Low (UX enhancement, not breaking)
 
 ---
 
-### For Me (Claude):
+## 🎯 Next Priorities (v2.1)
 
-**Phase 1: Research & Planning (15 min)**
-- [ ] Research GitHub trending API endpoints
-- [ ] Determine if official "trending" endpoint exists (may need to use search with sort)
-- [ ] Plan data mapping from API response to our TrendingItem model
-- [ ] Design rate limiting strategy
+### High Priority
+1. **Fix auto-scan sounds** - Resolve browser autoplay restrictions
+   - Try alternative unlock patterns
+   - Consider user interaction requirement
+   - Test across different browsers
 
-**Phase 2: Implementation (30-45 min)**
-- [ ] Create `github_api_spider.py` in `devpulse/spiders/`
-- [ ] Implement GitHub API client
-- [ ] Handle authentication (with and without token)
-- [ ] Parse API response into our TrendingItem format
-- [ ] Add error handling for rate limits
-- [ ] Support language filtering
-- [ ] Support time range (day/week/month)
+2. **Platform filter tabs** - Allow filtering by source
+   - Add tabs for All, GitHub, Hacker News, Dev.to
+   - Update FilterBar component
+   - Sync with existing source filtering
 
-**Phase 3: Integration (15 min)**
-- [ ] Update CLI to use new GitHub API spider
-- [ ] Remove/deprecate old HTML scraper
-- [ ] Update settings if needed
-- [ ] Test with live API
+3. **Error handling improvements**
+   - Better cold-start messaging (Render free tier sleeps)
+   - Retry logic for failed scans
+   - User-friendly error messages
 
-**Phase 4: Testing & Documentation (20 min)**
-- [ ] Test with various language filters
-- [ ] Test with different time ranges
-- [ ] Verify rate limiting works
-- [ ] Update README - change GitHub from 🟡 to 🟢
-- [ ] Update ROADMAP - mark v1.1 as complete
-- [ ] Document any API token setup needed
+### Medium Priority
+4. **Additional commands**
+   - `filter [source]` - Filter by platform
+   - `search [term]` - Search within results
+   - `theme [name]` - Change color scheme
 
-**Phase 5: Git & Cleanup (10 min)**
-- [ ] Commit changes with clear messages
-- [ ] Update version to v1.1
-- [ ] Push to GitHub
-- [ ] Test fresh clone to ensure it works
+5. **Visual enhancements**
+   - ASCII progress bars during scanning
+   - Animated loading states
+   - Smoother transitions
 
----
+6. **Performance**
+   - Optimize SSE connection handling
+   - Add data caching
+   - Reduce initial load time
 
-## Potential Blockers to Discuss:
-
-1. **API Rate Limits:**
-   - Without auth: 60 requests/hour
-   - With auth: 5,000 requests/hour
-   - Decision: Require token or work within free limits?
-
-2. **Trending Endpoint:**
-   - GitHub may not have a direct "trending" API
-   - Might need to use: `GET /search/repositories?q=created:>YYYY-MM-DD&sort=stars`
-   - This is a workaround - discuss if acceptable
-
-3. **Data Differences:**
-   - API gives more data than HTML scraper
-   - Should we store additional fields?
-   - Keep it simple or maximize data?
+### Low Priority
+7. **Documentation**
+   - Add screenshots to README
+   - Video demo
+   - API documentation
 
 ---
 
-## Session Structure:
+## 🚀 Future Features (v2.x)
 
-**9:00-9:15** - Quick sync on blockers, decide on approach
-**9:15-10:00** - Build GitHub API spider
-**10:00-10:20** - Test and debug
-**10:20-10:40** - Documentation and cleanup
-**10:40-11:00** - Push v1.1, celebrate, plan UI work
+### User Features
+- [ ] Save favorite items
+- [ ] Create custom feeds
+- [ ] Export to various formats (JSON, Markdown, etc.)
+- [ ] Share trending lists
+- [ ] Browser notifications for new trends
 
----
+### Additional Platforms
+- [ ] Product Hunt
+- [ ] Reddit (r/programming, r/webdev, etc.)
+- [ ] Lobsters
+- [ ] Stack Overflow
 
-## After GitHub API is Done:
-
-### Next Priorities:
-
-**Option A: Start UI/UX Work**
-- Wireframe the dashboard
-- Choose tech stack (React + Tailwind?)
-- Design components
-- Set up frontend project
-
-**Option B: Add Another Platform**
-- Product Hunt (has good API)
-- Reddit (official API available)
-- Quick win to show momentum
-
-**Option C: Infrastructure**
-- Set up database (PostgreSQL?)
-- Design data schema
-- Plan API endpoints for frontend
-
-**My Recommendation: Option A (UI/UX)**
-- You're excited about it
-- It's the most visible progress
-- We have solid backend already
-- Can iterate on data sources later
+### Data & Analytics
+- [ ] Trending score charts over time
+- [ ] Language distribution visualizations
+- [ ] Engagement metrics
+- [ ] Top authors/contributors
 
 ---
 
-## Questions to Answer Tomorrow:
+## 📝 Technical Debt
 
-1. Do we need GitHub token for better rate limits?
-2. How many repos should we fetch per request?
-3. Keep experimental HTML scraper or delete it?
-4. What language filters do you use most? (Python, JavaScript, etc.)
-5. When do we start UI work?
+### Frontend
+- [ ] Add proper TypeScript strict mode
+- [ ] Implement proper error boundaries
+- [ ] Add unit tests for components
+- [ ] Optimize bundle size
+
+### Backend
+- [ ] Add proper logging (not just print statements)
+- [ ] Implement rate limiting
+- [ ] Add caching layer
+- [ ] Write API tests
+
+### Infrastructure
+- [ ] Set up monitoring (error tracking, performance)
+- [ ] Add database for historical data
+- [ ] Implement CI/CD pipeline
+- [ ] Add staging environment
 
 ---
 
-## Success Criteria for Tomorrow:
+## 🔧 Recent Fixes (Session 2025-10-30)
 
-- [ ] GitHub API integration working
-- [ ] Can filter by language
-- [ ] Can filter by time range (day/week/month)
-- [ ] Gets at least 25 trending repos
-- [ ] No robots.txt issues
-- [ ] Documented and tested
-- [ ] Pushed to GitHub as v1.1
-- [ ] All 3 platforms working (HN, Dev.to, GitHub)
+1. **Backend Scrapy command** - Removed invalid `-t jsonlines` flag
+2. **Item count** - Fixed total_items to only count actual items, not status events
+3. **Title crash** - Added safe null checks for `item.title`
+4. **TrendCard null values** - Changed `!== undefined` to `!= null` for stats
+5. **Audio unlock** - Implemented pattern to enable sounds after user interaction
+6. **Vercel deployment** - Resolved duplicate project causing queue issues
 
 ---
 
-**Let's ship v1.1 tomorrow! 🚀**
+## 💡 Ideas for Consideration
 
-After that, we build the UI and DevPulse becomes a real SaaS.
+- **Mobile app** - React Native version?
+- **Browser extension** - Quick access to trends
+- **Slack/Discord bot** - Daily digest notifications
+- **RSS feed** - For traditional feed readers
+- **Public API** - Let others build on DevPulse data
+- **Personalization** - ML-based recommendations
+
+---
+
+## 📊 Success Metrics
+
+**Current Status:**
+- ✅ Web app live and functional
+- ✅ All 3 platforms scraping
+- ✅ Real-time streaming working
+- ✅ Cards displaying correctly
+- ⚠️ Sounds partially working
+
+**Next Milestones:**
+- [ ] 10+ GitHub stars
+- [ ] 100+ unique visitors
+- [ ] Positive user feedback
+- [ ] Featured on Product Hunt
+- [ ] Add 2 more platforms
+
+---
+
+**Last Updated:** 2025-10-30
+
+Ready to continue development! All major features working. Next focus: audio fix and additional filters.

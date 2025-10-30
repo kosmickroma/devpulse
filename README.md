@@ -16,9 +16,11 @@
 
 ## Overview
 
-**DevPulse** is a professional web scraping tool that aggregates trending developer content from multiple platforms. Stay current with what's hot in tech by tracking popular discussions and top articles—all in one place.
+**DevPulse** is a real-time developer trends aggregation platform with an interactive web interface. Track trending repos, discussions, and articles from GitHub, Hacker News, and Dev.to—all in one beautiful 80s-inspired dashboard.
 
-Built with Scrapy and designed with SOLID principles for scalability, DevPulse provides genuinely useful data for developers who want to stay on top of industry trends.
+**🌐 Live Demo:** [devpulse-1z8l.vercel.app](https://devpulse-1z8l.vercel.app)
+
+Built with Scrapy (backend), FastAPI (API), and Next.js (frontend), DevPulse combines professional scraping architecture with a unique terminal-inspired UX featuring real-time streaming and authentic retro sound effects.
 
 ### Platform Status
 
@@ -32,19 +34,29 @@ Built with Scrapy and designed with SOLID principles for scalability, DevPulse p
 
 ## Features
 
+🌐 **Interactive Web Dashboard** (v2.0 - Live!)
+- Real-time terminal interface with command parser
+- Server-Sent Events (SSE) for live data streaming
+- Auto-scan on page load with visual feedback
+- 80s synthwave aesthetic with neon accents
+- Authentic retro terminal sound effects
+- Responsive cards displaying trending content
+- Commands: `scan`, `scan [platform]`, `scan github [language]`, `help`, `clear`
+
 ✨ **Multi-Platform Tracking**
-- ✅ Hacker News front page stories (live)
-- ✅ Dev.to trending posts with tag filtering (live)
-- ✅ GitHub trending repositories via official API (live - v1.1)
+- ✅ GitHub trending repositories via official API
+- ✅ Hacker News front page stories
+- ✅ Dev.to trending posts with tag filtering
 
 🛡️ **Production-Ready**
+- FastAPI backend with async spider execution
 - Pydantic data validation
 - Intelligent deduplication
 - Respectful crawling (delays, user-agent rotation, robots.txt compliance)
 - Comprehensive error handling
 
 🎯 **Developer-Friendly**
-- Simple CLI interface
+- Simple CLI interface (still available!)
 - Flexible filtering options
 - CSV export with timestamps
 - Clean, well-documented code
@@ -309,12 +321,17 @@ Check logs for Pydantic validation failures. Common issues:
 - [x] Support for daily/weekly/monthly trends
 - [x] Better rate limit handling
 
-### v2.0 - Web UI/UX (High Priority)
-- [ ] React dashboard for visualizing trends
-- [ ] Real-time data updates
-- [ ] Interactive filters (language, time range, platform)
-- [ ] Saved searches and preferences
-- [ ] Trending charts and graphs
+### v2.0 - Web UI/UX ✅ (Live!)
+- [x] Next.js dashboard with 80s synthwave aesthetic
+- [x] Real-time data streaming via SSE
+- [x] Interactive terminal with command parser
+- [x] Auto-scan on page load
+- [x] FastAPI backend deployed on Render
+- [x] Frontend deployed on Vercel
+- [x] Authentic retro sound effects
+- [x] Responsive card layout for trending items
+- [ ] Platform filter tabs (HN, Dev.to, GitHub)
+- [ ] Sound effects during auto-scan (browser restriction workaround needed)
 
 ### v2.x - Additional Platforms
 - [ ] Product Hunt integration
