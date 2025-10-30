@@ -67,14 +67,16 @@ From trending GitHub repos to popular discussions, breaking tech news to emergin
 
 **Features:**
 
-**Interactive Terminal (🚧 In Progress):**
+**Interactive Terminal (🚧 90% Complete!):**
 - ✅ Retro terminal interface with command parser
 - ✅ Real-time streaming of scraper results
-- ✅ Sound effects (Web Audio API - needs better samples)
+- ✅ **Authentic Fallout 3 sound effects** - The real deal! 🎮
 - ✅ Commands: `scan`, `help`, `clear`
 - ✅ Auto-scrolling terminal output
-- [ ] Better sound files (retro terminal samples)
-- [ ] Deploy backend API for live functionality
+- ✅ Sounds: typing clicks, beeps, success/error
+- ✅ Terminal loads at top of page
+- [ ] Deploy backend API for live functionality (NEXT PRIORITY)
+- [ ] Auto-scan on page load (optional)
 - [ ] More commands: `filter`, `search`, `theme`
 
 **Core UI:**

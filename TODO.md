@@ -19,14 +19,21 @@ GitHub API integration is DONE! All 3 platforms (GitHub, Hacker News, Dev.to) ar
 - ✅ Live on Vercel frontend
 
 **What's Left:**
-- [ ] Better retro terminal sound files (replace Web Audio beeps with actual samples)
 - [ ] Deploy backend API so terminal can actually run live scans
+- [ ] Connect terminal to live backend
+- [ ] Decide: Auto-scan on page load vs manual scan
 - [ ] Add more commands: `filter`, `search`, `theme`
 - [ ] ASCII progress bars during scanning
 - [ ] Deploy backend to Railway/Render/Fly.io
 
+**Recent Wins:**
+- ✅ Authentic Fallout 3 terminal sounds integrated! (2025-10-30)
+- ✅ Sounds play on typing, commands, success/error
+- ✅ MIT licensed, legal to use
+- ✅ Terminal loads at top, sounds work immediately
+
 **Current State:**
-Frontend is live at https://devpulse-1z8l.vercel.app/ with terminal UI. Backend API needs deployment to enable actual scanning.
+Frontend is live at https://devpulse-1z8l.vercel.app/ with terminal UI and WORKING Fallout sounds! Backend API needs deployment to enable actual scanning.
 
 ---
 
