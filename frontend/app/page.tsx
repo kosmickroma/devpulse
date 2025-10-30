@@ -2,27 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import TrendCard from '@/components/TrendCard'
-import Hero from '@/components/Hero'
+import InteractiveTerminal from '@/components/InteractiveTerminal'
 import FilterBar from '@/components/FilterBar'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { TrendingItem } from '@/lib/types'
-import { mockTrends } from '@/lib/mockData'
 
 export default function Home() {
   const [trends, setTrends] = useState<TrendingItem[]>([])
   const [filteredTrends, setFilteredTrends] = useState<TrendingItem[]>([])
   const [selectedSource, setSelectedSource] = useState<string>('all')
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setTrends(mockTrends)
-      setFilteredTrends(mockTrends)
-      setIsLoading(false)
-    }, 1000)
-  }, [])
+  const handleDataReceived = (items: TrendingItem[]) => {
+    setTrends(items)
+    setFilteredTrends(items)
+  }
 
   useEffect(() => {
     if (selectedSource === 'all') {
@@ -35,7 +30,31 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <Navbar />
-      <Hero />
+
+      {/* Hero Section with Logo */}
+      <div className="relative overflow-hidden border-b-2 border-neon-cyan/30 py-12">
+        <div className="absolute inset-0 perspective-grid opacity-20" style={{ height: '300px' }} />
+        <div className="relative z-10 container mx-auto px-4 text-center">
+          <div className="mb-6 flex justify-center">
+            <img
+              src="/devpulse_logo.svg"
+              alt="DevPulse"
+              className="w-full max-w-2xl h-auto"
+              style={{
+                filter: 'drop-shadow(0 0 30px rgba(255, 0, 255, 0.4)) drop-shadow(0 0 50px rgba(0, 255, 255, 0.3))',
+              }}
+            />
+          </div>
+          <p className="text-xl text-neon-green neon-text-green font-mono">
+            &gt; TRACK THE PULSE OF DEVELOPER TRENDS
+          </p>
+        </div>
+      </div>
+
+      {/* Interactive Terminal */}
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <InteractiveTerminal onDataReceived={handleDataReceived} />
+      </div>
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <FilterBar
