@@ -17,12 +17,7 @@
 
 ## 🐛 Known Issues / Polish Items
 
-### Minor UX Decisions
-- **Consider removing subtitle text** under "CLICK TO INITIALIZE"
-  - Current: "Boot sequence will begin with audio"
-  - Might be cleaner without it
-  - Decide before next deployment
-  - **Priority:** Very Low (cosmetic preference)
+No known issues! All systems operational.
 
 ---
 
@@ -110,12 +105,14 @@
 
 ## 🔧 Recent Fixes
 
-### Session 2025-10-31 (Audio Bug Fix)
+### Session 2025-10-31 (Audio Bug Fix + v2.0 Polish)
 1. **Audio unlock mechanism restored** - Fixed broken audio caused by commit edbe831
    - Reverted to working silent beep unlock trick
    - Boot sound now plays after successful audio unlock
    - All terminal sounds (typing, beeps, success/error) working again
    - Resolved browser autoplay policy issues
+2. **Version updated to v2.0** - Terminal now displays correct version (v2.0)
+3. **Cleaned up init overlay** - Removed unnecessary subtitle text for cleaner UX
 
 ### Session 2025-10-30 (Evening - Final Polish)
 1. **"Click to Initialize" overlay** - Beautiful splash screen with user interaction requirement
