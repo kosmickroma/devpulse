@@ -59,15 +59,32 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
 
   // Handle system initialization (unlock audio and start boot)
   const handleInitialize = async () => {
-    // Play iconic boot-up sound immediately (the "access granted" sound)
-    if (sounds.current.success) {
+    let audioUnlocked = false
+
+    // First, unlock audio context with silent beep trick
+    if (sounds.current.beep) {
       try {
-        await sounds.current.success.play()
+        const beep = sounds.current.beep
+        const originalVolume = beep.volume
+        beep.volume = 0
+        await beep.play()
+        beep.pause()
+        beep.currentTime = 0
+        beep.volume = originalVolume
+        audioUnlocked = true
         setAudioEnabled(true)
       } catch (error) {
-        // Fallback: try to enable audio anyway
+        console.warn('Audio unlock failed:', error)
+        // Still try to enable, but audio might not work
         setAudioEnabled(true)
       }
+    }
+
+    // Then play iconic boot-up sound (now that audio is unlocked)
+    if (sounds.current.success && audioUnlocked) {
+      setTimeout(() => {
+        sounds.current.success?.play().catch(() => {})
+      }, 100)
     }
 
     // Hide overlay and start system
