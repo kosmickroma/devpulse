@@ -29,17 +29,12 @@
 ## 🎯 Next Priorities (v2.1)
 
 ### High Priority
-1. **Fix auto-scan sounds** - Resolve browser autoplay restrictions
-   - Try alternative unlock patterns
-   - Consider user interaction requirement
-   - Test across different browsers
-
-2. **Platform filter tabs** - Allow filtering by source
+1. **Platform filter tabs** - Allow filtering by source
    - Add tabs for All, GitHub, Hacker News, Dev.to
    - Update FilterBar component
    - Sync with existing source filtering
 
-3. **Error handling improvements**
+2. **Error handling improvements**
    - Better cold-start messaging (Render free tier sleeps)
    - Retry logic for failed scans
    - User-friendly error messages
@@ -115,6 +110,13 @@
 
 ## 🔧 Recent Fixes
 
+### Session 2025-10-31 (Audio Bug Fix)
+1. **Audio unlock mechanism restored** - Fixed broken audio caused by commit edbe831
+   - Reverted to working silent beep unlock trick
+   - Boot sound now plays after successful audio unlock
+   - All terminal sounds (typing, beeps, success/error) working again
+   - Resolved browser autoplay policy issues
+
 ### Session 2025-10-30 (Evening - Final Polish)
 1. **"Click to Initialize" overlay** - Beautiful splash screen with user interaction requirement
 2. **Boot-up sound** - Plays iconic Fallout success sound immediately on click
@@ -171,6 +173,6 @@
 
 ---
 
-**Last Updated:** 2025-10-30 (Evening)
+**Last Updated:** 2025-10-31
 
-**Status:** Phase 3 (Web UI/UX) COMPLETE ✅ - Taking a break before deployment. All features working flawlessly. Ready to showcase!
+**Status:** Phase 3 (Web UI/UX) COMPLETE ✅ - Audio bug fixed! All systems working perfectly. Ready to showcase!
