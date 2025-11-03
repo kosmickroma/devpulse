@@ -60,6 +60,25 @@ No known issues! All systems operational.
 
 ## 🚀 Future Features (v2.x)
 
+### Terminal Mini-Games (v2.3+)
+- [ ] **Retro games integrated into terminal** - Play while waiting for scans
+  - Snake game (`game snake`)
+  - Brick Breaker/Breakout (`game breakout`)
+  - Minesweeper/Minefield (`game minefield`)
+  - Pong (`game pong`)
+  - List all games (`games`)
+- [ ] **Game features:**
+  - Non-blocking overlay (can still scroll to see scan results below)
+  - Notification when scan completes while playing
+  - High score tracking with user sign-in
+  - Classic arcade sounds for each game (NOT Fallout sounds)
+  - ESC to exit back to terminal
+  - Prompt user "Play a game while you wait?" during scans
+- [ ] **Architecture:**
+  - Modular plug-and-play components (each game = separate file)
+  - Standard game interface/API for easy integration
+  - Built separately and imported into terminal
+
 ### User Features
 - [ ] Save favorite items
 - [ ] Create custom feeds

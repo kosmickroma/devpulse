@@ -55,3 +55,7 @@ output/*.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Interview prep / personal notes
+*CHEAT_SHEET*.md
+*INTERVIEW*.md
