@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import SnakeGame from './games/SnakeGame'
-import BrickBreaker from './games/BrickBreaker'
+import BrickBreaker from './games/BrickBreaker' // v3 fixes
 
 interface GameOverlayProps {
   game: 'snake' | 'brickbreaker' | null

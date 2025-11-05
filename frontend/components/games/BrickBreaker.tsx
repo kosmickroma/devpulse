@@ -431,7 +431,7 @@ export default function BrickBreaker() {
         </div>
         <div className="text-neon-green">LEVEL: {level}</div>
         <div className="text-neon-magenta">
-          LIVES: {'❤️'.repeat(lives)}
+          LIVES: {'❤️'.repeat(Math.max(0, lives))}
         </div>
       </div>
 
