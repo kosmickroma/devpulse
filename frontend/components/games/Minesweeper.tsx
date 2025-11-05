@@ -201,7 +201,25 @@ export default function Minesweeper() {
   const startNewGame = useCallback((diff: Difficulty) => {
     setDifficulty(diff)
     const config = DIFFICULTIES[diff]
-    setGrid([])
+
+    // Create empty grid for user to click on
+    const emptyGrid: Cell[][] = []
+    for (let y = 0; y < config.rows; y++) {
+      const row: Cell[] = []
+      for (let x = 0; x < config.cols; x++) {
+        row.push({
+          isMine: false,
+          isRevealed: false,
+          isFlagged: false,
+          neighborMines: 0,
+          x,
+          y
+        })
+      }
+      emptyGrid.push(row)
+    }
+
+    setGrid(emptyGrid)
     setGameStarted(false)
     setGameOver(false)
     setGameWon(false)
@@ -286,7 +304,7 @@ export default function Minesweeper() {
           </div>
         </div>
 
-        {!gameStarted && !gameOver && !gameWon && (
+        {grid.length === 0 && (
           <div className="mb-4 text-center">
             <div className="text-2xl font-bold text-neon-magenta neon-text-magenta mb-4 font-mono">
               MINESWEEPER
@@ -320,7 +338,7 @@ export default function Minesweeper() {
           </div>
         )}
 
-        {(gameStarted || gameOver || gameWon) && (
+        {grid.length > 0 && (
           <>
             <div className="mb-2 flex gap-2 justify-center">
               <button
