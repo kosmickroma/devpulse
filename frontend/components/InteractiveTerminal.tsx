@@ -28,7 +28,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
   const [spinnerFrame, setSpinnerFrame] = useState(0) // NEW: for loading animation
 
   // Game overlay state
-  const [activeGame, setActiveGame] = useState<'snake' | null>(null)
+  const [activeGame, setActiveGame] = useState<'snake' | 'brickbreaker' | null>(null)
   const [showGamePrompt, setShowGamePrompt] = useState(false)
   const [scanCompleteNotification, setScanCompleteNotification] = useState(false)
   const [scanCompleteMessage, setScanCompleteMessage] = useState('')
@@ -241,8 +241,9 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         playBeep()
         addLine('🎮 Available Mini-Games:', 'output')
         addLine('  snake - Classic snake game with neon aesthetic', 'success')
+        addLine('  brickbreaker - Cyberpunk brick breaker with power-ups', 'success')
         addLine('  ', 'output')
-        addLine('Usage: game [name] (e.g., "game snake")', 'output')
+        addLine('Usage: game [name] (e.g., "game snake" or "game brickbreaker")', 'output')
         addLine('Press ESC while playing to return to terminal', 'output')
         break
 
@@ -251,6 +252,9 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         if (args[0] === 'snake') {
           addLine('> Launching Snake...', 'success')
           setTimeout(() => setActiveGame('snake'), 300)
+        } else if (args[0] === 'brickbreaker' || args[0] === 'brick') {
+          addLine('> Launching Brick Breaker...', 'success')
+          setTimeout(() => setActiveGame('brickbreaker'), 300)
         } else if (args.length === 0) {
           addLine('Usage: game [name]', 'error')
           addLine('Type "games" to see available games', 'output')
