@@ -7,8 +7,16 @@
 
 ---
 
-## ✅ v2.0 Complete! (2025-10-31)
+## ✅ Version History
 
+**v3.0 - Authentication & Jobs** (2025-11-05)
+- ✅ Full authentication system (GitHub OAuth, Google OAuth, Email/Password)
+- ✅ User sessions and profile management
+- ✅ Jobs directory with 100+ tech companies
+- ✅ Terminal jobs commands (search, filters)
+- ✅ Company submission form
+
+**v2.0 - Interactive Terminal** (2025-10-31)
 - ✅ Interactive terminal with retro aesthetic
 - ✅ Real-time SSE scanning (GitHub, HN, Dev.to)
 - ✅ Snake game with cyberpunk notifications

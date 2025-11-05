@@ -143,7 +143,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     hasBooted.current = true // Mark as booted
 
     const bootLines = [
-      { id: '1', text: '> DevPulse Terminal v2.0', type: 'output' as const, timestamp: Date.now() },
+      { id: '1', text: '> DevPulse Terminal v3.0', type: 'output' as const, timestamp: Date.now() },
       { id: '2', text: '> Initializing systems...', type: 'output' as const, timestamp: Date.now() + 300 },
       { id: '3', text: '> [✓] GitHub API: ONLINE', type: 'success' as const, timestamp: Date.now() + 600 },
       { id: '4', text: '> [✓] Hacker News: ONLINE', type: 'success' as const, timestamp: Date.now() + 900 },
@@ -608,7 +608,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
               DEVPULSE TERMINAL
             </div>
             <div className="text-xl text-neon-green neon-text-green font-mono mb-8">
-              v2.0 - INITIALIZED
+              v3.0
             </div>
             <div className="text-lg text-gray-300 font-mono">
               [ CLICK TO INITIALIZE ]
