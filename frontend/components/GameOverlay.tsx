@@ -2,11 +2,10 @@
 
 import React, { useEffect, useState } from 'react'
 import SnakeGame from './games/SnakeGame'
-import BrickBreaker from './games/BrickBreaker'
 import Minesweeper from './games/Minesweeper'
 
 interface GameOverlayProps {
-  game: 'snake' | 'brickbreaker' | 'minesweeper' | null
+  game: 'snake' | 'minesweeper' | null
   onClose: () => void
   showNotification?: boolean
   notificationMessage?: string
@@ -37,11 +36,10 @@ export default function GameOverlay({
       console.log('🔔 SHOWING NOTIFICATION:', notificationMessage)
       setShowNotificationInternal(true)
 
-      // Auto-dismiss after 60 seconds
+      // Auto-dismiss after 3 seconds
       const timer = setTimeout(() => {
-        console.log('⏰ Auto-dismissing notification after 1 minute')
         setShowNotificationInternal(false)
-      }, 60000)
+      }, 3000)
 
       return () => clearTimeout(timer)
     } else {
@@ -145,7 +143,6 @@ export default function GameOverlay({
             notificationMessage: notificationMessage
           }}>
             {game === 'snake' && <SnakeGame />}
-            {game === 'brickbreaker' && <BrickBreaker />}
             {game === 'minesweeper' && <Minesweeper />}
           </GameNotificationContext.Provider>
         </div>
