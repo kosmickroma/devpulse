@@ -1,194 +1,282 @@
 # DevPulse - Task List
 
-## ✅ v2.0 MVP Complete! (2025-10-30)
+## 🎯 Current Status: Phase 1 - Foundation
 
-**The interactive web dashboard is LIVE!** 🎉
-
-- ✅ Frontend: https://devpulse-1z8l.vercel.app
-- ✅ Backend: https://devpulse-api.onrender.com
-- ✅ All 3 platforms scanning successfully (GitHub, Hacker News, Dev.to)
-- ✅ Real-time SSE streaming working
-- ✅ Cards displaying trending content
-- ✅ Auto-scan on page load
-- ✅ Authentic Fallout 3 terminal sounds (MIT licensed)
-- ✅ GitHub Actions keep-alive preventing backend sleep
+**Users:** 0 (but we're building it anyway!)
+**Last Updated:** 2025-11-05
 
 ---
 
-## 🐛 Known Issues / Polish Items
+## ✅ v2.0 Complete! (2025-10-31)
 
-No known issues! All systems operational.
-
----
-
-## 🎯 Next Priorities (v2.1)
-
-### High Priority
-1. **Platform filter tabs** - Allow filtering by source
-   - Add tabs for All, GitHub, Hacker News, Dev.to
-   - Update FilterBar component
-   - Sync with existing source filtering
-
-2. **Error handling improvements**
-   - Better cold-start messaging (Render free tier sleeps)
-   - Retry logic for failed scans
-   - User-friendly error messages
-
-### Medium Priority
-4. **Additional commands**
-   - `filter [source]` - Filter by platform
-   - `search [term]` - Search within results
-   - `theme [name]` - Change color scheme
-
-5. **Visual enhancements**
-   - ASCII progress bars during scanning
-   - Animated loading states
-   - Smoother transitions
-
-6. **Performance**
-   - Optimize SSE connection handling
-   - Add data caching
-   - Reduce initial load time
-
-### Low Priority
-7. **Documentation**
-   - Add screenshots to README
-   - Video demo
-   - API documentation
+- ✅ Interactive terminal with retro aesthetic
+- ✅ Real-time SSE scanning (GitHub, HN, Dev.to)
+- ✅ Snake game with cyberpunk notifications
+- ✅ Arcade overlay system
+- ✅ Retro sound effects
+- ✅ Deployed to Vercel + Render
 
 ---
 
-## 🚀 Future Features (v2.x)
+## 🚧 Phase 1: Foundation (Next 3 Months)
 
-### Terminal Mini-Games (v2.3+)
-- [ ] **Retro games integrated into terminal** - Play while waiting for scans
-  - Snake game (`game snake`)
-  - Brick Breaker/Breakout (`game breakout`)
-  - Minesweeper/Minefield (`game minefield`)
-  - Pong (`game pong`)
-  - List all games (`games`)
-- [ ] **Game features:**
-  - Non-blocking overlay (can still scroll to see scan results below)
-  - Notification when scan completes while playing
-  - High score tracking with user sign-in
-  - Classic arcade sounds for each game (NOT Fallout sounds)
-  - ESC to exit back to terminal
-  - Prompt user "Play a game while you wait?" during scans
-- [ ] **Architecture:**
-  - Modular plug-and-play components (each game = separate file)
-  - Standard game interface/API for easy integration
-  - Built separately and imported into terminal
+### 🔥 This Week - Quick Wins
 
-### User Features
-- [ ] Save favorite items
-- [ ] Create custom feeds
-- [ ] Export to various formats (JSON, Markdown, etc.)
+**Priority 1: Custom Feed Selection (NO AUTH NEEDED)**
+- [ ] Add checkboxes to FilterBar for source selection
+- [ ] Save preferences to localStorage
+- [ ] Restore on page load
+- [ ] Show active sources in terminal header
+- [ ] Update scan command to use saved preferences
+
+**Priority 2: More Games**
+- [ ] Add Breakout/Brick Breaker
+- [ ] Add Pong
+- [ ] Update 'games' command to list all
+
+**Priority 3: Polish**
+- [ ] Add loading states for cold starts
+- [ ] Better error messages
+- [ ] Keyboard shortcuts help (press '?')
+
+---
+
+### 🔐 User Authentication (Week 2-3)
+
+**Auth System:**
+- [ ] Set up Supabase project
+- [ ] Add auth UI (login/signup modal)
+- [ ] Email/password authentication
+- [ ] GitHub OAuth
+- [ ] Google OAuth
+- [ ] Session management
+- [ ] Protected routes
+
+**Profile System:**
+- [ ] Create user profiles table
+- [ ] Profile page (/profile/[username])
+- [ ] Edit profile (name, bio, avatar)
+- [ ] Settings panel
+- [ ] Public vs private profiles
+
+---
+
+### 📊 Feed Customization (Week 3-4)
+
+**Backend:**
+- [ ] User preferences table
+- [ ] API endpoints for saving/loading prefs
+- [ ] Default preferences on signup
+
+**Frontend:**
+- [ ] Settings UI for source selection
+- [ ] Language preferences (GitHub)
+- [ ] Time range preferences
+- [ ] Save/restore from backend (if logged in)
+- [ ] Fallback to localStorage (if not logged in)
+
+---
+
+### 🌐 More Sources (Week 4-6)
+
+**Reddit Integration:**
+- [ ] Reddit API research
+- [ ] Create Reddit spider
+- [ ] Support multiple subreddits
+- [ ] Add to source selection
+
+**Product Hunt:**
+- [ ] Product Hunt API setup
+- [ ] Create PH spider
+- [ ] Parse daily top products
+- [ ] Add to source selection
+
+**Lobsters:**
+- [ ] Lobsters scraper (HTML)
+- [ ] Parse front page
+- [ ] Add to source selection
+
+**Stack Overflow:**
+- [ ] SO API setup
+- [ ] Parse trending questions
+- [ ] Add to source selection
+
+---
+
+### 💬 Basic Forum (Week 6-8)
+
+**Backend:**
+- [ ] Posts table (PostgreSQL)
+- [ ] Comments table
+- [ ] Votes table
+- [ ] Real-time subscriptions (Supabase)
+
+**Frontend:**
+- [ ] Forum page (/forum)
+- [ ] Create post form
+- [ ] Post list view
+- [ ] Thread view with comments
+- [ ] Reply/comment form
+- [ ] Upvote/downvote buttons
+- [ ] Real-time updates
+
+**Terminal Integration:**
+- [ ] `forum` command - open forum
+- [ ] `post` command - create post
+- [ ] `thread [id]` command - view thread
+
+---
+
+### 🎨 UI/UX Improvements
+
+**Terminal:**
+- [ ] Command history (up/down arrows)
+- [ ] Tab completion
+- [ ] Command aliases
+- [ ] Help command improvements
+- [ ] Clear command confirmation
+
+**Cards:**
+- [ ] Hover animations
+- [ ] Quick actions (save, share)
+- [ ] Preview images
+- [ ] Better mobile layout
+
+**Navigation:**
+- [ ] Sticky header
+- [ ] Quick links
+- [ ] Search bar
+- [ ] User menu
+
+---
+
+## 📈 Success Metrics - Phase 1
+
+**By End of Month 3:**
+- [ ] 100 signups
+- [ ] 20 daily active users
+- [ ] 50+ forum posts created
+- [ ] 5+ minute avg session time
+- [ ] Launch on Product Hunt
+
+---
+
+## 🎮 Phase 2: Community & Content (Months 4-6)
+
+### Channel System
+- [ ] Multiple channels (#python, #js, etc.)
+- [ ] Create custom channels
+- [ ] Channel moderation
+- [ ] Real-time chat
+
+### Code Sharing
+- [ ] Code snippet editor
+- [ ] Syntax highlighting
+- [ ] Run code in browser
+- [ ] Fork/remix snippets
+
+### Game Creation
+- [ ] Built-in code editor (Monaco)
+- [ ] Fantasy console (JS runtime)
+- [ ] `game create` command
+- [ ] `game publish` command
+- [ ] Game browser
+
+### Gamification
+- [ ] XP system
+- [ ] Level progression
+- [ ] Badges & achievements
+- [ ] Leaderboards
+- [ ] Karma from upvotes
+
+---
+
+## 🤖 Phase 3: AI Integration (Months 7-9)
+
+### Vector Search
+- [ ] Set up Pinecone
+- [ ] Generate embeddings
+- [ ] Semantic search API
+- [ ] Natural language queries
+
+### AI Code Helper
+- [ ] OpenAI API integration
+- [ ] `ask` command
+- [ ] Code generation
+- [ ] Run code inline
+- [ ] Share results
+
+### Smart Features
+- [ ] Personalized recommendations
+- [ ] Auto-categorization
+- [ ] Similar post detection
+- [ ] Tutorial validation
+
+---
+
+## 🏆 Phase 4: Platform (Months 10-12)
+
+### Creator Program
+- [ ] Revenue sharing system
+- [ ] Payout integration
+- [ ] Analytics dashboard
+- [ ] Featured creator spotlight
+
+### API
+- [ ] RESTful API
+- [ ] WebSocket API
+- [ ] Rate limiting
+- [ ] Documentation
+
+### Mobile/Desktop
+- [ ] React Native app
+- [ ] Tauri desktop app
+- [ ] Push notifications
+- [ ] Offline mode
+
+---
+
+## 🐛 Known Issues
+
+**Current:**
+- Frontend package-lock.json has uncommitted changes
+- No user accounts yet (everything is ephemeral)
+- Only 3 sources (need more)
+
+---
+
+## 💡 Feature Ideas (Backlog)
+
+**Quick Wins:**
+- [ ] Dark/light theme toggle
+- [ ] Export data (JSON, CSV, Markdown)
 - [ ] Share trending lists
-- [ ] Browser notifications for new trends
+- [ ] Browser notifications
+- [ ] Keyboard shortcut reference
 
-### Additional Platforms
-- [ ] Product Hunt
-- [ ] Reddit (r/programming, r/webdev, etc.)
-- [ ] Lobsters
-- [ ] Stack Overflow
-
-### Data & Analytics
-- [ ] Trending score charts over time
-- [ ] Language distribution visualizations
-- [ ] Engagement metrics
-- [ ] Top authors/contributors
+**Big Ideas:**
+- [ ] Live coding sessions
+- [ ] Pair programming rooms
+- [ ] Code review system
+- [ ] Job board integration
+- [ ] Conference schedule integration
 
 ---
 
-## 📝 Technical Debt
+## 🚀 Launch Checklist
 
-### Frontend
-- [ ] Add proper TypeScript strict mode
-- [ ] Implement proper error boundaries
-- [ ] Add unit tests for components
-- [ ] Optimize bundle size
-
-### Backend
-- [ ] Add proper logging (not just print statements)
-- [ ] Implement rate limiting
-- [ ] Add caching layer
-- [ ] Write API tests
-
-### Infrastructure
-- [ ] Set up monitoring (error tracking, performance)
-- [ ] Add database for historical data
-- [ ] Implement CI/CD pipeline
-- [ ] Add staging environment
+**Before Product Hunt Launch:**
+- [ ] User accounts working
+- [ ] At least 5 sources
+- [ ] Forum with 20+ posts
+- [ ] Mobile responsive
+- [ ] Demo video (2 min)
+- [ ] Landing page copy
+- [ ] Screenshots
+- [ ] Social media accounts
+- [ ] Analytics setup
+- [ ] Error tracking (Sentry)
 
 ---
 
-## 🔧 Recent Fixes
-
-### Session 2025-10-31 (Audio Bug Fix + v2.0 Polish)
-1. **Audio unlock mechanism restored** - Fixed broken audio caused by commit edbe831
-   - Reverted to working silent beep unlock trick
-   - Boot sound now plays after successful audio unlock
-   - All terminal sounds (typing, beeps, success/error) working again
-   - Resolved browser autoplay policy issues
-2. **Version updated to v2.0** - Terminal now displays correct version (v2.0)
-3. **Cleaned up init overlay** - Removed unnecessary subtitle text for cleaner UX
-
-### Session 2025-10-30 (Evening - Final Polish)
-1. **"Click to Initialize" overlay** - Beautiful splash screen with user interaction requirement
-2. **Boot-up sound** - Plays iconic Fallout success sound immediately on click
-3. **Loading spinner** - Added retro braille dot animation (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏) during scans
-4. **Audio fully working** - Boot sequence + auto-scan + manual commands all play sounds
-5. **Wording clarity** - Changed "PRESS ANY KEY" to "CLICK TO INITIALIZE"
-
-### Session 2025-10-30 (Afternoon - Bug Fixes)
-1. **Backend Scrapy command** - Removed invalid `-t jsonlines` flag
-2. **Item count** - Fixed total_items to only count actual items, not status events
-3. **Title crash** - Added safe null checks for `item.title`
-4. **TrendCard null values** - Changed `!== undefined` to `!= null` for stats
-5. **Vercel deployment** - Resolved duplicate project causing queue issues
-
----
-
-## 💡 Ideas for Consideration
-
-- **Mobile app** - React Native version?
-- **Browser extension** - Quick access to trends
-- **Slack/Discord bot** - Daily digest notifications
-- **RSS feed** - For traditional feed readers
-- **Public API** - Let others build on DevPulse data
-- **Personalization** - ML-based recommendations
-
----
-
-## 📊 Success Metrics
-
-**Current Status (v2.0 MVP COMPLETE!):**
-- ✅ Web app live and functional
-- ✅ All 3 platforms scraping successfully
-- ✅ Real-time streaming working perfectly
-- ✅ Cards displaying with all data
-- ✅ Sounds working throughout (boot, scan, commands)
-- ✅ Beautiful UX with splash screen
-- ✅ Retro loading animations
-- ✅ Zero crashes, stable performance
-
-**Ready to Ship:**
-- All features implemented
-- All bugs fixed
-- Documentation complete
-- Code is clean and tested
-- **Deployment:** Planned for next week
-
-**Next Milestones:**
-- [ ] Deploy to production (next week)
-- [ ] 10+ GitHub stars
-- [ ] 100+ unique visitors
-- [ ] Positive user feedback
-- [ ] Featured on Product Hunt
-- [ ] Add 2 more platforms (v2.1)
-
----
-
-**Last Updated:** 2025-10-31
-
-**Status:** Phase 3 (Web UI/UX) COMPLETE ✅ - Audio bug fixed! All systems working perfectly. Ready to showcase!
+**Status:** Let's fucking build this! 🔥
