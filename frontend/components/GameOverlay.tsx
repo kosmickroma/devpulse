@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react'
 import SnakeGame from './games/SnakeGame'
 import Minesweeper from './games/Minesweeper'
+import SpaceInvaders from './games/SpaceInvaders'
 
 interface GameOverlayProps {
-  game: 'snake' | 'minesweeper' | null
+  game: 'snake' | 'minesweeper' | 'spaceinvaders' | null
   onClose: () => void
   showNotification?: boolean
   notificationMessage?: string
@@ -144,6 +145,7 @@ export default function GameOverlay({
           }}>
             {game === 'snake' && <SnakeGame />}
             {game === 'minesweeper' && <Minesweeper />}
+            {game === 'spaceinvaders' && <SpaceInvaders />}
           </GameNotificationContext.Provider>
         </div>
       </div>

@@ -28,7 +28,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
   const [spinnerFrame, setSpinnerFrame] = useState(0) // NEW: for loading animation
 
   // Game overlay state
-  const [activeGame, setActiveGame] = useState<'snake' | 'minesweeper' | null>(null)
+  const [activeGame, setActiveGame] = useState<'snake' | 'minesweeper' | 'spaceinvaders' | null>(null)
   const [showGamePrompt, setShowGamePrompt] = useState(false)
   const [scanCompleteNotification, setScanCompleteNotification] = useState(false)
   const [scanCompleteMessage, setScanCompleteMessage] = useState('')
@@ -242,8 +242,9 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         addLine('🎮 Available Mini-Games:', 'output')
         addLine('  snake - Classic snake game with neon aesthetic', 'success')
         addLine('  minesweeper - Neon minesweeper with 3 difficulty levels', 'success')
+        addLine('  spaceinvaders - Retro alien shooter with waves', 'success')
         addLine('  ', 'output')
-        addLine('Usage: game [name] (e.g., "game snake" or "game minesweeper")', 'output')
+        addLine('Usage: game [name] (e.g., "game spaceinvaders")', 'output')
         addLine('Press ESC while playing to return to terminal', 'output')
         break
 
@@ -255,6 +256,9 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         } else if (args[0] === 'minesweeper' || args[0] === 'mine' || args[0] === 'mines') {
           addLine('> Launching Minesweeper...', 'success')
           setTimeout(() => setActiveGame('minesweeper'), 300)
+        } else if (args[0] === 'spaceinvaders' || args[0] === 'space' || args[0] === 'invaders') {
+          addLine('> Launching Space Invaders...', 'success')
+          setTimeout(() => setActiveGame('spaceinvaders'), 300)
         } else if (args.length === 0) {
           addLine('Usage: game [name]', 'error')
           addLine('Type "games" to see available games', 'output')
