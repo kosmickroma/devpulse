@@ -85,7 +85,7 @@ export default function BrickBreaker() {
   const initLevel = useCallback((levelNum: number) => {
     const newBricks: Brick[] = []
     const offsetX = (GAME_WIDTH - (BRICK_COLS * (BRICK_WIDTH + BRICK_PADDING))) / 2
-    const offsetY = 80
+    const offsetY = 100
 
     for (let row = 0; row < BRICK_ROWS; row++) {
       for (let col = 0; col < BRICK_COLS; col++) {
@@ -98,7 +98,7 @@ export default function BrickBreaker() {
             height: BRICK_HEIGHT,
             hits,
             color: COLORS[hits - 1],
-            powerUp: Math.random() < 0.15 ? POWER_UP_TYPES[Math.floor(Math.random() * POWER_UP_TYPES.length)] : undefined
+            powerUp: Math.random() < 0.08 ? POWER_UP_TYPES[Math.floor(Math.random() * POWER_UP_TYPES.length)] : undefined
           })
         }
       }
@@ -240,6 +240,7 @@ export default function BrickBreaker() {
           let brickHit = false
           const updatedBricks = prevBricks.map(brick => {
             if (
+              !brickHit &&
               newX + ball.radius > brick.x &&
               newX - ball.radius < brick.x + brick.width &&
               newY + ball.radius > brick.y &&
@@ -330,13 +331,7 @@ export default function BrickBreaker() {
         ))
       }
     }
-    if (keysPressed.current[' '] && caughtBall !== null) {
-      setBalls(prev => prev.map((ball, i) =>
-        i === caughtBall ? { ...ball, dx: 3 + level * 0.5, dy: -(3 + level * 0.5) } : ball
-      ))
-      setCaughtBall(null)
-      keysPressed.current[' '] = false
-    }
+    // Space bar handling moved to keydown event to prevent issues
 
     gameLoopRef.current = requestAnimationFrame(gameLoop)
   }, [paddle, level, combo, isPaused, gameOver, caughtBall, catchActive, playSound, activatePowerUp])
@@ -352,9 +347,18 @@ export default function BrickBreaker() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+      if (['ArrowLeft', 'ArrowRight'].includes(e.key)) {
         e.preventDefault()
         keysPressed.current[e.key] = true
+      }
+      if (e.key === ' ') {
+        e.preventDefault()
+        if (caughtBall !== null) {
+          setBalls(prev => prev.map((ball, i) =>
+            i === caughtBall ? { ...ball, dx: 3 + level * 0.5, dy: -(3 + level * 0.5) } : ball
+          ))
+          setCaughtBall(null)
+        }
       }
       if (e.key === 'p') {
         setIsPaused(prev => !prev)
@@ -362,7 +366,7 @@ export default function BrickBreaker() {
     }
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+      if (['ArrowLeft', 'ArrowRight'].includes(e.key)) {
         keysPressed.current[e.key] = false
       }
     }
@@ -374,7 +378,7 @@ export default function BrickBreaker() {
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
-  }, [])
+  }, [caughtBall, level])
 
   useEffect(() => {
     if (showNotification && notificationMessage) {
