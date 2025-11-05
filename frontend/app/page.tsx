@@ -8,6 +8,8 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { TrendingItem } from '@/lib/types'
 
+export const dynamic = 'force-dynamic'
+
 export default function Home() {
   const [trends, setTrends] = useState<TrendingItem[]>([])
   const [filteredTrends, setFilteredTrends] = useState<TrendingItem[]>([])
