@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, KeyboardEvent } from 'react'
 import { TrendingItem } from '@/lib/types'
+import GameOverlay from './GameOverlay'
 
 interface TerminalLine {
   id: string
@@ -24,6 +25,13 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
   const [isSystemReady, setIsSystemReady] = useState(false)
   const [showInitOverlay, setShowInitOverlay] = useState(true)
   const [spinnerFrame, setSpinnerFrame] = useState(0) // NEW: for loading animation
+
+  // Game overlay state
+  const [activeGame, setActiveGame] = useState<'snake' | null>(null)
+  const [showGamePrompt, setShowGamePrompt] = useState(false)
+  const [scanCompleteNotification, setScanCompleteNotification] = useState(false)
+  const [scanCompleteMessage, setScanCompleteMessage] = useState('')
+
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const terminalContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -104,6 +112,13 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
     const timer = setTimeout(() => setIsInitialLoad(false), 2500)
     return () => clearTimeout(timer)
   }, [])
+
+  // Auto-focus input field when system is ready
+  useEffect(() => {
+    if (isSystemReady && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [isSystemReady])
 
   // Spinner animation - rotates through cool retro characters when scanning
   useEffect(() => {
@@ -198,12 +213,44 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
         addLine('Available commands:', 'output')
         addLine('  scan [all|github|hackernews|devto] - Scan platforms for trending content', 'output')
         addLine('  scan github [language] - Scan GitHub for specific language', 'output')
+        addLine('  games - List available mini-games', 'output')
+        addLine('  game [name] - Launch a mini-game (e.g., game snake)', 'output')
         addLine('  clear - Clear terminal', 'output')
         addLine('  help - Show this help message', 'output')
         break
 
       case 'scan':
-        await handleScan(args)
+        if (isScanning) {
+          playError()
+          addLine('⚠ Scan already in progress!', 'error')
+          addLine('Wait for current scan to complete, or type "game snake" to play while you wait', 'output')
+        } else {
+          await handleScan(args)
+        }
+        break
+
+      case 'games':
+        playBeep()
+        addLine('🎮 Available Mini-Games:', 'output')
+        addLine('  snake - Classic snake game with neon aesthetic', 'success')
+        addLine('  ', 'output')
+        addLine('Usage: game [name] (e.g., "game snake")', 'output')
+        addLine('Press ESC while playing to return to terminal', 'output')
+        break
+
+      case 'game':
+        playBeep()
+        if (args[0] === 'snake') {
+          addLine('> Launching Snake...', 'success')
+          setTimeout(() => setActiveGame('snake'), 300)
+        } else if (args.length === 0) {
+          addLine('Usage: game [name]', 'error')
+          addLine('Type "games" to see available games', 'output')
+        } else {
+          playError()
+          addLine(`Game not found: ${args[0]}`, 'error')
+          addLine('Type "games" to see available games', 'output')
+        }
         break
 
       case 'clear':
@@ -234,6 +281,14 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
 
     playBeep()
     addLine(`Initiating scan: ${platform}${language ? ` (${language})` : ''}...`, 'output')
+
+    // Show game prompt after a short delay
+    setTimeout(() => {
+      setShowGamePrompt(true)
+      addLine('  ', 'output')
+      addLine('💡 Want to play a game while you wait? Type "game snake"', 'output')
+      addLine('  ', 'output')
+    }, 1500)
 
     try {
       // Connect to SSE endpoint (Render backend)
@@ -285,6 +340,12 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
             playSuccess()
             eventSource.close()
             setIsScanning(false)
+            setShowGamePrompt(false)
+
+            // ALWAYS show notification, then check if game is active
+            console.log('Scan complete! activeGame:', activeGame)
+            setScanCompleteNotification(true)
+            setScanCompleteMessage(`Found ${data.total_items} trending items!`)
 
             // Send data to parent
             onDataReceived(itemsRef.current)
@@ -331,7 +392,9 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
 
   // Handle key press
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && currentInput.trim() && !isScanning) {
+    if (e.key === 'Enter' && currentInput.trim()) {
+      // Allow commands during scanning (game, help, clear, etc.)
+      // The executeCommand function will handle scan-specific logic
       executeCommand(currentInput)
       setCurrentInput('')
     } else if (e.key.length === 1) {
@@ -351,8 +414,24 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
   }
 
   return (
-    <div className="relative max-w-5xl mx-auto neon-border rounded-lg overflow-hidden bg-dark-card/90 backdrop-blur">
-      {/* Terminal Header */}
+    <>
+      {/* Game Overlay */}
+      <GameOverlay
+        game={activeGame}
+        onClose={() => {
+          console.log('Closing game overlay')
+          setActiveGame(null)
+          setScanCompleteNotification(false)
+          setScanCompleteMessage('')
+          // Refocus input when game closes
+          setTimeout(() => inputRef.current?.focus(), 100)
+        }}
+        showNotification={scanCompleteNotification}
+        notificationMessage={scanCompleteMessage}
+      />
+
+      <div className="relative max-w-5xl mx-auto neon-border rounded-lg overflow-hidden bg-dark-card/90 backdrop-blur">
+        {/* Terminal Header */}
       <div className="bg-dark-hover border-b border-neon-cyan/30 px-4 py-2 flex items-center gap-2">
         <div className="w-3 h-3 rounded-full bg-neon-magenta shadow-neon-magenta animate-pulse" />
         <div className="w-3 h-3 rounded-full bg-neon-green shadow-neon-green" />
@@ -381,25 +460,23 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
           </div>
         ))}
 
-        {/* Input line */}
-        {!isScanning && (
-          <div className="flex items-center text-neon-cyan mt-2">
-            <span className="mr-2">{'>'}</span>
-            <div className="flex-1 flex items-center">
-              <input
-                ref={inputRef}
-                type="text"
-                value={currentInput}
-                onChange={(e) => setCurrentInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="flex-1 bg-transparent outline-none caret-neon-cyan text-neon-cyan"
-                spellCheck={false}
-                placeholder="Type command..."
-              />
-              <span className="inline-block w-2 h-4 bg-neon-cyan animate-pulse" />
-            </div>
+        {/* Input line - Always visible, even during scans */}
+        <div className="flex items-center text-neon-cyan mt-2">
+          <span className="mr-2">{'>'}</span>
+          <div className="flex-1 flex items-center">
+            <input
+              ref={inputRef}
+              type="text"
+              value={currentInput}
+              onChange={(e) => setCurrentInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="flex-1 bg-transparent outline-none caret-neon-cyan text-neon-cyan"
+              spellCheck={false}
+              placeholder={isScanning ? "Scan running... type 'game snake' to play" : "Type command..."}
+            />
+            <span className="inline-block w-2 h-4 bg-neon-cyan animate-pulse" />
           </div>
-        )}
+        </div>
 
         <div ref={terminalEndRef} />
       </div>
@@ -426,6 +503,7 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
