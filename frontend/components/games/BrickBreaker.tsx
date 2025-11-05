@@ -33,11 +33,12 @@ const GAME_HEIGHT = 700
 const PADDLE_WIDTH = 100
 const PADDLE_HEIGHT = 15
 const BALL_RADIUS = 8
-const BRICK_ROWS = 6
+const BRICK_ROWS = 5
 const BRICK_COLS = 10
 const BRICK_WIDTH = 55
 const BRICK_HEIGHT = 20
 const BRICK_PADDING = 3
+const BRICK_OFFSET_Y = 120
 
 const POWER_UP_TYPES = ['multiball', 'extend', 'laser', 'slowmo', 'catch', 'life']
 const COLORS = ['#00ffff', '#ff00ff', '#00ff00', '#ffff00', '#ff0066', '#00ffaa']
@@ -85,7 +86,6 @@ export default function BrickBreaker() {
   const initLevel = useCallback((levelNum: number) => {
     const newBricks: Brick[] = []
     const offsetX = (GAME_WIDTH - (BRICK_COLS * (BRICK_WIDTH + BRICK_PADDING))) / 2
-    const offsetY = 100
 
     for (let row = 0; row < BRICK_ROWS; row++) {
       for (let col = 0; col < BRICK_COLS; col++) {
@@ -93,7 +93,7 @@ export default function BrickBreaker() {
           const hits = Math.min(levelNum, 3)
           newBricks.push({
             x: offsetX + col * (BRICK_WIDTH + BRICK_PADDING),
-            y: offsetY + row * (BRICK_HEIGHT + BRICK_PADDING),
+            y: BRICK_OFFSET_Y + row * (BRICK_HEIGHT + BRICK_PADDING),
             width: BRICK_WIDTH,
             height: BRICK_HEIGHT,
             hits,
