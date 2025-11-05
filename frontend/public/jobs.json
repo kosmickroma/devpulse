@@ -1,0 +1,849 @@
+{
+  "companies": [
+    {
+      "id": "google",
+      "name": "Google",
+      "career_url": "https://careers.google.com",
+      "size": "large",
+      "categories": ["FAANG", "remote-friendly", "visa-sponsor", "intern-program", "new-grad"],
+      "tech_stack": ["Go", "Python", "Java", "TypeScript", "C++"],
+      "locations": ["Mountain View", "NYC", "Seattle", "London", "Remote"],
+      "description": "Search, ads, cloud, AI"
+    },
+    {
+      "id": "meta",
+      "name": "Meta (Facebook)",
+      "career_url": "https://www.metacareers.com",
+      "size": "large",
+      "categories": ["FAANG", "remote-friendly", "visa-sponsor", "intern-program", "new-grad"],
+      "tech_stack": ["React", "Python", "PHP", "Hack", "C++"],
+      "locations": ["Menlo Park", "NYC", "Seattle", "London", "Remote"],
+      "description": "Social media, VR/AR, AI"
+    },
+    {
+      "id": "amazon",
+      "name": "Amazon",
+      "career_url": "https://www.amazon.jobs",
+      "size": "large",
+      "categories": ["FAANG", "remote-friendly", "visa-sponsor", "intern-program", "new-grad"],
+      "tech_stack": ["Java", "Python", "TypeScript", "Go", "C++"],
+      "locations": ["Seattle", "NYC", "Austin", "Global", "Remote"],
+      "description": "E-commerce, AWS, logistics"
+    },
+    {
+      "id": "apple",
+      "name": "Apple",
+      "career_url": "https://www.apple.com/careers",
+      "size": "large",
+      "categories": ["FAANG", "visa-sponsor", "intern-program", "new-grad"],
+      "tech_stack": ["Swift", "Objective-C", "C++", "Python"],
+      "locations": ["Cupertino", "Austin", "Seattle", "Global"],
+      "description": "Consumer electronics, software"
+    },
+    {
+      "id": "netflix",
+      "name": "Netflix",
+      "career_url": "https://jobs.netflix.com",
+      "size": "large",
+      "categories": ["FAANG", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Java", "Python", "JavaScript", "Go", "Node.js"],
+      "locations": ["Los Gatos", "Los Angeles", "Remote"],
+      "description": "Streaming, entertainment"
+    },
+    {
+      "id": "microsoft",
+      "name": "Microsoft",
+      "career_url": "https://careers.microsoft.com",
+      "size": "large",
+      "categories": ["big-tech", "remote-friendly", "visa-sponsor", "intern-program", "new-grad"],
+      "tech_stack": ["C#", "TypeScript", "Python", "Azure", "Rust"],
+      "locations": ["Redmond", "NYC", "Austin", "Global", "Remote"],
+      "description": "Software, cloud, gaming"
+    },
+    {
+      "id": "stripe",
+      "name": "Stripe",
+      "career_url": "https://stripe.com/jobs",
+      "size": "large",
+      "categories": ["fintech", "remote-first", "visa-sponsor", "intern-program"],
+      "tech_stack": ["Ruby", "Go", "TypeScript", "React", "Scala"],
+      "locations": ["San Francisco", "NYC", "Dublin", "Remote"],
+      "description": "Payment processing, fintech"
+    },
+    {
+      "id": "airbnb",
+      "name": "Airbnb",
+      "career_url": "https://careers.airbnb.com",
+      "size": "large",
+      "categories": ["unicorn", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Ruby", "Java", "JavaScript", "React"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Travel, hospitality tech"
+    },
+    {
+      "id": "uber",
+      "name": "Uber",
+      "career_url": "https://www.uber.com/careers",
+      "size": "large",
+      "categories": ["big-tech", "remote-friendly", "visa-sponsor", "intern-program"],
+      "tech_stack": ["Go", "Java", "Python", "React", "Node.js"],
+      "locations": ["San Francisco", "NYC", "Global", "Remote"],
+      "description": "Rideshare, delivery"
+    },
+    {
+      "id": "lyft",
+      "name": "Lyft",
+      "career_url": "https://www.lyft.com/careers",
+      "size": "large",
+      "categories": ["big-tech", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Go", "Python", "React", "TypeScript"],
+      "locations": ["San Francisco", "Seattle", "Remote"],
+      "description": "Rideshare"
+    },
+    {
+      "id": "shopify",
+      "name": "Shopify",
+      "career_url": "https://www.shopify.com/careers",
+      "size": "large",
+      "categories": ["e-commerce", "remote-first", "visa-sponsor", "intern-program"],
+      "tech_stack": ["Ruby", "React", "TypeScript", "Go"],
+      "locations": ["Ottawa", "Toronto", "Global", "Remote"],
+      "description": "E-commerce platform"
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "career_url": "https://github.com/about/careers",
+      "size": "large",
+      "categories": ["developer-tools", "remote-first", "visa-sponsor"],
+      "tech_stack": ["Ruby", "Go", "TypeScript", "React"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Developer platform"
+    },
+    {
+      "id": "gitlab",
+      "name": "GitLab",
+      "career_url": "https://about.gitlab.com/jobs",
+      "size": "medium",
+      "categories": ["developer-tools", "remote-first", "visa-sponsor"],
+      "tech_stack": ["Ruby", "Go", "Vue.js", "PostgreSQL"],
+      "locations": ["Remote"],
+      "description": "DevOps platform"
+    },
+    {
+      "id": "vercel",
+      "name": "Vercel",
+      "career_url": "https://vercel.com/careers",
+      "size": "startup",
+      "categories": ["developer-tools", "remote-first", "startup"],
+      "tech_stack": ["TypeScript", "React", "Next.js", "Go"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Web hosting, Next.js creators"
+    },
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "career_url": "https://www.cloudflare.com/careers",
+      "size": "large",
+      "categories": ["cloud", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Go", "Rust", "TypeScript", "Python"],
+      "locations": ["San Francisco", "Austin", "London", "Remote"],
+      "description": "CDN, security, serverless"
+    },
+    {
+      "id": "notion",
+      "name": "Notion",
+      "career_url": "https://www.notion.so/careers",
+      "size": "medium",
+      "categories": ["productivity", "remote-friendly", "startup"],
+      "tech_stack": ["TypeScript", "React", "Python", "Go"],
+      "locations": ["San Francisco", "NYC", "Remote"],
+      "description": "Productivity, notes"
+    },
+    {
+      "id": "figma",
+      "name": "Figma",
+      "career_url": "https://www.figma.com/careers",
+      "size": "large",
+      "categories": ["design-tools", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["TypeScript", "C++", "Rust", "WebAssembly"],
+      "locations": ["San Francisco", "NYC", "Remote"],
+      "description": "Design collaboration"
+    },
+    {
+      "id": "linear",
+      "name": "Linear",
+      "career_url": "https://linear.app/careers",
+      "size": "startup",
+      "categories": ["productivity", "remote-first", "startup"],
+      "tech_stack": ["TypeScript", "React", "GraphQL", "PostgreSQL"],
+      "locations": ["Remote"],
+      "description": "Issue tracking"
+    },
+    {
+      "id": "datadog",
+      "name": "Datadog",
+      "career_url": "https://www.datadoghq.com/careers",
+      "size": "large",
+      "categories": ["devops", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Go", "Python", "Java", "TypeScript"],
+      "locations": ["NYC", "Boston", "Paris", "Remote"],
+      "description": "Monitoring, observability"
+    },
+    {
+      "id": "snowflake",
+      "name": "Snowflake",
+      "career_url": "https://careers.snowflake.com",
+      "size": "large",
+      "categories": ["data", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Java", "Python", "SQL", "C++"],
+      "locations": ["San Mateo", "Remote"],
+      "description": "Data warehouse, analytics"
+    },
+    {
+      "id": "databricks",
+      "name": "Databricks",
+      "career_url": "https://www.databricks.com/company/careers",
+      "size": "large",
+      "categories": ["data", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Scala", "Python", "Spark", "Java"],
+      "locations": ["San Francisco", "Amsterdam", "Remote"],
+      "description": "Data analytics, Spark"
+    },
+    {
+      "id": "coinbase",
+      "name": "Coinbase",
+      "career_url": "https://www.coinbase.com/careers",
+      "size": "large",
+      "categories": ["crypto", "remote-first", "visa-sponsor"],
+      "tech_stack": ["Go", "Ruby", "TypeScript", "React"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Cryptocurrency exchange"
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "career_url": "https://openai.com/careers",
+      "size": "medium",
+      "categories": ["ai", "visa-sponsor"],
+      "tech_stack": ["Python", "PyTorch", "TypeScript", "Rust"],
+      "locations": ["San Francisco"],
+      "description": "AI research, ChatGPT"
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "career_url": "https://www.anthropic.com/careers",
+      "size": "startup",
+      "categories": ["ai", "startup", "visa-sponsor"],
+      "tech_stack": ["Python", "PyTorch", "TypeScript", "Rust"],
+      "locations": ["San Francisco"],
+      "description": "AI safety, Claude"
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face",
+      "career_url": "https://huggingface.co/join",
+      "size": "startup",
+      "categories": ["ai", "remote-first", "startup"],
+      "tech_stack": ["Python", "PyTorch", "Rust", "TypeScript"],
+      "locations": ["Remote"],
+      "description": "AI/ML models, transformers"
+    },
+    {
+      "id": "discord",
+      "name": "Discord",
+      "career_url": "https://discord.com/careers",
+      "size": "large",
+      "categories": ["social", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Rust", "Python", "React", "Elixir"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Chat, voice, communities"
+    },
+    {
+      "id": "twitch",
+      "name": "Twitch",
+      "career_url": "https://www.twitch.tv/jobs",
+      "size": "large",
+      "categories": ["streaming", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Go", "TypeScript", "React", "GraphQL"],
+      "locations": ["San Francisco", "Seattle", "Remote"],
+      "description": "Live streaming"
+    },
+    {
+      "id": "spotify",
+      "name": "Spotify",
+      "career_url": "https://www.lifeatspotify.com/jobs",
+      "size": "large",
+      "categories": ["media", "remote-friendly", "visa-sponsor", "intern-program"],
+      "tech_stack": ["Java", "Python", "TypeScript", "React"],
+      "locations": ["NYC", "Stockholm", "London", "Remote"],
+      "description": "Music streaming"
+    },
+    {
+      "id": "reddit",
+      "name": "Reddit",
+      "career_url": "https://www.redditinc.com/careers",
+      "size": "large",
+      "categories": ["social", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Python", "Go", "TypeScript", "React"],
+      "locations": ["San Francisco", "NYC", "Remote"],
+      "description": "Social news, communities"
+    },
+    {
+      "id": "twitter",
+      "name": "X (Twitter)",
+      "career_url": "https://careers.twitter.com",
+      "size": "large",
+      "categories": ["social", "visa-sponsor"],
+      "tech_stack": ["Scala", "Java", "Python", "React"],
+      "locations": ["San Francisco", "NYC"],
+      "description": "Social media"
+    },
+    {
+      "id": "linkedin",
+      "name": "LinkedIn",
+      "career_url": "https://careers.linkedin.com",
+      "size": "large",
+      "categories": ["social", "remote-friendly", "visa-sponsor", "intern-program"],
+      "tech_stack": ["Java", "Scala", "Python", "React"],
+      "locations": ["Sunnyvale", "NYC", "Remote"],
+      "description": "Professional network"
+    },
+    {
+      "id": "slack",
+      "name": "Slack",
+      "career_url": "https://slack.com/careers",
+      "size": "large",
+      "categories": ["productivity", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["PHP", "Java", "TypeScript", "React"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Team communication"
+    },
+    {
+      "id": "zoom",
+      "name": "Zoom",
+      "career_url": "https://careers.zoom.us",
+      "size": "large",
+      "categories": ["video", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["C++", "Go", "TypeScript", "React"],
+      "locations": ["San Jose", "Remote"],
+      "description": "Video conferencing"
+    },
+    {
+      "id": "dropbox",
+      "name": "Dropbox",
+      "career_url": "https://www.dropbox.com/jobs",
+      "size": "large",
+      "categories": ["storage", "remote-first", "visa-sponsor"],
+      "tech_stack": ["Python", "Go", "TypeScript", "React"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Cloud storage, collaboration"
+    },
+    {
+      "id": "atlassian",
+      "name": "Atlassian",
+      "career_url": "https://www.atlassian.com/company/careers",
+      "size": "large",
+      "categories": ["productivity", "remote-friendly", "visa-sponsor", "intern-program"],
+      "tech_stack": ["Java", "TypeScript", "React", "Kotlin"],
+      "locations": ["San Francisco", "Austin", "Sydney", "Remote"],
+      "description": "Jira, Confluence, Trello"
+    },
+    {
+      "id": "asana",
+      "name": "Asana",
+      "career_url": "https://asana.com/jobs",
+      "size": "medium",
+      "categories": ["productivity", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["TypeScript", "React", "Python", "GraphQL"],
+      "locations": ["San Francisco", "NYC", "Remote"],
+      "description": "Project management"
+    },
+    {
+      "id": "monday",
+      "name": "Monday.com",
+      "career_url": "https://monday.com/careers",
+      "size": "large",
+      "categories": ["productivity", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["React", "Node.js", "Python", "Ruby"],
+      "locations": ["Tel Aviv", "NYC", "Remote"],
+      "description": "Work OS, project management"
+    },
+    {
+      "id": "airtable",
+      "name": "Airtable",
+      "career_url": "https://www.airtable.com/careers",
+      "size": "medium",
+      "categories": ["productivity", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["TypeScript", "React", "Python", "GraphQL"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Database, collaboration"
+    },
+    {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "career_url": "https://www.mongodb.com/careers",
+      "size": "large",
+      "categories": ["database", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["C++", "Go", "Python", "JavaScript"],
+      "locations": ["NYC", "Austin", "Dublin", "Remote"],
+      "description": "NoSQL database"
+    },
+    {
+      "id": "redis",
+      "name": "Redis",
+      "career_url": "https://redis.com/company/careers",
+      "size": "medium",
+      "categories": ["database", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["C", "Go", "Python", "Java"],
+      "locations": ["Mountain View", "Remote"],
+      "description": "In-memory database"
+    },
+    {
+      "id": "elastic",
+      "name": "Elastic",
+      "career_url": "https://www.elastic.co/careers",
+      "size": "large",
+      "categories": ["search", "remote-first", "visa-sponsor"],
+      "tech_stack": ["Java", "Go", "TypeScript", "React"],
+      "locations": ["Remote"],
+      "description": "Elasticsearch, observability"
+    },
+    {
+      "id": "confluent",
+      "name": "Confluent",
+      "career_url": "https://www.confluent.io/careers",
+      "size": "large",
+      "categories": ["data", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Java", "Scala", "Go", "Kafka"],
+      "locations": ["Mountain View", "Austin", "London", "Remote"],
+      "description": "Data streaming, Kafka"
+    },
+    {
+      "id": "hashicorp",
+      "name": "HashiCorp",
+      "career_url": "https://www.hashicorp.com/careers",
+      "size": "large",
+      "categories": ["devops", "remote-first", "visa-sponsor"],
+      "tech_stack": ["Go", "Rust", "TypeScript"],
+      "locations": ["Remote"],
+      "description": "Terraform, Vault, cloud infra"
+    },
+    {
+      "id": "docker",
+      "name": "Docker",
+      "career_url": "https://www.docker.com/careers",
+      "size": "medium",
+      "categories": ["devops", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Go", "Python", "TypeScript"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Containerization"
+    },
+    {
+      "id": "digitalocean",
+      "name": "DigitalOcean",
+      "career_url": "https://www.digitalocean.com/careers",
+      "size": "large",
+      "categories": ["cloud", "remote-first", "visa-sponsor"],
+      "tech_stack": ["Go", "Ruby", "TypeScript"],
+      "locations": ["NYC", "Remote"],
+      "description": "Cloud hosting"
+    },
+    {
+      "id": "heroku",
+      "name": "Heroku",
+      "career_url": "https://www.heroku.com/careers",
+      "size": "medium",
+      "categories": ["cloud", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Ruby", "Go", "Erlang"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Platform as a service"
+    },
+    {
+      "id": "netlify",
+      "name": "Netlify",
+      "career_url": "https://www.netlify.com/careers",
+      "size": "startup",
+      "categories": ["cloud", "remote-first", "startup"],
+      "tech_stack": ["Go", "TypeScript", "React"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "JAMstack hosting"
+    },
+    {
+      "id": "auth0",
+      "name": "Auth0",
+      "career_url": "https://auth0.com/careers",
+      "size": "large",
+      "categories": ["security", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Node.js", "Go", "TypeScript"],
+      "locations": ["Seattle", "Remote"],
+      "description": "Authentication, identity"
+    },
+    {
+      "id": "okta",
+      "name": "Okta",
+      "career_url": "https://www.okta.com/company/careers",
+      "size": "large",
+      "categories": ["security", "remote-friendly", "visa-sponsor", "intern-program"],
+      "tech_stack": ["Java", "Python", "TypeScript"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Identity management"
+    },
+    {
+      "id": "crowdstrike",
+      "name": "CrowdStrike",
+      "career_url": "https://www.crowdstrike.com/careers",
+      "size": "large",
+      "categories": ["security", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Go", "Python", "C++"],
+      "locations": ["Sunnyvale", "Austin", "Remote"],
+      "description": "Cybersecurity"
+    },
+    {
+      "id": "plaid",
+      "name": "Plaid",
+      "career_url": "https://plaid.com/careers",
+      "size": "large",
+      "categories": ["fintech", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Go", "Python", "TypeScript"],
+      "locations": ["San Francisco", "NYC", "Remote"],
+      "description": "Financial APIs"
+    },
+    {
+      "id": "square",
+      "name": "Block (Square)",
+      "career_url": "https://careers.squareup.com",
+      "size": "large",
+      "categories": ["fintech", "remote-friendly", "visa-sponsor", "intern-program"],
+      "tech_stack": ["Java", "Ruby", "Go", "Kotlin"],
+      "locations": ["San Francisco", "Oakland", "Remote"],
+      "description": "Payments, Cash App"
+    },
+    {
+      "id": "robinhood",
+      "name": "Robinhood",
+      "career_url": "https://robinhood.com/careers",
+      "size": "large",
+      "categories": ["fintech", "visa-sponsor"],
+      "tech_stack": ["Python", "Go", "TypeScript"],
+      "locations": ["Menlo Park", "NYC"],
+      "description": "Stock trading"
+    },
+    {
+      "id": "chime",
+      "name": "Chime",
+      "career_url": "https://www.chime.com/careers",
+      "size": "large",
+      "categories": ["fintech", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Ruby", "Python", "TypeScript"],
+      "locations": ["San Francisco", "Chicago", "Remote"],
+      "description": "Digital banking"
+    },
+    {
+      "id": "instacart",
+      "name": "Instacart",
+      "career_url": "https://instacart.careers",
+      "size": "large",
+      "categories": ["marketplace", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Ruby", "Python", "TypeScript"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Grocery delivery"
+    },
+    {
+      "id": "doordash",
+      "name": "DoorDash",
+      "career_url": "https://careers.doordash.com",
+      "size": "large",
+      "categories": ["marketplace", "remote-friendly", "visa-sponsor", "intern-program"],
+      "tech_stack": ["Python", "Go", "Kotlin", "TypeScript"],
+      "locations": ["San Francisco", "NYC", "Remote"],
+      "description": "Food delivery"
+    },
+    {
+      "id": "grubhub",
+      "name": "Grubhub",
+      "career_url": "https://careers.grubhub.com",
+      "size": "large",
+      "categories": ["marketplace", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Python", "Java", "TypeScript"],
+      "locations": ["Chicago", "NYC", "Remote"],
+      "description": "Food delivery"
+    },
+    {
+      "id": "etsy",
+      "name": "Etsy",
+      "career_url": "https://www.etsy.com/careers",
+      "size": "large",
+      "categories": ["e-commerce", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["PHP", "Python", "TypeScript"],
+      "locations": ["Brooklyn", "Remote"],
+      "description": "Handmade marketplace"
+    },
+    {
+      "id": "wayfair",
+      "name": "Wayfair",
+      "career_url": "https://www.aboutwayfair.com/careers",
+      "size": "large",
+      "categories": ["e-commerce", "remote-friendly", "visa-sponsor", "intern-program"],
+      "tech_stack": ["PHP", "React", "Python", "Java"],
+      "locations": ["Boston", "Remote"],
+      "description": "Furniture e-commerce"
+    },
+    {
+      "id": "peloton",
+      "name": "Peloton",
+      "career_url": "https://www.onepeloton.com/careers",
+      "size": "large",
+      "categories": ["fitness", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["TypeScript", "React", "Python", "Go"],
+      "locations": ["NYC", "Remote"],
+      "description": "Fitness, connected devices"
+    },
+    {
+      "id": "duolingo",
+      "name": "Duolingo",
+      "career_url": "https://www.duolingo.com/careers",
+      "size": "medium",
+      "categories": ["edtech", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Python", "Scala", "TypeScript", "React"],
+      "locations": ["Pittsburgh", "Remote"],
+      "description": "Language learning"
+    },
+    {
+      "id": "coursera",
+      "name": "Coursera",
+      "career_url": "https://about.coursera.org/careers",
+      "size": "large",
+      "categories": ["edtech", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Scala", "Python", "TypeScript"],
+      "locations": ["Mountain View", "Remote"],
+      "description": "Online education"
+    },
+    {
+      "id": "roblox",
+      "name": "Roblox",
+      "career_url": "https://corp.roblox.com/careers",
+      "size": "large",
+      "categories": ["gaming", "remote-friendly", "visa-sponsor", "intern-program"],
+      "tech_stack": ["C++", "Lua", "Go", "TypeScript"],
+      "locations": ["San Mateo", "Remote"],
+      "description": "Gaming platform"
+    },
+    {
+      "id": "unity",
+      "name": "Unity",
+      "career_url": "https://careers.unity.com",
+      "size": "large",
+      "categories": ["gaming", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["C#", "C++", "TypeScript"],
+      "locations": ["San Francisco", "Austin", "Remote"],
+      "description": "Game engine"
+    },
+    {
+      "id": "epic",
+      "name": "Epic Games",
+      "career_url": "https://www.epicgames.com/site/careers",
+      "size": "large",
+      "categories": ["gaming", "visa-sponsor", "intern-program"],
+      "tech_stack": ["C++", "C#", "Python"],
+      "locations": ["Cary", "Seattle"],
+      "description": "Fortnite, Unreal Engine"
+    },
+    {
+      "id": "riot",
+      "name": "Riot Games",
+      "career_url": "https://www.riotgames.com/en/work-with-us",
+      "size": "large",
+      "categories": ["gaming", "visa-sponsor", "intern-program"],
+      "tech_stack": ["C++", "Java", "Python"],
+      "locations": ["Los Angeles", "Dublin"],
+      "description": "League of Legends, Valorant"
+    },
+    {
+      "id": "tesla",
+      "name": "Tesla",
+      "career_url": "https://www.tesla.com/careers",
+      "size": "large",
+      "categories": ["automotive", "visa-sponsor", "intern-program"],
+      "tech_stack": ["Python", "C++", "Java"],
+      "locations": ["Palo Alto", "Austin", "Fremont"],
+      "description": "Electric vehicles, energy"
+    },
+    {
+      "id": "rivian",
+      "name": "Rivian",
+      "career_url": "https://rivian.com/careers",
+      "size": "large",
+      "categories": ["automotive", "visa-sponsor"],
+      "tech_stack": ["C++", "Python", "Rust"],
+      "locations": ["Irvine", "Palo Alto", "Seattle"],
+      "description": "Electric vehicles"
+    },
+    {
+      "id": "spacex",
+      "name": "SpaceX",
+      "career_url": "https://www.spacex.com/careers",
+      "size": "large",
+      "categories": ["aerospace", "intern-program"],
+      "tech_stack": ["C++", "Python", "Rust"],
+      "locations": ["Hawthorne", "Brownsville"],
+      "description": "Rockets, satellites"
+    },
+    {
+      "id": "palantir",
+      "name": "Palantir",
+      "career_url": "https://www.palantir.com/careers",
+      "size": "large",
+      "categories": ["data", "visa-sponsor", "new-grad"],
+      "tech_stack": ["Java", "TypeScript", "Python", "Go"],
+      "locations": ["Palo Alto", "NYC", "Denver"],
+      "description": "Data analytics, software"
+    },
+    {
+      "id": "snowflake-db",
+      "name": "Snowflake",
+      "career_url": "https://careers.snowflake.com",
+      "size": "large",
+      "categories": ["data", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Java", "Python", "C++"],
+      "locations": ["San Mateo", "Bellevue", "Remote"],
+      "description": "Cloud data platform"
+    },
+    {
+      "id": "twilio",
+      "name": "Twilio",
+      "career_url": "https://www.twilio.com/company/jobs",
+      "size": "large",
+      "categories": ["api", "remote-friendly", "visa-sponsor", "intern-program"],
+      "tech_stack": ["Java", "Python", "TypeScript"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Communications APIs"
+    },
+    {
+      "id": "sendgrid",
+      "name": "SendGrid",
+      "career_url": "https://sendgrid.com/careers",
+      "size": "medium",
+      "categories": ["api", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Go", "Python", "TypeScript"],
+      "locations": ["Denver", "Remote"],
+      "description": "Email API"
+    },
+    {
+      "id": "postman",
+      "name": "Postman",
+      "career_url": "https://www.postman.com/company/careers",
+      "size": "medium",
+      "categories": ["developer-tools", "remote-friendly", "visa-sponsor"],
+      "tech_stack": ["Node.js", "Go", "TypeScript"],
+      "locations": ["San Francisco", "Bangalore", "Remote"],
+      "description": "API development platform"
+    },
+    {
+      "id": "retool",
+      "name": "Retool",
+      "career_url": "https://retool.com/careers",
+      "size": "startup",
+      "categories": ["developer-tools", "remote-friendly", "startup"],
+      "tech_stack": ["TypeScript", "React", "Python"],
+      "locations": ["San Francisco", "Remote"],
+      "description": "Internal tool builder"
+    },
+    {
+      "id": "supabase",
+      "name": "Supabase",
+      "career_url": "https://supabase.com/careers",
+      "size": "startup",
+      "categories": ["developer-tools", "remote-first", "startup"],
+      "tech_stack": ["TypeScript", "PostgreSQL", "Rust"],
+      "locations": ["Remote"],
+      "description": "Open-source Firebase alternative"
+    },
+    {
+      "id": "railway",
+      "name": "Railway",
+      "career_url": "https://railway.app/careers",
+      "size": "startup",
+      "categories": ["cloud", "remote-first", "startup"],
+      "tech_stack": ["Go", "TypeScript", "Rust"],
+      "locations": ["Remote"],
+      "description": "Cloud hosting"
+    },
+    {
+      "id": "render",
+      "name": "Render",
+      "career_url": "https://render.com/careers",
+      "size": "startup",
+      "categories": ["cloud", "remote-first", "startup"],
+      "tech_stack": ["Go", "TypeScript", "Rust"],
+      "locations": ["Remote"],
+      "description": "Cloud hosting"
+    },
+    {
+      "id": "fly",
+      "name": "Fly.io",
+      "career_url": "https://fly.io/jobs",
+      "size": "startup",
+      "categories": ["cloud", "remote-first", "startup"],
+      "tech_stack": ["Go", "Rust", "Elixir"],
+      "locations": ["Remote"],
+      "description": "Edge hosting"
+    },
+    {
+      "id": "planetscale",
+      "name": "PlanetScale",
+      "career_url": "https://planetscale.com/careers",
+      "size": "startup",
+      "categories": ["database", "remote-first", "startup"],
+      "tech_stack": ["Go", "MySQL", "TypeScript"],
+      "locations": ["Remote"],
+      "description": "Serverless MySQL"
+    },
+    {
+      "id": "neon",
+      "name": "Neon",
+      "career_url": "https://neon.tech/careers",
+      "size": "startup",
+      "categories": ["database", "remote-first", "startup"],
+      "tech_stack": ["Rust", "PostgreSQL", "TypeScript"],
+      "locations": ["Remote"],
+      "description": "Serverless Postgres"
+    },
+    {
+      "id": "clerk",
+      "name": "Clerk",
+      "career_url": "https://clerk.com/careers",
+      "size": "startup",
+      "categories": ["security", "remote-first", "startup"],
+      "tech_stack": ["TypeScript", "React", "Go"],
+      "locations": ["Remote"],
+      "description": "User management, auth"
+    },
+    {
+      "id": "resend",
+      "name": "Resend",
+      "career_url": "https://resend.com/careers",
+      "size": "startup",
+      "categories": ["api", "remote-first", "startup"],
+      "tech_stack": ["TypeScript", "Rust"],
+      "locations": ["Remote"],
+      "description": "Email API for developers"
+    },
+    {
+      "id": "val-town",
+      "name": "Val Town",
+      "career_url": "https://val.town/careers",
+      "size": "startup",
+      "categories": ["developer-tools", "remote-first", "startup"],
+      "tech_stack": ["TypeScript", "Deno", "PostgreSQL"],
+      "locations": ["Remote"],
+      "description": "Code snippets, automation"
+    }
+  ],
+  "metadata": {
+    "last_updated": "2025-11-05",
+    "total_companies": 100,
+    "version": "1.0"
+  }
+}

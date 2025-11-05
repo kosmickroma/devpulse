@@ -24,16 +24,16 @@ export default function Navbar() {
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-6 font-mono text-sm">
             <a
-              href="#"
+              href="/"
               className="text-neon-cyan hover:text-white transition-colors"
             >
               TRENDS
             </a>
             <a
-              href="#"
-              className="text-gray-400 hover:text-neon-magenta transition-colors"
+              href="/jobs"
+              className="text-neon-magenta hover:text-white transition-colors"
             >
-              SOURCES
+              JOBS
             </a>
             <a
               href="#"

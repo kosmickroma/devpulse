@@ -22,12 +22,20 @@
 
 ### 🔥 This Week - Quick Wins
 
-**Priority 1: Custom Feed Selection (NO AUTH NEEDED)**
-- [ ] Add checkboxes to FilterBar for source selection
-- [ ] Save preferences to localStorage
-- [ ] Restore on page load
-- [ ] Show active sources in terminal header
-- [ ] Update scan command to use saved preferences
+**Priority 1: Custom Feed Selection (NO AUTH NEEDED)** ✅ COMPLETED
+- [x] Add checkboxes to FilterBar for source selection
+- [x] Save preferences to localStorage
+- [x] Restore on page load
+- [x] Show active sources in terminal header
+- [x] Update scan command to use saved preferences
+
+**Priority 1.5: Jobs Directory** ✅ COMPLETED (2025-11-05)
+- [x] Create jobs.json with 100+ tech companies
+- [x] Add terminal commands (jobs, jobs search, jobs [filter])
+- [x] Create /jobs landing page with filters
+- [x] Add SEO meta tags for discoverability
+- [x] Create company submission form (/jobs/submit)
+- [x] Add "JOBS" link to navbar
 
 **Priority 2: More Games**
 - [ ] Add Breakout/Brick Breaker

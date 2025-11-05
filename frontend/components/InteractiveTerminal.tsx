@@ -214,6 +214,9 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         addLine('Available commands:', 'output')
         addLine('  scan [all|github|hackernews|devto] - Scan platforms for trending content', 'output')
         addLine('  scan github [language] - Scan GitHub for specific language', 'output')
+        addLine('  jobs - Browse 100+ tech companies hiring', 'output')
+        addLine('  jobs search [keyword] - Filter companies by keyword', 'output')
+        addLine('  jobs [remote|visa|startup|intern] - Filter by category', 'output')
         addLine('  games - List available mini-games', 'output')
         addLine('  game [name] - Launch a mini-game (e.g., game snake)', 'output')
         addLine('  clear - Clear terminal', 'output')
@@ -228,6 +231,10 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         } else {
           await handleScan(args)
         }
+        break
+
+      case 'jobs':
+        await handleJobs(args)
         break
 
       case 'games':
@@ -390,6 +397,92 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       addLine(`✗ Error: ${error}`, 'error')
       playError()
       setIsScanning(false)
+    }
+  }
+
+  // Handle jobs command
+  const handleJobs = async (args: string[]) => {
+    playBeep()
+
+    try {
+      const response = await fetch('/jobs.json')
+      const data = await response.json()
+      const companies = data.companies || []
+
+      let filtered = companies
+      let filterLabel = 'All Companies'
+
+      // Handle different filters
+      if (args.length > 0) {
+        const command = args[0].toLowerCase()
+
+        if (command === 'search' && args.length > 1) {
+          const keyword = args.slice(1).join(' ').toLowerCase()
+          filtered = companies.filter((c: any) =>
+            c.name.toLowerCase().includes(keyword) ||
+            c.description?.toLowerCase().includes(keyword) ||
+            c.tech_stack?.some((tech: string) => tech.toLowerCase().includes(keyword)) ||
+            c.categories?.some((cat: string) => cat.toLowerCase().includes(keyword))
+          )
+          filterLabel = `Search: "${keyword}"`
+        } else if (command === 'remote') {
+          filtered = companies.filter((c: any) => c.categories?.includes('remote-friendly'))
+          filterLabel = 'Remote-Friendly Companies'
+        } else if (command === 'visa') {
+          filtered = companies.filter((c: any) => c.categories?.includes('visa-sponsor'))
+          filterLabel = 'Visa Sponsors'
+        } else if (command === 'startup') {
+          filtered = companies.filter((c: any) => c.categories?.includes('startup'))
+          filterLabel = 'Startups'
+        } else if (command === 'intern') {
+          filtered = companies.filter((c: any) => c.categories?.includes('intern-program'))
+          filterLabel = 'Internship Programs'
+        } else {
+          playError()
+          addLine(`Unknown filter: ${command}`, 'error')
+          addLine('Use: jobs search [keyword], jobs remote, jobs visa, jobs startup, or jobs intern', 'output')
+          return
+        }
+      }
+
+      // Display results
+      addLine('═══════════════════════════════════════════════════════════', 'output')
+      addLine(`  ${filterLabel} (${filtered.length} results)`, 'success')
+      addLine('═══════════════════════════════════════════════════════════', 'output')
+      addLine('', 'output')
+
+      if (filtered.length === 0) {
+        addLine('No companies found matching your criteria.', 'error')
+      } else {
+        // Show max 15 companies at a time
+        const displayCount = Math.min(filtered.length, 15)
+        filtered.slice(0, displayCount).forEach((company: any) => {
+          addLine(`▸ ${company.name}`, 'success')
+          if (company.description) {
+            addLine(`  ${company.description}`, 'output')
+          }
+          if (company.tech_stack && company.tech_stack.length > 0) {
+            addLine(`  Tech: ${company.tech_stack.slice(0, 5).join(', ')}`, 'output')
+          }
+          if (company.locations && company.locations.length > 0) {
+            addLine(`  📍 ${company.locations.slice(0, 3).join(', ')}`, 'output')
+          }
+          addLine(`  🔗 ${company.career_url}`, 'output')
+          addLine('', 'output')
+        })
+
+        if (filtered.length > 15) {
+          addLine(`... and ${filtered.length - 15} more companies`, 'output')
+          addLine(`Visit /jobs page for full list`, 'output')
+        }
+      }
+
+      addLine('═══════════════════════════════════════════════════════════', 'output')
+      playSuccess()
+
+    } catch (error) {
+      playError()
+      addLine(`Error loading jobs database: ${error}`, 'error')
     }
   }
 
