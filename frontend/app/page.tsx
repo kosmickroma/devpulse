@@ -11,7 +11,7 @@ import { TrendingItem } from '@/lib/types'
 export default function Home() {
   const [trends, setTrends] = useState<TrendingItem[]>([])
   const [filteredTrends, setFilteredTrends] = useState<TrendingItem[]>([])
-  const [selectedSource, setSelectedSource] = useState<string>('all')
+  const [selectedSources, setSelectedSources] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   // Force page to stay at top on load
@@ -24,13 +24,17 @@ export default function Home() {
     setFilteredTrends(items)
   }
 
+  const handleSourcesChange = (sources: string[]) => {
+    setSelectedSources(sources)
+  }
+
   useEffect(() => {
-    if (selectedSource === 'all') {
+    if (selectedSources.length === 0) {
       setFilteredTrends(trends)
     } else {
-      setFilteredTrends(trends.filter(trend => trend.source === selectedSource))
+      setFilteredTrends(trends.filter(trend => selectedSources.includes(trend.source)))
     }
-  }, [selectedSource, trends])
+  }, [selectedSources, trends])
 
   return (
     <main className="min-h-screen">
@@ -58,13 +62,15 @@ export default function Home() {
 
       {/* Interactive Terminal */}
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <InteractiveTerminal onDataReceived={handleDataReceived} />
+        <InteractiveTerminal
+          onDataReceived={handleDataReceived}
+          selectedSources={selectedSources}
+        />
       </div>
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <FilterBar
-          selectedSource={selectedSource}
-          onSourceChange={setSelectedSource}
+          onSourcesChange={handleSourcesChange}
         />
 
         {isLoading ? (

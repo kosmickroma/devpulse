@@ -13,9 +13,10 @@ interface TerminalLine {
 
 interface InteractiveTerminalProps {
   onDataReceived: (items: TrendingItem[]) => void
+  selectedSources: string[]
 }
 
-export default function InteractiveTerminal({ onDataReceived }: InteractiveTerminalProps) {
+export default function InteractiveTerminal({ onDataReceived, selectedSources }: InteractiveTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([])
   const [currentInput, setCurrentInput] = useState('')
   const [isScanning, setIsScanning] = useState(false)
@@ -276,11 +277,30 @@ export default function InteractiveTerminal({ onDataReceived }: InteractiveTermi
     setProgress(0)
     itemsRef.current = []
 
-    const platform = args[0] || 'all'
+    // Determine platform from args or selected sources
+    let platform = args[0] || ''
     const language = args[1] || ''
 
+    // If no platform specified in command, use selected sources
+    if (!platform) {
+      if (selectedSources.length === 0 || selectedSources.length === 3) {
+        // No sources selected or all selected = scan all
+        platform = 'all'
+      } else if (selectedSources.length === 1) {
+        // Single source selected
+        platform = selectedSources[0]
+      } else {
+        // Multiple sources selected = scan all (backend will filter)
+        platform = 'all'
+      }
+    }
+
     playBeep()
-    addLine(`Initiating scan: ${platform}${language ? ` (${language})` : ''}...`, 'output')
+    const sourcesList = selectedSources.length > 0
+      ? selectedSources.map(s => s.toUpperCase()).join(', ')
+      : 'ALL'
+    addLine(`Initiating scan: ${platform.toUpperCase()}${language ? ` (${language})` : ''}...`, 'output')
+    addLine(`Active sources: ${sourcesList}`, 'output')
 
     // Show game prompt after a short delay
     setTimeout(() => {
