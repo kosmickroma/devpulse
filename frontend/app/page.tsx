@@ -15,10 +15,20 @@ export default function Home() {
   const [filteredTrends, setFilteredTrends] = useState<TrendingItem[]>([])
   const [selectedSources, setSelectedSources] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
 
-  // Force page to stay at top on load
+  // Force page to stay at top on load and check for auth errors
   useEffect(() => {
     window.scrollTo(0, 0)
+
+    // Check for auth errors in URL
+    const params = new URLSearchParams(window.location.search)
+    const error = params.get('error')
+    if (error) {
+      setAuthError(decodeURIComponent(error))
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname)
+    }
   }, [])
 
   const handleDataReceived = (items: TrendingItem[]) => {
@@ -41,6 +51,23 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <Navbar />
+
+      {/* Auth Error Display */}
+      {authError && (
+        <div className="container mx-auto px-4 pt-4">
+          <div className="border-2 border-neon-magenta bg-neon-magenta/10 rounded p-4 text-center">
+            <p className="text-neon-magenta font-mono text-sm">
+              <strong>Authentication Error:</strong> {authError}
+            </p>
+            <button
+              onClick={() => setAuthError(null)}
+              className="mt-2 text-xs text-gray-400 hover:text-neon-cyan"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section with Logo */}
       <div className="relative overflow-hidden border-b-2 border-neon-cyan/30 py-12">
