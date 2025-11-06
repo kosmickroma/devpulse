@@ -49,7 +49,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setError(null)
 
     if (mode === 'signup') {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -58,7 +58,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       })
       if (error) {
         setError(error.message)
+      } else if (data.session) {
+        // User is logged in immediately (email confirmation disabled)
+        onClose()
       } else {
+        // Email confirmation required
         setError('Check your email to confirm your account!')
       }
     } else {
