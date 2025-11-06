@@ -2,6 +2,7 @@
 FastAPI backend for DevPulse interactive terminal.
 
 Provides endpoints for running spiders and streaming results in real-time.
+Includes SYNTH AI assistant powered by Google Gemini.
 """
 
 from fastapi import FastAPI
@@ -13,10 +14,13 @@ import json
 
 from api.spider_runner import SpiderRunner
 
+# Import SYNTH AI routers
+from api.ai import summarize, ask
+
 app = FastAPI(
     title="DevPulse API",
-    description="Real-time developer trends aggregation",
-    version="1.1.0"
+    description="Real-time developer trends aggregation with AI assistant",
+    version="2.0.0"
 )
 
 # CORS middleware for frontend
@@ -149,8 +153,14 @@ async def health_check():
     return {
         "status": "healthy",
         "spiders_available": 3,
-        "api_version": "1.1.0"
+        "ai_enabled": True,
+        "api_version": "2.0.0"
     }
+
+
+# Include SYNTH AI routers
+app.include_router(summarize.router, prefix='/api/ai', tags=['synth-ai'])
+app.include_router(ask.router, prefix='/api/ai', tags=['synth-ai'])
 
 
 if __name__ == "__main__":
