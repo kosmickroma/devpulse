@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { TrendingItem } from '@/lib/types'
+import { supabase } from '@/lib/supabase'
 
 interface TrendCardProps {
   trend: TrendingItem
@@ -52,6 +54,52 @@ export default function TrendCard({ trend, index }: TrendCardProps) {
     high: 'text-neon-magenta',
     medium: 'text-neon-cyan',
     low: 'text-neon-green',
+  }
+
+  // SYNTH AI state
+  const [summary, setSummary] = useState<string | null>(null)
+  const [loadingSummary, setLoadingSummary] = useState(false)
+  const [summaryError, setSummaryError] = useState<string | null>(null)
+  const [remaining, setRemaining] = useState<number | null>(null)
+
+  const handleSummarize = async () => {
+    // Check if user is logged in
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      setSummaryError('Please sign in to use SYNTH AI')
+      return
+    }
+
+    setLoadingSummary(true)
+    setSummaryError(null)
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/ai/summarize`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          url: trend.url,
+          title: trend.title,
+          content: trend.description || trend.title
+        })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Failed to generate summary')
+      }
+
+      const data = await response.json()
+      setSummary(data.summary)
+      setRemaining(data.remaining)
+    } catch (err: any) {
+      setSummaryError(err.message)
+    } finally {
+      setLoadingSummary(false)
+    }
   }
 
   return (
@@ -167,6 +215,47 @@ export default function TrendCard({ trend, index }: TrendCardProps) {
             💾
           </button>
         </div>
+
+        {/* SYNTH AI Summary Button */}
+        {!summary && (
+          <button
+            onClick={handleSummarize}
+            disabled={loadingSummary}
+            className="mt-3 w-full flex items-center justify-center gap-2 py-2 px-4 rounded
+                     border-2 border-neon-cyan/30 text-neon-cyan text-xs font-mono
+                     hover:border-neon-cyan hover:bg-neon-cyan/10
+                     disabled:opacity-50 disabled:cursor-not-allowed
+                     transition-all duration-300"
+          >
+            🤖 {loadingSummary ? 'SYNTH thinking...' : 'AI Summary'}
+          </button>
+        )}
+
+        {/* Summary Display */}
+        {summary && (
+          <div className="mt-3 p-3 bg-dark-hover/50 border-2 border-neon-cyan/30 rounded">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-neon-cyan text-xs font-mono font-bold">🤖 SYNTH</span>
+              {remaining !== null && (
+                <span className="text-xs text-gray-500 font-mono">({remaining} left today)</span>
+              )}
+            </div>
+            <p className="text-xs text-gray-300 leading-relaxed">{summary}</p>
+            <button
+              onClick={() => setSummary(null)}
+              className="mt-2 text-xs text-gray-500 hover:text-neon-cyan transition-colors"
+            >
+              Hide
+            </button>
+          </div>
+        )}
+
+        {/* Error Display */}
+        {summaryError && (
+          <div className="mt-3 p-2 bg-neon-magenta/10 border border-neon-magenta/30 rounded">
+            <p className="text-xs text-neon-magenta font-mono">⚠️ {summaryError}</p>
+          </div>
+        )}
       </div>
 
       {/* Glow Effect on Hover */}

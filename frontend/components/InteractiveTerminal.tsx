@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, KeyboardEvent } from 'react'
 import { TrendingItem } from '@/lib/types'
+import { supabase } from '@/lib/supabase'
 import GameOverlay from './GameOverlay'
 
 interface TerminalLine {
@@ -219,6 +220,8 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         addLine('  jobs [remote|visa|startup|intern] - Filter by category', 'output')
         addLine('  games - List available mini-games', 'output')
         addLine('  game [name] - Launch a mini-game (e.g., game snake)', 'output')
+        addLine('  synth - Info about SYNTH AI assistant 🤖', 'output')
+        addLine('  ask [question] - Ask SYNTH anything 🤖', 'output')
         addLine('  clear - Clear terminal', 'output')
         addLine('  help - Show this help message', 'output')
         break
@@ -273,6 +276,79 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         playBeep()
         setLines([])
         addLine('> Terminal cleared', 'success')
+        break
+
+      case 'synth':
+      case 'ai':
+        playBeep()
+        addLine('╔══════════════════════════════════════════════╗', 'output')
+        addLine('║        🤖 SYNTH - Your AI Assistant          ║', 'success')
+        addLine('╠══════════════════════════════════════════════╣', 'output')
+        addLine('║ COMMANDS:                                    ║', 'output')
+        addLine('║   ask [question]  - Ask SYNTH anything       ║', 'output')
+        addLine('║                                              ║', 'output')
+        addLine('║ ABOUT:                                       ║', 'output')
+        addLine('║   SYNTH is your chill 80s-inspired AI that   ║', 'output')
+        addLine('║   helps you understand tech, gaming, space,  ║', 'output')
+        addLine('║   and more. Powered by Google Gemini.        ║', 'output')
+        addLine('║                                              ║', 'output')
+        addLine('║ LIMITS:                                      ║', 'output')
+        addLine('║   Free users: 50 queries/day                 ║', 'output')
+        addLine('║   Requires: Sign in to use                   ║', 'output')
+        addLine('╚══════════════════════════════════════════════╝', 'output')
+        break
+
+      case 'ask':
+        const question = parts.slice(1).join(' ')
+        if (!question) {
+          playError()
+          addLine('Usage: ask [your question]', 'error')
+          addLine('Example: ask how do I center a div in CSS', 'output')
+          break
+        }
+
+        // Check authentication
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+          playError()
+          addLine('⚠️ Authentication required', 'error')
+          addLine('Please sign in to chat with SYNTH AI', 'output')
+          break
+        }
+
+        // Call SYNTH
+        playBeep()
+        addLine('🤖 SYNTH is thinking...', 'progress')
+
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/ai/ask`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ question })
+          })
+
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.detail || 'SYNTH is unavailable')
+          }
+
+          const data = await response.json()
+
+          // Display SYNTH's response
+          playSound('success')
+          addLine('', 'output')
+          data.response.split('\n').forEach((line: string) => {
+            addLine(line, 'success')
+          })
+          addLine('', 'output')
+          addLine(`💭 ${data.remaining} AI queries left today`, 'output')
+        } catch (error: any) {
+          playError()
+          addLine(`⚠️ ${error.message}`, 'error')
+        }
         break
 
       case '':
