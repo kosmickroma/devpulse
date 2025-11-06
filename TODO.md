@@ -26,18 +26,65 @@
 
 ---
 
-## 🚧 Phase 1: Foundation (Next 3 Months)
+## 🚧 Phase 1: AI-First Strategy (Next 2 Months)
 
-### 🔥 This Week - Quick Wins
+### 🤖 THIS WEEK - AI Integration (PRIORITY #1)
 
-**Priority 1: Custom Feed Selection (NO AUTH NEEDED)** ✅ COMPLETED
-- [x] Add checkboxes to FilterBar for source selection
-- [x] Save preferences to localStorage
-- [x] Restore on page load
-- [x] Show active sources in terminal header
-- [x] Update scan command to use saved preferences
+**Goal:** Ship AI features to market as "AI-powered dev hub" for Upwork portfolio
 
-**Priority 1.5: Jobs Directory** ✅ COMPLETED (2025-11-05)
+**Backend Setup:**
+- [ ] Install google-generativeai package (Gemini)
+- [ ] Get Gemini API key (FREE tier)
+- [ ] Create `/api/ai/summarize` endpoint
+- [ ] Create `/api/ai/ask` endpoint
+- [ ] Add caching layer (Redis or DB)
+- [ ] Rate limiting (15 req/min free tier)
+- [ ] Error handling for API failures
+
+**Frontend - Article Summaries:**
+- [ ] Add 🤖 "Summarize" button to TrendCard
+- [ ] Click → API call → display summary
+- [ ] Typing animation effect
+- [ ] Loading states
+- [ ] Cache summaries client-side
+- [ ] Responsive design (mobile)
+
+**Frontend - Terminal AI Assistant:**
+- [ ] Add `ask [question]` command
+- [ ] Add `summarize [url]` command
+- [ ] Add `explain [topic]` command
+- [ ] Robot personality/branding
+- [ ] Typing animation for responses
+- [ ] Help text for AI commands
+- [ ] Error messages (API failures, rate limits)
+
+**AI Branding & Personality:**
+- [ ] Choose robot name
+- [ ] Define personality traits
+- [ ] Custom responses/tone
+- [ ] Robot emoji/avatar (🤖 or custom?)
+- [ ] Update help command with AI intro
+
+**Testing:**
+- [ ] Test with real articles
+- [ ] Test rate limiting
+- [ ] Test error scenarios
+- [ ] Mobile testing
+- [ ] Performance testing
+
+---
+
+### ✅ Completed Features
+
+**Auth System** ✅ COMPLETED (2025-11-06)
+- [x] Email/password signup with verification
+- [x] GitHub OAuth
+- [x] Google OAuth
+- [x] Session persistence (SSR client)
+- [x] Supabase URL configuration
+- [x] Error handling and display
+
+**Jobs Directory** ✅ COMPLETED (2025-11-05)
 - [x] Create jobs.json with 100+ tech companies
 - [x] Add terminal commands (jobs, jobs search, jobs [filter])
 - [x] Create /jobs landing page with filters
@@ -45,12 +92,33 @@
 - [x] Create company submission form (/jobs/submit)
 - [x] Add "JOBS" link to navbar
 
-**Priority 2: More Games**
+**Custom Feed Selection** ✅ COMPLETED
+- [x] Add checkboxes to FilterBar for source selection
+- [x] Save preferences to localStorage
+- [x] Restore on page load
+- [x] Show active sources in terminal header
+- [x] Update scan command to use saved preferences
+
+---
+
+### 🎯 Next Week - Personalized Feed
+
+**After AI ships:**
+- [ ] User preference storage (Supabase)
+- [ ] Interest selection UI (gaming, space, dev)
+- [ ] Add gaming sources (IGN, GameSpot, Polygon)
+- [ ] Add space sources (NASA, SpaceX, Space.com)
+- [ ] Save/load preferences per user
+- [ ] Update terminal to use preferences
+
+---
+
+### 🎮 Future: More Games (Backlog)
 - [ ] Add Breakout/Brick Breaker
 - [ ] Add Pong
 - [ ] Update 'games' command to list all
 
-**Priority 3: Polish**
+### 🎨 Polish (Ongoing)
 - [ ] Add loading states for cold starts
 - [ ] Better error messages
 - [ ] Keyboard shortcuts help (press '?')

@@ -33,34 +33,58 @@ From a trending feed → To a full developer community hub with:
 ---
 
 ## 🚀 Phase 1: Foundation (Months 1-3)
-**Goal: User accounts + basic customization**
+**Goal: AI-powered personalized feed + user accounts**
 
-### Core Features
-- [ ] **User authentication**
-  - Email/password signup
-  - GitHub OAuth
-  - Google OAuth
-  - Profile creation
+### Core Features (PRIORITY ORDER)
 
+**WEEK 1-2: AI Integration** 🤖 (IN PROGRESS)
+- [ ] **Gemini API setup** (FREE tier)
+  - Backend `/api/summarize` endpoint
+  - Backend `/api/ask` endpoint
+  - Caching layer (avoid re-generating)
+  - Rate limiting (respect free tier)
+
+- [ ] **AI Article Summaries**
+  - 🤖 "Summarize" button on trend cards
+  - 2-3 sentence AI-generated summaries
+  - Inline display with typing animation
+  - Cache summaries in database
+
+- [ ] **Terminal AI Assistant**
+  - `ask [question]` - Dev questions
+  - `summarize [url]` - Summarize any article
+  - `explain [topic]` - Explain concepts
+  - Robot personality/branding
+  - Typing animation for responses
+
+**WEEK 3: User Authentication** ✅ COMPLETED
+- [x] Email/password signup
+- [x] GitHub OAuth
+- [x] Google OAuth
+- [x] Profile creation
+- [x] Session management
+
+**WEEK 4: Personalized Feed**
+- [ ] **Custom feed preferences**
+  - Select which sources to scan
+  - Choose interests (dev, gaming, space)
+  - Save preferences to Supabase
+  - Remember settings per user
+
+- [ ] **More sources**
+  - Gaming: IGN, GameSpot, Polygon
+  - Space: NASA, SpaceX, Space.com
+  - Still keep: GitHub, HN, Dev.to, Reddit
+  - Product Hunt
+
+**WEEK 5-8: User Profiles & Polish**
 - [ ] **User profiles**
   - Display name, avatar, bio
   - Public profile page
   - Settings panel
   - Theme customization
 
-- [ ] **Custom feed preferences**
-  - Select which sources to scan
-  - Save preferred languages (for GitHub)
-  - Default scan options
-  - Remember last settings
-
-- [ ] **More sources**
-  - Reddit (r/programming, r/webdev, etc.)
-  - Product Hunt
-  - Lobsters
-  - Stack Overflow (trending questions)
-
-- [ ] **Basic forum**
+- [ ] **Basic forum** (optional, may push to Phase 2)
   - Single #general channel
   - Post threads
   - Reply/comment
@@ -70,11 +94,13 @@ From a trending feed → To a full developer community hub with:
 ### Success Metrics
 - [ ] 100 signups
 - [ ] 20 daily active users
-- [ ] 10 forum posts per day
+- [ ] 500+ AI queries per week
+- [ ] 10 forum posts per day (if implemented)
 - [ ] Avg session: 5+ minutes
+- [ ] Launch on Product Hunt as "AI-powered dev hub"
 
-**Target Timeline:** 3 months
-**Focus:** Get people using it, gather feedback
+**Target Timeline:** 2 months (accelerated)
+**Focus:** Ship AI features fast, get users, iterate based on feedback
 
 ---
 
