@@ -38,6 +38,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
   // SYNTH AI mode state
   const [synthMode, setSynthMode] = useState(false)
   const [synthThinking, setSynthThinking] = useState(false)
+  const [synthJustActivated, setSynthJustActivated] = useState(false)
 
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const terminalContainerRef = useRef<HTMLDivElement>(null)
@@ -138,6 +139,19 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
 
     return () => clearInterval(interval)
   }, [isScanning])
+
+  // SYNTH mode activation animation
+  useEffect(() => {
+    if (synthMode) {
+      // Initial flicker animation
+      setSynthJustActivated(true)
+      // After 1 second, switch to steady subtle flicker
+      const timer = setTimeout(() => {
+        setSynthJustActivated(false)
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [synthMode])
 
   // Auto-scan after boot sequence completes
   const [hasAutoScanned, setHasAutoScanned] = useState(false)
@@ -848,7 +862,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
 
       <div className={`relative max-w-5xl mx-auto rounded-lg overflow-hidden backdrop-blur transition-all duration-500 ${
         synthMode
-          ? 'border-4 border-neon-magenta bg-dark-card/80 shadow-[0_0_30px_rgba(255,0,255,0.8),0_0_60px_rgba(255,0,255,0.4)] animate-pulse'
+          ? `border-4 border-neon-magenta bg-dark-card/80 shadow-[0_0_30px_rgba(255,0,255,0.8),0_0_60px_rgba(255,0,255,0.4)] ${synthJustActivated ? 'synth-border-flicker-on' : 'synth-border-steady'}`
           : 'neon-border bg-dark-card/90'
       }`}>
         {/* SYNTH Mode Overlay - Animated Grid Background + Particles */}

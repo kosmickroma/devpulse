@@ -20,25 +20,14 @@ class GeminiService:
 
         genai.configure(api_key=api_key)
 
-        # Try models in order (v1beta API only supports gemini-pro)
-        # The 1.5 models require v1 API which might not be available yet
-        models_to_try = [
-            'gemini-pro',  # v1beta stable model (FREE tier)
-        ]
-
-        last_error = None
-        for model_name in models_to_try:
-            try:
-                self.model = genai.GenerativeModel(model_name)
-                print(f"✅ SYNTH initialized with {model_name}")
-                return
-            except Exception as e:
-                last_error = e
-                print(f"⚠️ Failed to initialize {model_name}: {e}")
-                continue
-
-        # If all models failed
-        raise ValueError(f"Failed to initialize any Gemini model. Last error: {last_error}")
+        # Use gemini-pro (the only FREE model that works with v1beta API)
+        # Note: gemini-1.5 models require upgrading the SDK or API version
+        try:
+            self.model = genai.GenerativeModel('gemini-pro')
+            print(f"✅ SYNTH initialized with gemini-pro (FREE tier)")
+        except Exception as e:
+            print(f"❌ Failed to initialize Gemini: {e}")
+            raise ValueError(f"Could not initialize Gemini model. Check API key and package version. Error: {e}")
 
     def generate_summary(self, title: str, content: str) -> str:
         """

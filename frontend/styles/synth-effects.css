@@ -1,5 +1,39 @@
 /* SYNTH AI Visual Effects - 80s Synthwave Aesthetic */
 
+/* Neon Sign Flicker - Initial Power Up */
+@keyframes neon-flicker-on {
+  0% { opacity: 0; }
+  2% { opacity: 1; }
+  4% { opacity: 0.2; }
+  6% { opacity: 1; }
+  8% { opacity: 0.4; }
+  10% { opacity: 1; }
+  12% { opacity: 0.1; }
+  14% { opacity: 1; }
+  16% { opacity: 0.6; }
+  18% { opacity: 1; }
+  20% { opacity: 0.3; }
+  22% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+/* Subtle Periodic Flicker */
+@keyframes neon-flicker-subtle {
+  0%, 96% { opacity: 1; }
+  97% { opacity: 0.8; }
+  98% { opacity: 1; }
+  99% { opacity: 0.9; }
+  100% { opacity: 1; }
+}
+
+.synth-border-flicker-on {
+  animation: neon-flicker-on 1s ease-out;
+}
+
+.synth-border-steady {
+  animation: neon-flicker-subtle 30s ease-in-out infinite;
+}
+
 /* SYNTH Avatar Animations */
 @keyframes synth-hexagon-pulse {
   0%, 100% {
