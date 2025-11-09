@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Exo_2, Space_Mono } from 'next/font/google'
 import './globals.css'
+import '../styles/synth-effects.css'
 
 const exo2 = Exo_2({
   subsets: ['latin'],

@@ -19,7 +19,20 @@ class GeminiService:
             raise ValueError("GEMINI_API_KEY environment variable not set")
 
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+
+        # Try models in order of preference (newest to oldest)
+        model_names = ['gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-pro']
+
+        for model_name in model_names:
+            try:
+                self.model = genai.GenerativeModel(model_name)
+                print(f"✅ SYNTH initialized with {model_name}")
+                break
+            except Exception as e:
+                print(f"⚠️ Failed to initialize {model_name}: {e}")
+                continue
+        else:
+            raise ValueError("Failed to initialize any Gemini model. Check API key and model availability.")
 
     def generate_summary(self, title: str, content: str) -> str:
         """

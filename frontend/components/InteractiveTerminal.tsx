@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, KeyboardEvent } from 'react'
 import { TrendingItem } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import GameOverlay from './GameOverlay'
+import SynthAvatar from './SynthAvatar'
 
 interface TerminalLine {
   id: string
@@ -33,6 +34,10 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
   const [showGamePrompt, setShowGamePrompt] = useState(false)
   const [scanCompleteNotification, setScanCompleteNotification] = useState(false)
   const [scanCompleteMessage, setScanCompleteMessage] = useState('')
+
+  // SYNTH AI mode state
+  const [synthMode, setSynthMode] = useState(false)
+  const [synthThinking, setSynthThinking] = useState(false)
 
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const terminalContainerRef = useRef<HTMLDivElement>(null)
@@ -197,17 +202,241 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     playSound('success')
   }
 
+  // Handle asking SYNTH (reusable for all SYNTH queries)
+  const handleAskSynth = async (question: string) => {
+    if (!question || question.trim().length === 0) {
+      playError()
+      addLine('⚠️ Please ask a question', 'error')
+      return
+    }
+
+    // Check authentication
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      playError()
+      addLine('⚠️ Authentication required', 'error')
+      addLine('Please sign in to chat with SYNTH AI', 'output')
+      return
+    }
+
+    // Call SYNTH
+    playBeep()
+    setSynthThinking(true)
+    addLine('🤖 SYNTH is thinking...', 'progress')
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/ai/ask`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ question })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'SYNTH is unavailable')
+      }
+
+      const data = await response.json()
+
+      // Display SYNTH's response
+      playSound('success')
+      addLine('', 'output')
+      data.response.split('\n').forEach((line: string) => {
+        addLine(line, 'success')
+      })
+      addLine('', 'output')
+      if (synthMode) {
+        addLine(`💭 ${data.remaining} queries left | Type "exit" to leave SYNTH mode`, 'output')
+      } else {
+        addLine(`💭 ${data.remaining} AI queries left today`, 'output')
+      }
+    } catch (error: any) {
+      playError()
+      addLine(`⚠️ ${error.message}`, 'error')
+    } finally {
+      setSynthThinking(false)
+    }
+  }
+
+  // Handle SYNTH search (search across sources)
+  const handleSynthSearch = async (query: string) => {
+    if (!query || query.trim().length === 0) {
+      playError()
+      addLine('⚠️ Please provide a search query', 'error')
+      return
+    }
+
+    // Check authentication
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      playError()
+      addLine('⚠️ Authentication required', 'error')
+      addLine('Please sign in to use SYNTH search', 'output')
+      return
+    }
+
+    // Call SYNTH search
+    playBeep()
+    setSynthThinking(true)
+    addLine('🔍 SYNTH is searching across sources...', 'progress')
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/ai/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ query })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'SYNTH search failed')
+      }
+
+      const data = await response.json()
+
+      // Display search results
+      playSound('success')
+      addLine('', 'output')
+      addLine('╔══════════════════════════════════════════════════════════════╗', 'success')
+      addLine(`║  🔍 SYNTH SEARCH RESULTS: ${data.total_found} found`, 'success')
+      addLine('╚══════════════════════════════════════════════════════════════╝', 'success')
+      addLine('', 'output')
+
+      // Display SYNTH's commentary
+      addLine('🤖 SYNTH says:', 'output')
+      data.commentary.split('\n').forEach((line: string) => {
+        addLine(`   ${line}`, 'success')
+      })
+      addLine('', 'output')
+
+      // Display results
+      if (data.results && data.results.length > 0) {
+        addLine(`Top ${Math.min(data.results.length, 10)} results:`, 'output')
+        addLine('', 'output')
+        data.results.slice(0, 10).forEach((item: any, idx: number) => {
+          addLine(`${idx + 1}. ${item.title}`, 'success')
+          addLine(`   Source: ${item.source.toUpperCase()} | ${item.url}`, 'output')
+          if (item.language) addLine(`   Language: ${item.language}`, 'output')
+          if (item.stars) addLine(`   ⭐ ${item.stars}`, 'output')
+          addLine('', 'output')
+        })
+      }
+
+      addLine(`💭 ${data.remaining} AI queries left today`, 'output')
+      addLine('', 'output')
+
+    } catch (error: any) {
+      playError()
+      addLine(`⚠️ ${error.message}`, 'error')
+    } finally {
+      setSynthThinking(false)
+    }
+  }
+
+  // Intelligent SYNTH routing - determines if user wants search or Q&A
+  const routeSynthQuery = async (query: string) => {
+    const lowerQuery = query.toLowerCase()
+
+    // Search indicators - user wants to find specific content
+    const searchIndicators = [
+      'find', 'search', 'show', 'get', 'grab', 'look for', 'looking for',
+      'repos', 'repositories', 'projects', 'articles', 'tutorials',
+      'on github', 'on hackernews', 'on dev.to', 'from github'
+    ]
+
+    // Check if this is a search query
+    const isSearch = searchIndicators.some(indicator => lowerQuery.includes(indicator))
+
+    if (isSearch) {
+      await handleSynthSearch(query)
+    } else {
+      await handleAskSynth(query)
+    }
+  }
+
   // Handle command execution
   const executeCommand = async (command: string) => {
-    const trimmed = command.trim().toLowerCase()
+    const trimmed = command.trim()
+    const lowerTrimmed = trimmed.toLowerCase()
 
-    // Add input line
-    addLine(`> ${command}`, 'input')
+    // Add input line with SYNTH prompt if in SYNTH mode
+    if (synthMode) {
+      addLine(`SYNTH > ${command}`, 'input')
+    } else {
+      addLine(`> ${command}`, 'input')
+    }
+
+    // If in SYNTH mode, everything goes to AI (intelligent routing)
+    if (synthMode) {
+      // Special commands to exit SYNTH mode
+      if (lowerTrimmed === 'exit' || lowerTrimmed === 'back' || lowerTrimmed === 'quit') {
+        playBeep()
+        setSynthMode(false)
+        addLine('', 'output')
+        addLine('> Exiting SYNTH mode...', 'success')
+        addLine('> Back to normal terminal', 'output')
+        addLine('', 'output')
+        return
+      }
+
+      // Everything else goes through intelligent routing
+      await routeSynthQuery(trimmed)
+      return
+    }
 
     // Parse command
-    const parts = trimmed.split(' ')
+    const parts = lowerTrimmed.split(' ')
     const cmd = parts[0]
     const args = parts.slice(1)
+
+    // Natural language detection for SYNTH - ANY natural phrase triggers SYNTH
+    const naturalPhrases = ['hey', 'yo', 'hi', 'synth', 'find', 'search', 'show', 'get', 'grab', 'looking']
+
+    if (naturalPhrases.includes(cmd)) {
+      // Extract the actual query
+      let query = trimmed
+
+      // Remove greeting/trigger words
+      if (cmd === 'hey' || cmd === 'yo' || cmd === 'hi') {
+        // "hey synth, show me..." or "yo synth what is..."
+        if (parts[1] === 'synth' || parts[1] === 'ai') {
+          query = parts.slice(2).join(' ').replace(/^,\s*/, '') // Remove "hey synth," part
+        } else {
+          // "hey, what is..." - still route to SYNTH
+          query = parts.slice(1).join(' ').replace(/^,\s*/, '')
+        }
+      } else if (cmd === 'synth') {
+        // "synth mode" is a command, but "synth, show me..." is natural
+        if (args[0] === 'mode') {
+          // Let it fall through to command handling
+        } else {
+          query = args.join(' ').replace(/^,\s*/, '')
+          if (query) {
+            await routeSynthQuery(query)
+            return
+          }
+        }
+      } else if (['find', 'search', 'show', 'get', 'grab', 'looking'].includes(cmd)) {
+        // "find arcade games", "search for tutorials", etc.
+        query = args.join(' ').replace(/^(me|for)\s+/, '') // Remove "me" or "for"
+        if (query) {
+          await handleSynthSearch(query)
+          return
+        }
+      }
+
+      // If we extracted a query, route it
+      if (query && query.trim().length > 0) {
+        await routeSynthQuery(query)
+        return
+      }
+    }
 
     switch (cmd) {
       case 'help':
@@ -220,8 +449,17 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         addLine('  jobs [remote|visa|startup|intern] - Filter by category', 'output')
         addLine('  games - List available mini-games', 'output')
         addLine('  game [name] - Launch a mini-game (e.g., game snake)', 'output')
-        addLine('  synth - Info about SYNTH AI assistant 🤖', 'output')
-        addLine('  ask [question] - Ask SYNTH anything 🤖', 'output')
+        addLine('  ', 'output')
+        addLine('🤖 SYNTH AI ASSISTANT - Just talk naturally!', 'success')
+        addLine('  synth mode - Enter conversation mode', 'output')
+        addLine('  ', 'output')
+        addLine('  Examples (no commands needed!):', 'output')
+        addLine('    "hey synth, what is React?"', 'output')
+        addLine('    "yo synth explain async await"', 'output')
+        addLine('    "find arcade games on github"', 'output')
+        addLine('    "show me python tutorials"', 'output')
+        addLine('    "grab some rust projects"', 'output')
+        addLine('  ', 'output')
         addLine('  clear - Clear terminal', 'output')
         addLine('  help - Show this help message', 'output')
         break
@@ -280,75 +518,48 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
 
       case 'synth':
       case 'ai':
+        // Check for "synth mode" to enter conversation mode
+        if (args[0] === 'mode') {
+          playSound('success')
+          setSynthMode(true)
+          addLine('', 'output')
+          addLine('╔══════════════════════════════════════════════╗', 'success')
+          addLine('║     🤖 SYNTH CONVERSATION MODE ACTIVE        ║', 'success')
+          addLine('╠══════════════════════════════════════════════╣', 'output')
+          addLine('║  Everything you type goes to SYNTH.          ║', 'output')
+          addLine('║  Just talk naturally!                        ║', 'output')
+          addLine('║                                              ║', 'output')
+          addLine('║  Type "exit" or "back" to leave SYNTH mode   ║', 'output')
+          addLine('╚══════════════════════════════════════════════╝', 'output')
+          addLine('', 'output')
+          break
+        }
+
+        // Show SYNTH info
         playBeep()
         addLine('╔══════════════════════════════════════════════╗', 'output')
         addLine('║        🤖 SYNTH - Your AI Assistant          ║', 'success')
         addLine('╠══════════════════════════════════════════════╣', 'output')
-        addLine('║ COMMANDS:                                    ║', 'output')
-        addLine('║   ask [question]  - Ask SYNTH anything       ║', 'output')
+        addLine('║ Just talk naturally - no commands needed!   ║', 'output')
         addLine('║                                              ║', 'output')
-        addLine('║ ABOUT:                                       ║', 'output')
-        addLine('║   SYNTH is your chill 80s-inspired AI that   ║', 'output')
-        addLine('║   helps you understand tech, gaming, space,  ║', 'output')
-        addLine('║   and more. Powered by Google Gemini.        ║', 'output')
+        addLine('║ ASK QUESTIONS:                               ║', 'output')
+        addLine('║   "hey synth, what is React?"                ║', 'output')
+        addLine('║   "yo synth explain async await"             ║', 'output')
+        addLine('║   "how do I center a div?"                   ║', 'output')
         addLine('║                                              ║', 'output')
-        addLine('║ LIMITS:                                      ║', 'output')
-        addLine('║   Free users: 50 queries/day                 ║', 'output')
-        addLine('║   Requires: Sign in to use                   ║', 'output')
+        addLine('║ SEARCH FOR CONTENT:                          ║', 'output')
+        addLine('║   "find arcade games on github"              ║', 'output')
+        addLine('║   "show me python tutorials"                 ║', 'output')
+        addLine('║   "grab rust machine learning repos"         ║', 'output')
+        addLine('║                                              ║', 'output')
+        addLine('║ CONVERSATION MODE:                           ║', 'output')
+        addLine('║   Type "synth mode" for continuous chat      ║', 'output')
+        addLine('║                                              ║', 'output')
+        addLine('║ SYNTH is your chill 80s AI powered by        ║', 'output')
+        addLine('║ Google Gemini. Searches GitHub, HN, Dev.to   ║', 'output')
+        addLine('║                                              ║', 'output')
+        addLine('║ LIMITS: 50 queries/day (sign in required)   ║', 'output')
         addLine('╚══════════════════════════════════════════════╝', 'output')
-        break
-
-      case 'ask':
-        const question = parts.slice(1).join(' ')
-        if (!question) {
-          playError()
-          addLine('Usage: ask [your question]', 'error')
-          addLine('Example: ask how do I center a div in CSS', 'output')
-          break
-        }
-
-        // Check authentication
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) {
-          playError()
-          addLine('⚠️ Authentication required', 'error')
-          addLine('Please sign in to chat with SYNTH AI', 'output')
-          break
-        }
-
-        // Call SYNTH
-        playBeep()
-        addLine('🤖 SYNTH is thinking...', 'progress')
-
-        try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/ai/ask`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`
-            },
-            body: JSON.stringify({ question })
-          })
-
-          if (!response.ok) {
-            const error = await response.json()
-            throw new Error(error.detail || 'SYNTH is unavailable')
-          }
-
-          const data = await response.json()
-
-          // Display SYNTH's response
-          playSound('success')
-          addLine('', 'output')
-          data.response.split('\n').forEach((line: string) => {
-            addLine(line, 'success')
-          })
-          addLine('', 'output')
-          addLine(`💭 ${data.remaining} AI queries left today`, 'output')
-        } catch (error: any) {
-          playError()
-          addLine(`⚠️ ${error.message}`, 'error')
-        }
         break
 
       case '':
@@ -627,14 +838,75 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         notificationMessage={scanCompleteMessage}
       />
 
-      <div className="relative max-w-5xl mx-auto neon-border rounded-lg overflow-hidden bg-dark-card/90 backdrop-blur">
+      <div className={`relative max-w-5xl mx-auto rounded-lg overflow-hidden backdrop-blur ${
+        synthMode
+          ? 'neon-border-animated bg-dark-card/80 shadow-neon-magenta'
+          : 'neon-border bg-dark-card/90'
+      }`}>
+        {/* SYNTH Mode Overlay - Animated Grid Background + Particles */}
+        {synthMode && (
+          <div className="absolute inset-0 opacity-20 pointer-events-none z-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-neon-magenta/20 via-neon-cyan/20 to-neon-magenta/20 animate-pulse" />
+            <div className="perspective-grid opacity-30" style={{ height: '100%' }} />
+
+            {/* Floating Particles */}
+            {[...Array(15)].map((_, i) => (
+              <div
+                key={i}
+                className="synth-particle"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  bottom: `-${Math.random() * 20}px`,
+                  animationDelay: `${Math.random() * 3}s`,
+                  animationDuration: `${3 + Math.random() * 2}s`,
+                  '--drift': `${(Math.random() - 0.5) * 100}px`
+                } as React.CSSProperties}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Terminal Header */}
-      <div className="bg-dark-hover border-b border-neon-cyan/30 px-4 py-2 flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-neon-magenta shadow-neon-magenta animate-pulse" />
+      <div className={`border-b px-4 py-2 flex items-center gap-3 relative z-10 synth-crt ${
+        synthMode
+          ? 'bg-dark-hover/80 border-neon-magenta/50'
+          : 'bg-dark-hover border-neon-cyan/30'
+      }`}>
+        {/* Traffic Light Dots */}
+        <div className={`w-3 h-3 rounded-full shadow-neon-magenta ${synthMode ? 'bg-neon-magenta animate-pulse' : 'bg-neon-magenta'}`} />
         <div className="w-3 h-3 rounded-full bg-neon-green shadow-neon-green" />
         <div className="w-3 h-3 rounded-full bg-neon-cyan shadow-neon-cyan" />
-        <span className="ml-4 text-neon-cyan font-mono text-sm">terminal://devpulse/interactive</span>
-        {isScanning && (
+
+        {/* SYNTH Avatar (when active) */}
+        {(synthMode || synthThinking) && (
+          <div className="ml-2">
+            <SynthAvatar
+              isThinking={synthThinking}
+              mode={synthThinking ? 'scanning' : 'friendly'}
+              size="sm"
+            />
+          </div>
+        )}
+
+        {/* Terminal Title */}
+        <span className={`ml-2 font-mono text-sm ${synthMode ? 'text-neon-magenta synth-holographic' : 'text-neon-cyan'}`}>
+          {synthMode ? 'SYNTH://conversation-mode' : 'terminal://devpulse/interactive'}
+        </span>
+
+        {/* Status Messages */}
+        {synthMode && !synthThinking && (
+          <span className="ml-auto text-neon-magenta font-mono text-xs animate-pulse synth-neon-pulse">
+            [AI MODE ACTIVE]
+          </span>
+        )}
+        {synthThinking && (
+          <span className="ml-auto font-mono text-xs flex items-center gap-2">
+            <span className="text-neon-magenta synth-glitch" data-text="[SYNTH ANALYZING...]">
+              [SYNTH ANALYZING...]
+            </span>
+          </span>
+        )}
+        {isScanning && !synthMode && (
           <span className="ml-auto text-neon-green font-mono text-xs flex items-center gap-2">
             <span className="text-lg">{['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'][spinnerFrame]}</span>
             <span>[SCANNING... {progress} items]</span>
@@ -658,8 +930,8 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         ))}
 
         {/* Input line - Always visible, even during scans */}
-        <div className="flex items-center text-neon-cyan mt-2">
-          <span className="mr-2">{'>'}</span>
+        <div className={`flex items-center mt-2 ${synthMode ? 'text-neon-magenta' : 'text-neon-cyan'}`}>
+          <span className="mr-2">{synthMode ? 'SYNTH >' : '>'}</span>
           <div className="flex-1 flex items-center">
             <input
               ref={inputRef}
@@ -667,11 +939,21 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
               value={currentInput}
               onChange={(e) => setCurrentInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 bg-transparent outline-none caret-neon-cyan text-neon-cyan"
+              className={`flex-1 bg-transparent outline-none ${
+                synthMode
+                  ? 'caret-neon-magenta text-neon-magenta'
+                  : 'caret-neon-cyan text-neon-cyan'
+              }`}
               spellCheck={false}
-              placeholder={isScanning ? "Scan running... type 'game snake' to play" : "Type command..."}
+              placeholder={
+                synthMode
+                  ? "Chat with SYNTH... (type 'exit' to leave)"
+                  : isScanning
+                  ? "Scan running... type 'game snake' to play"
+                  : "Type command..."
+              }
             />
-            <span className="inline-block w-2 h-4 bg-neon-cyan animate-pulse" />
+            <span className={`inline-block w-2 h-4 animate-pulse ${synthMode ? 'bg-neon-magenta' : 'bg-neon-cyan'}`} />
           </div>
         </div>
 

@@ -15,7 +15,7 @@ import json
 from api.spider_runner import SpiderRunner
 
 # Import SYNTH AI routers
-from api.ai import summarize, ask
+from api.ai import summarize, ask, search
 
 app = FastAPI(
     title="DevPulse API",
@@ -161,6 +161,7 @@ async def health_check():
 # Include SYNTH AI routers
 app.include_router(summarize.router, prefix='/api/ai', tags=['synth-ai'])
 app.include_router(ask.router, prefix='/api/ai', tags=['synth-ai'])
+app.include_router(search.router, prefix='/api/ai', tags=['synth-ai'])
 
 
 if __name__ == "__main__":
