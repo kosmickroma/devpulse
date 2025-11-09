@@ -20,19 +20,10 @@ class GeminiService:
 
         genai.configure(api_key=api_key)
 
-        # Try models in order of preference (newest to oldest)
-        model_names = ['gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-pro']
-
-        for model_name in model_names:
-            try:
-                self.model = genai.GenerativeModel(model_name)
-                print(f"✅ SYNTH initialized with {model_name}")
-                break
-            except Exception as e:
-                print(f"⚠️ Failed to initialize {model_name}: {e}")
-                continue
-        else:
-            raise ValueError("Failed to initialize any Gemini model. Check API key and model availability.")
+        # Use gemini-pro (stable model, always available)
+        # Note: gemini-1.5 models require different API version
+        self.model = genai.GenerativeModel('gemini-pro')
+        print(f"✅ SYNTH initialized with gemini-pro")
 
     def generate_summary(self, title: str, content: str) -> str:
         """

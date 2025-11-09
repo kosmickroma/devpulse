@@ -154,8 +154,11 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       { id: '3', text: '> [✓] GitHub API: ONLINE', type: 'success' as const, timestamp: Date.now() + 600 },
       { id: '4', text: '> [✓] Hacker News: ONLINE', type: 'success' as const, timestamp: Date.now() + 900 },
       { id: '5', text: '> [✓] Dev.to: ONLINE', type: 'success' as const, timestamp: Date.now() + 1200 },
-      { id: '6', text: '> ', type: 'output' as const, timestamp: Date.now() + 1500 },
-      { id: '7', text: '> Auto-scan initiating...', type: 'output' as const, timestamp: Date.now() + 1800 },
+      { id: '6', text: '> [✓] SYNTH AI: READY', type: 'success' as const, timestamp: Date.now() + 1500 },
+      { id: '7', text: '> ', type: 'output' as const, timestamp: Date.now() + 1800 },
+      { id: '8', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 2100 },
+      { id: '9', text: '> ', type: 'output' as const, timestamp: Date.now() + 2400 },
+      { id: '10', text: '> Auto-scan initiating...', type: 'output' as const, timestamp: Date.now() + 2700 },
     ]
 
     bootLines.forEach((line, index) => {
@@ -319,13 +322,18 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       if (data.results && data.results.length > 0) {
         addLine(`Top ${Math.min(data.results.length, 10)} results:`, 'output')
         addLine('', 'output')
+
+        // Send results to parent to display as cards
+        onDataReceived(data.results.slice(0, 10))
+
         data.results.slice(0, 10).forEach((item: any, idx: number) => {
           addLine(`${idx + 1}. ${item.title}`, 'success')
-          addLine(`   Source: ${item.source.toUpperCase()} | ${item.url}`, 'output')
+          addLine(`   🔗 ${item.url}`, 'output')
           if (item.language) addLine(`   Language: ${item.language}`, 'output')
           if (item.stars) addLine(`   ⭐ ${item.stars}`, 'output')
           addLine('', 'output')
         })
+        addLine('💡 Cards updated below!', 'output')
       }
 
       addLine(`💭 ${data.remaining} AI queries left today`, 'output')
@@ -838,9 +846,9 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         notificationMessage={scanCompleteMessage}
       />
 
-      <div className={`relative max-w-5xl mx-auto rounded-lg overflow-hidden backdrop-blur ${
+      <div className={`relative max-w-5xl mx-auto rounded-lg overflow-hidden backdrop-blur transition-all duration-500 ${
         synthMode
-          ? 'neon-border-animated bg-dark-card/80 shadow-neon-magenta'
+          ? 'border-4 border-neon-magenta bg-dark-card/80 shadow-[0_0_30px_rgba(255,0,255,0.8),0_0_60px_rgba(255,0,255,0.4)] animate-pulse'
           : 'neon-border bg-dark-card/90'
       }`}>
         {/* SYNTH Mode Overlay - Animated Grid Background + Particles */}
