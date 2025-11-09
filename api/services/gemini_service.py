@@ -20,10 +20,16 @@ class GeminiService:
 
         genai.configure(api_key=api_key)
 
-        # Use gemini-pro (stable model, always available)
-        # Note: gemini-1.5 models require different API version
-        self.model = genai.GenerativeModel('gemini-pro')
-        print(f"✅ SYNTH initialized with gemini-pro")
+        # Use gemini-1.5-flash (free tier, fast)
+        # Format: 'models/model-name' or just 'model-name'
+        try:
+            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            print(f"✅ SYNTH initialized with gemini-1.5-flash")
+        except Exception as e:
+            # Fallback to older naming
+            print(f"⚠️ Trying alternative model format: {e}")
+            self.model = genai.GenerativeModel('models/gemini-1.5-flash')
+            print(f"✅ SYNTH initialized with models/gemini-1.5-flash")
 
     def generate_summary(self, title: str, content: str) -> str:
         """
