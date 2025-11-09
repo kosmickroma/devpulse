@@ -20,14 +20,24 @@ class GeminiService:
 
         genai.configure(api_key=api_key)
 
-        # Use gemini-pro (the only FREE model that works with v1beta API)
-        # Note: gemini-1.5 models require upgrading the SDK or API version
-        try:
-            self.model = genai.GenerativeModel('gemini-pro')
-            print(f"✅ SYNTH initialized with gemini-pro (FREE tier)")
-        except Exception as e:
-            print(f"❌ Failed to initialize Gemini: {e}")
-            raise ValueError(f"Could not initialize Gemini model. Check API key and package version. Error: {e}")
+        # Try models in order - newer SDK supports gemini-1.5-flash
+        models_to_try = [
+            'gemini-1.5-flash',  # Latest free model
+            'gemini-1.5-pro',    # Alternative
+            'gemini-pro',        # Fallback for older SDK
+        ]
+
+        for model_name in models_to_try:
+            try:
+                self.model = genai.GenerativeModel(model_name)
+                print(f"✅ SYNTH initialized with {model_name}")
+                return
+            except Exception as e:
+                print(f"⚠️ {model_name} failed: {e}")
+                continue
+
+        # If we get here, all models failed
+        raise ValueError("Could not initialize any Gemini model. Check your API key at https://aistudio.google.com/app/apikey")
 
     def generate_summary(self, title: str, content: str) -> str:
         """
