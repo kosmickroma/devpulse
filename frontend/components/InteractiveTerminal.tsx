@@ -143,12 +143,12 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
   // SYNTH mode activation animation
   useEffect(() => {
     if (synthMode) {
-      // Initial flicker animation
+      // Initial flicker animation (longer now - 2.5 seconds)
       setSynthJustActivated(true)
-      // After 1 second, switch to steady subtle flicker
+      // After 2.5 seconds, switch to steady subtle flicker
       const timer = setTimeout(() => {
         setSynthJustActivated(false)
-      }, 1000)
+      }, 2500)
       return () => clearTimeout(timer)
     }
   }, [synthMode])
@@ -871,17 +871,32 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
             <div className="absolute inset-0 bg-gradient-to-br from-neon-magenta/20 via-neon-cyan/20 to-neon-magenta/20 animate-pulse" />
             <div className="perspective-grid opacity-30" style={{ height: '100%' }} />
 
-            {/* Floating Particles */}
-            {[...Array(15)].map((_, i) => (
+            {/* BIG SYNTH Avatar - Top Right Corner */}
+            <div className="absolute top-4 right-4 z-20 opacity-60">
+              <SynthAvatar
+                isThinking={synthThinking}
+                mode={synthThinking ? 'scanning' : 'friendly'}
+                size="lg"
+              />
+            </div>
+
+            {/* Floating Particles - MORE DRAMATIC */}
+            {[...Array(30)].map((_, i) => (
               <div
                 key={i}
                 className="synth-particle"
                 style={{
                   left: `${Math.random() * 100}%`,
                   bottom: `-${Math.random() * 20}px`,
+                  width: `${6 + Math.random() * 6}px`,
+                  height: `${6 + Math.random() * 6}px`,
+                  opacity: 0.6 + Math.random() * 0.4,
                   animationDelay: `${Math.random() * 3}s`,
-                  animationDuration: `${3 + Math.random() * 2}s`,
-                  '--drift': `${(Math.random() - 0.5) * 100}px`
+                  animationDuration: `${2 + Math.random() * 3}s`,
+                  '--drift': `${(Math.random() - 0.5) * 150}px`,
+                  boxShadow: i % 2 === 0
+                    ? '0 0 15px #00ffff, 0 0 25px #00ffff'
+                    : '0 0 15px #ff00ff, 0 0 25px #ff00ff'
                 } as React.CSSProperties}
               />
             ))}
