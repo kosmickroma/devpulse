@@ -422,7 +422,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       } else if (cmd === 'synth') {
         // "synth mode" is a command, but "synth, show me..." is natural
         if (args[0] === 'mode') {
-          // Let it fall through to command handling
+          // Don't route this - let it fall through to switch statement
         } else {
           query = args.join(' ').replace(/^,\s*/, '')
           if (query) {
@@ -439,8 +439,8 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         }
       }
 
-      // If we extracted a query, route it
-      if (query && query.trim().length > 0) {
+      // If we extracted a query, route it (but skip if it's a command like "synth mode")
+      if (query && query.trim().length > 0 && !(cmd === 'synth' && args[0] === 'mode')) {
         await routeSynthQuery(query)
         return
       }
