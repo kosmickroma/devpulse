@@ -5,7 +5,6 @@ import { TrendingItem } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import GameOverlay from './GameOverlay'
 import SynthAvatar from './SynthAvatar'
-import SynthBackground from './SynthBackground'
 
 interface TerminalLine {
   id: string
@@ -362,23 +361,22 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     }
   }
 
-  // Intelligent SYNTH routing - determines if user wants search or Q&A
+  // Simple SYNTH routing - default to Q&A, require explicit search
   const routeSynthQuery = async (query: string) => {
     const lowerQuery = query.toLowerCase()
+    const firstWord = lowerQuery.split(' ')[0]
 
-    // Search indicators - user wants to find specific content
-    const searchIndicators = [
-      'find', 'search', 'show', 'get', 'grab', 'look for', 'looking for',
-      'repos', 'repositories', 'projects', 'articles', 'tutorials',
-      'on github', 'on hackernews', 'on dev.to', 'from github'
-    ]
-
-    // Check if this is a search query
-    const isSearch = searchIndicators.some(indicator => lowerQuery.includes(indicator))
-
-    if (isSearch) {
-      await handleSynthSearch(query)
+    // Only search if explicitly requested with first word
+    if (firstWord === 'search' || firstWord === 'find') {
+      // Remove the search keyword and search the rest
+      const searchQuery = query.split(' ').slice(1).join(' ')
+      if (searchQuery) {
+        await handleSynthSearch(searchQuery)
+      } else {
+        addLine('🤖 SYNTH: What do you want me to search for?', 'output')
+      }
     } else {
+      // Everything else - just answer the question
       await handleAskSynth(query)
     }
   }
@@ -418,8 +416,8 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     const cmd = parts[0]
     const args = parts.slice(1)
 
-    // Natural language detection for SYNTH - ANY natural phrase triggers SYNTH
-    const naturalPhrases = ['hey', 'yo', 'hi', 'synth', 'find', 'search', 'show', 'get', 'grab', 'looking']
+    // Natural language detection for SYNTH - greetings and explicit commands
+    const naturalPhrases = ['hey', 'yo', 'hi', 'synth', 'find', 'search']
 
     if (naturalPhrases.includes(cmd)) {
       // Extract the actual query
@@ -445,7 +443,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
             return
           }
         }
-      } else if (['find', 'search', 'show', 'get', 'grab', 'looking'].includes(cmd)) {
+      } else if (['find', 'search'].includes(cmd)) {
         // "find arcade games", "search for tutorials", etc.
         query = args.join(' ').replace(/^(me|for)\s+/, '') // Remove "me" or "for"
         if (query) {
@@ -863,49 +861,62 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
 
       <div className={`relative max-w-5xl mx-auto rounded-lg overflow-hidden backdrop-blur transition-all duration-500 ${
         synthMode
-          ? `border-4 border-neon-magenta bg-dark-card/80 shadow-[0_0_30px_rgba(255,0,255,0.8),0_0_60px_rgba(255,0,255,0.4)] ${synthJustActivated ? 'synth-border-flicker-on' : 'synth-border-steady'}`
+          ? 'border-4 border-neon-magenta bg-dark-card/80 shadow-[0_0_30px_rgba(255,0,255,0.8),0_0_60px_rgba(255,0,255,0.4)]'
           : 'neon-border bg-dark-card/90'
       }`}>
-        {/* SYNTH Mode Overlay - EPIC Background */}
+        {/* Flickering Border Overlay - Only in SYNTH mode */}
+        {synthMode && (
+          <div
+            className={`absolute inset-0 rounded-lg pointer-events-none z-50 border-4 border-neon-magenta ${
+              synthJustActivated ? 'synth-border-flicker-on' : 'synth-border-steady'
+            }`}
+            style={{ background: 'transparent' }}
+          />
+        )}
+        {/* SYNTH Mode Overlay - Clean and Simple */}
         {synthMode && (
           <div className="absolute inset-0 pointer-events-none z-0">
-            {/* Terminator/RoboCop Background */}
-            <SynthBackground />
-
             {/* Grid overlay */}
             <div className="absolute inset-0 opacity-10">
               <div className="perspective-grid" style={{ height: '100%' }} />
             </div>
 
-            {/* BIG SYNTH Avatar - Top Right Corner */}
-            <div className="absolute top-4 right-4 z-20 opacity-60">
-              <SynthAvatar
-                isThinking={synthThinking}
-                mode={synthThinking ? 'scanning' : 'friendly'}
-                size="lg"
-              />
-            </div>
-
-            {/* Floating Particles - MORE DRAMATIC */}
-            {[...Array(30)].map((_, i) => (
+            {/* Subtle Particles */}
+            {[...Array(10)].map((_, i) => (
               <div
                 key={i}
                 className="synth-particle"
                 style={{
                   left: `${Math.random() * 100}%`,
                   bottom: `-${Math.random() * 20}px`,
-                  width: `${6 + Math.random() * 6}px`,
-                  height: `${6 + Math.random() * 6}px`,
-                  opacity: 0.6 + Math.random() * 0.4,
+                  width: `${2 + Math.random() * 2}px`,
+                  height: `${2 + Math.random() * 2}px`,
+                  opacity: 0.15 + Math.random() * 0.15,
                   animationDelay: `${Math.random() * 3}s`,
-                  animationDuration: `${2 + Math.random() * 3}s`,
-                  '--drift': `${(Math.random() - 0.5) * 150}px`,
+                  animationDuration: `${4 + Math.random() * 3}s`,
+                  '--drift': `${(Math.random() - 0.5) * 100}px`,
                   boxShadow: i % 2 === 0
-                    ? '0 0 15px #00ffff, 0 0 25px #00ffff'
-                    : '0 0 15px #ff00ff, 0 0 25px #ff00ff'
+                    ? '0 0 6px #00ffff'
+                    : '0 0 6px #ff00ff'
                 } as React.CSSProperties}
               />
             ))}
+
+            {/* KITT Scanner - Only when thinking */}
+            {synthThinking && (
+              <div className="absolute top-0 left-0 right-0 h-1 overflow-hidden">
+                <div
+                  className="kitt-scanner"
+                  style={{
+                    position: 'absolute',
+                    height: '100%',
+                    width: '120px',
+                    background: 'linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.9), transparent)',
+                    boxShadow: '0 0 20px rgba(255, 0, 255, 0.8)',
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
 

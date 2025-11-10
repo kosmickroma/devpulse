@@ -1,5 +1,25 @@
 /* SYNTH AI Visual Effects - 80s Synthwave Aesthetic */
 
+/* KITT Scanner - Knight Rider Style */
+@keyframes kitt-scanner {
+  0% {
+    left: -120px;
+  }
+  50% {
+    left: calc(100% + 120px);
+  }
+  50.01% {
+    left: calc(100% + 120px);
+  }
+  100% {
+    left: -120px;
+  }
+}
+
+.kitt-scanner {
+  animation: kitt-scanner 1.5s ease-in-out infinite;
+}
+
 /* Neon Sign Flicker - Initial Power Up (MORE DRAMATIC) */
 @keyframes neon-flicker-on {
   0% { opacity: 0; filter: brightness(0); }
