@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, KeyboardEvent } from 'react'
 import { TrendingItem } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
+import { loadTodaysScanResults, saveScanResults } from '@/lib/db'
 import GameOverlay from './GameOverlay'
 import SynthAvatar from './SynthAvatar'
 
@@ -34,6 +35,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
   const [showGamePrompt, setShowGamePrompt] = useState(false)
   const [scanCompleteNotification, setScanCompleteNotification] = useState(false)
   const [scanCompleteMessage, setScanCompleteMessage] = useState('')
+  const [resultsFromCache, setResultsFromCache] = useState(false)
 
   // SYNTH AI mode state
   const [synthMode, setSynthMode] = useState(false)
@@ -692,6 +694,10 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
 
             // Send data to parent
             onDataReceived(itemsRef.current)
+
+            // Save to database (optional, non-breaking)
+            saveScanResults(itemsRef.current)
+            setResultsFromCache(false)
             break
 
           case 'error':
@@ -812,10 +818,30 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     }])
   }
 
-  // Trigger auto-scan when flag is set
+  // Load cached results and trigger auto-scan
   useEffect(() => {
     if (hasAutoScanned && !isScanning) {
-      handleScan([]) // Scan all platforms
+      // Try to load cached results first
+      loadTodaysScanResults().then(cachedItems => {
+        if (cachedItems.length > 0) {
+          // We have cached results!
+          addLine(`> Loading cached results from today...`, 'output')
+          addLine(`> Found ${cachedItems.length} cached items`, 'success')
+          onDataReceived(cachedItems)
+          setResultsFromCache(true)
+          playSuccess()
+
+          // Still run the scan but don't wait for it
+          setTimeout(() => {
+            addLine('> ', 'output')
+            addLine('> Running fresh scan in background...', 'output')
+            handleScan([])
+          }, 1000)
+        } else {
+          // No cache, run normal scan
+          handleScan([])
+        }
+      })
     }
   }, [hasAutoScanned])
 
@@ -1012,6 +1038,15 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         </div>
 
         <div ref={terminalEndRef} />
+
+        {/* Cache Indicator */}
+        {resultsFromCache && (
+          <div className="px-4 py-2 border-t border-neon-cyan/20 text-center">
+            <span className="text-xs text-gray-500 font-mono">
+              📦 Results from cache • Fresh scan running in background
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Initialization Overlay - "Press Any Key" */}
