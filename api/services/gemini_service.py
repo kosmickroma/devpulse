@@ -48,13 +48,7 @@ Content: {content[:800]}
 Summary:"""
 
         try:
-            response = self.model.generate_content(
-                prompt,
-                generation_config={
-                    'max_output_tokens': 150,
-                    'temperature': 0.7,
-                }
-            )
+            response = self.model.generate_content(prompt)
             return response.text.strip()
         except Exception as e:
             print(f"❌ Summary error: {e}")
@@ -81,15 +75,6 @@ Answer:"""
 
         try:
             response = self.model.generate_content(prompt)
-
-            # Debug: Print what we got
-            print(f"DEBUG: Response candidates: {len(response.candidates) if response.candidates else 0}")
-            if response.candidates:
-                print(f"DEBUG: Finish reason: {response.candidates[0].finish_reason}")
-                print(f"DEBUG: Has content: {bool(response.candidates[0].content)}")
-                if response.candidates[0].content:
-                    print(f"DEBUG: Parts count: {len(response.candidates[0].content.parts)}")
-
             return response.text.strip()
         except Exception as e:
             print(f"❌ Answer error: {e}")
@@ -115,13 +100,7 @@ Topic: {topic}
 Explanation:"""
 
         try:
-            response = self.model.generate_content(
-                prompt,
-                generation_config={
-                    'max_output_tokens': 250,
-                    'temperature': 0.8,
-                }
-            )
+            response = self.model.generate_content(prompt)
             return response.text.strip()
         except Exception as e:
             print(f"❌ Explain error: {e}")
