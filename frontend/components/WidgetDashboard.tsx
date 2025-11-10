@@ -112,6 +112,7 @@ export default function WidgetDashboard({
             draggableHandle=".widget-drag-handle"
             compactType="vertical"
             preventCollision={false}
+            resizeHandles={['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne']}
           >
             {widgets.map((widget) => (
               <div key={widget.id} className="widget-grid-item">

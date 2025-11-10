@@ -29,15 +29,22 @@ export default function Widget({
 
   return (
     <div
-      className={`h-full flex flex-col border-2 border-neon-cyan/30 rounded-lg bg-dark-card overflow-hidden ${className}`}
+      className={`h-full flex flex-col border-2 rounded-lg bg-dark-card overflow-hidden transition-all duration-300 ${
+        isHovered
+          ? 'border-neon-cyan shadow-neon-cyan'
+          : 'border-neon-cyan/30'
+      } ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Widget Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-neon-cyan/30 bg-dark-card/80">
-        <h3 className="text-neon-cyan font-mono text-sm font-bold uppercase">
-          {title}
-        </h3>
+      {/* Widget Header - Draggable */}
+      <div className="widget-drag-handle flex items-center justify-between px-4 py-3 border-b border-neon-cyan/30 bg-gradient-to-r from-dark-card/80 to-dark-card cursor-move hover:from-neon-cyan/10 hover:to-dark-card/80 transition-all">
+        <div className="flex items-center gap-2">
+          <span className="text-neon-cyan/50 text-xs">⋮⋮</span>
+          <h3 className="text-neon-cyan font-mono text-sm font-bold uppercase tracking-wider neon-text">
+            {title}
+          </h3>
+        </div>
 
         {/* Widget Controls */}
         <div className={`flex items-center gap-2 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
