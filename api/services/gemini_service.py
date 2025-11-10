@@ -21,29 +21,11 @@ class GeminiService:
         # Configure the SDK
         genai.configure(api_key=api_key)
 
-        # Use current models with free tier
-        models_to_try = [
-            'gemini-2.5-flash',      # Latest stable with free tier
-            'gemini-2.0-flash',      # Fallback
-            'gemini-pro',            # Legacy
-        ]
-
-        self.model = None
-        self.model_name = None
-
-        for model_name in models_to_try:
-            try:
-                test_model = genai.GenerativeModel(model_name)
-                self.model = test_model
-                self.model_name = model_name
-                print(f"✅ SYNTH initialized with {model_name}")
-                break
-            except Exception as e:
-                print(f"⚠️  Model {model_name} failed: {e}")
-                continue
-
-        if not self.model:
-            raise ValueError("Failed to initialize any Gemini model. Check API key and SDK version.")
+        # Use current stable free tier model (Jan 2025)
+        # gemini-2.5-flash: 10 RPM / 250 RPD on Tier 1 free tier
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        self.model_name = 'gemini-2.5-flash'
+        print(f"✅ SYNTH initialized with {self.model_name}")
 
     def generate_summary(self, title: str, content: str) -> str:
         """
@@ -75,13 +57,8 @@ Summary:"""
             )
             return response.text.strip()
         except Exception as e:
-            error_str = str(e)
-            # Check for quota/rate limit errors
-            if '429' in error_str or 'quota' in error_str.lower():
-                raise Exception("SYNTH is rate-limited. Free tier quota exceeded. Upgrade your Gemini API plan or wait for quota reset.")
-            error_msg = f"Gemini API error ({self.model_name}): {error_str}"
-            print(f"❌ {error_msg}")
-            raise Exception(error_msg)
+            print(f"❌ Summary error: {e}")
+            raise Exception(f"Failed to generate summary: {str(e)}")
 
     def generate_answer(self, question: str) -> str:
         """
@@ -112,12 +89,8 @@ Answer:"""
             )
             return response.text.strip()
         except Exception as e:
-            error_str = str(e)
-            if '429' in error_str or 'quota' in error_str.lower():
-                raise Exception("SYNTH is rate-limited. Free tier quota exceeded. Upgrade your Gemini API plan or wait for quota reset.")
-            error_msg = f"Gemini API error ({self.model_name}): {error_str}"
-            print(f"❌ {error_msg}")
-            raise Exception(error_msg)
+            print(f"❌ Answer error: {e}")
+            raise Exception(f"SYNTH encountered an error: {str(e)}")
 
     def explain_concept(self, topic: str) -> str:
         """
@@ -148,9 +121,5 @@ Explanation:"""
             )
             return response.text.strip()
         except Exception as e:
-            error_str = str(e)
-            if '429' in error_str or 'quota' in error_str.lower():
-                raise Exception("SYNTH is rate-limited. Free tier quota exceeded. Upgrade your Gemini API plan or wait for quota reset.")
-            error_msg = f"Gemini API error ({self.model_name}): {error_str}"
-            print(f"❌ {error_msg}")
-            raise Exception(error_msg)
+            print(f"❌ Explain error: {e}")
+            raise Exception(f"SYNTH encountered an error: {str(e)}")
