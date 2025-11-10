@@ -86,6 +86,12 @@ export default function Navbar() {
 
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-48 neon-border rounded-lg bg-dark-card p-2">
+                      <a
+                        href="/settings"
+                        className="block w-full text-left px-4 py-2 text-neon-cyan hover:bg-neon-cyan/10 rounded transition-colors"
+                      >
+                        ⚙️ SETTINGS
+                      </a>
                       <button
                         onClick={handleSignOut}
                         className="w-full text-left px-4 py-2 text-neon-magenta hover:bg-neon-magenta/10 rounded transition-colors"

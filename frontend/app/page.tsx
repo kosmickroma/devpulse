@@ -20,7 +20,7 @@ export default function Home() {
   const [isFromCache, setIsFromCache] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
-  // Force page to stay at top on load and check for auth errors
+  // Load user preferences and cached results on mount
   useEffect(() => {
     window.scrollTo(0, 0)
 
@@ -32,6 +32,15 @@ export default function Home() {
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname)
     }
+
+    // Load user preferences and set selected sources
+    const loadPreferences = async () => {
+      const { loadUserPreferences } = await import('@/lib/db')
+      const prefs = await loadUserPreferences()
+      console.log('[PAGE] Loaded user preferences:', prefs.selectedSources)
+      setSelectedSources(prefs.selectedSources)
+    }
+    loadPreferences()
 
     // Load cached results on mount (in addition to terminal auto-scan)
     console.log('[PAGE] Loading cached results on page mount...')
@@ -120,6 +129,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <SimpleFilterBar
           onSourcesChange={handleSourcesChange}
+          initialSources={selectedSources}
         />
 
         {/* Cache Status Indicator */}

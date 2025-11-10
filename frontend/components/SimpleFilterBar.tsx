@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 
 interface SimpleFilterBarProps {
   onSourcesChange: (sources: string[]) => void
+  initialSources?: string[]
 }
 
 const AVAILABLE_SOURCES = [
@@ -12,15 +13,17 @@ const AVAILABLE_SOURCES = [
   { id: 'devto', label: 'DEV.TO', color: 'green' },
 ]
 
-export default function SimpleFilterBar({ onSourcesChange }: SimpleFilterBarProps) {
+export default function SimpleFilterBar({ onSourcesChange, initialSources }: SimpleFilterBarProps) {
   const [selectedSources, setSelectedSources] = useState<string[]>([])
 
-  // Default: all sources selected
+  // Initialize with user preferences or all sources
   useEffect(() => {
-    const allSources = AVAILABLE_SOURCES.map(s => s.id)
-    setSelectedSources(allSources)
-    onSourcesChange(allSources)
-  }, [])
+    const sources = initialSources && initialSources.length > 0
+      ? initialSources
+      : AVAILABLE_SOURCES.map(s => s.id)
+    setSelectedSources(sources)
+    onSourcesChange(sources)
+  }, [initialSources])
 
   const toggleSource = (sourceId: string) => {
     const newSources = selectedSources.includes(sourceId)
