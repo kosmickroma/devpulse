@@ -22,7 +22,8 @@ class SpiderRunner:
         self,
         spider_name: str,
         language: Optional[str] = None,
-        time_range: str = "daily"
+        time_range: str = "daily",
+        search_query: Optional[str] = None
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """
         Run a Scrapy spider asynchronously and yield results as they come in.
@@ -31,6 +32,7 @@ class SpiderRunner:
             spider_name: Name of the spider to run
             language: Programming language filter (GitHub only)
             time_range: Time range filter (daily, weekly, monthly)
+            search_query: Custom search query (GitHub only)
 
         Yields:
             Dictionary events with spider results
@@ -52,6 +54,8 @@ class SpiderRunner:
                 cmd.extend(["-a", f"time_range={time_range}"])
                 if language:
                     cmd.extend(["-a", f"language={language}"])
+                if search_query:
+                    cmd.extend(["-a", f"search_query={search_query}"])
             elif spider_name == "devto":
                 cmd.extend(["-a", f"time_range={time_range}"])
             elif spider_name == "hackernews":

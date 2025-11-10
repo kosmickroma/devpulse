@@ -101,16 +101,21 @@ class SynthSearchService:
                 if not spider_name:
                     continue
 
+                # Build search query for GitHub
+                search_query = None
+                if source == 'github' and intent['keywords']:
+                    # Join keywords for GitHub search
+                    search_query = " ".join(intent['keywords'])
+
                 # Run spider
                 async for event in self.spider_runner.run_spider_async(
                     spider_name=spider_name,
                     language=intent['language'] if source == 'github' else None,
-                    time_range='daily'
+                    time_range='daily',
+                    search_query=search_query if source == 'github' else None
                 ):
                     if event['type'] == 'item':
-                        # Filter by keywords if present
-                        if self._matches_keywords(event['data'], intent['keywords']):
-                            results.append(event['data'])
+                        results.append(event['data'])
                     elif event['type'] == 'error':
                         errors.append(event['message'])
 

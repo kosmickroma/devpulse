@@ -37,17 +37,19 @@ class GithubApiSpider(scrapy.Spider):
         'DOWNLOAD_DELAY': 1,  # Be respectful to API
     }
 
-    def __init__(self, time_range: str = "daily", language: str = "", *args, **kwargs):
+    def __init__(self, time_range: str = "daily", language: str = "", search_query: str = "", *args, **kwargs):
         """
         Initialize the spider.
 
         Args:
             time_range: daily, weekly, or monthly
             language: programming language filter (empty for all)
+            search_query: custom search query (overrides time_range if provided)
         """
         super().__init__(*args, **kwargs)
         self.time_range = time_range
         self.language = language
+        self.search_query = search_query
 
         # Load GitHub token from .env
         load_dotenv()
@@ -68,38 +70,51 @@ class GithubApiSpider(scrapy.Spider):
         Build GitHub Search API URL with appropriate filters.
 
         Strategy:
-        - Search for repos created/updated in the time range
+        - If search_query provided: Use custom search with star sorting
+        - Otherwise: Search for repos created/updated in the time range
         - Sort by stars (most popular)
         - Filter by language if specified
 
         Returns:
             Complete API URL with query parameters
         """
-        # Calculate date range
-        today = datetime.now()
+        # If custom search query provided, use that
+        if self.search_query:
+            query_parts = [self.search_query]
 
-        if self.time_range == "daily":
-            since_date = (today - timedelta(days=1)).strftime("%Y-%m-%d")
-        elif self.time_range == "weekly":
-            since_date = (today - timedelta(days=7)).strftime("%Y-%m-%d")
-        elif self.time_range == "monthly":
-            since_date = (today - timedelta(days=30)).strftime("%Y-%m-%d")
+            if self.language:
+                query_parts.append(f"language:{self.language}")
+
+            # Add stars threshold for quality
+            query_parts.append("stars:>5")
+
+            query = " ".join(query_parts)
         else:
-            # Default to daily
-            since_date = (today - timedelta(days=1)).strftime("%Y-%m-%d")
+            # Calculate date range for trending
+            today = datetime.now()
 
-        # Build query string
-        # Using "created" gives us new repos, "pushed" gives us active repos
-        # Let's use pushed for better trending behavior
-        query_parts = [f"pushed:>{since_date}"]
+            if self.time_range == "daily":
+                since_date = (today - timedelta(days=1)).strftime("%Y-%m-%d")
+            elif self.time_range == "weekly":
+                since_date = (today - timedelta(days=7)).strftime("%Y-%m-%d")
+            elif self.time_range == "monthly":
+                since_date = (today - timedelta(days=30)).strftime("%Y-%m-%d")
+            else:
+                # Default to daily
+                since_date = (today - timedelta(days=1)).strftime("%Y-%m-%d")
 
-        if self.language:
-            query_parts.append(f"language:{self.language}")
+            # Build query string
+            # Using "created" gives us new repos, "pushed" gives us active repos
+            # Let's use pushed for better trending behavior
+            query_parts = [f"pushed:>{since_date}"]
 
-        # Add stars threshold to filter out low-quality repos
-        query_parts.append("stars:>10")
+            if self.language:
+                query_parts.append(f"language:{self.language}")
 
-        query = " ".join(query_parts)
+            # Add stars threshold to filter out low-quality repos
+            query_parts.append("stars:>10")
+
+            query = " ".join(query_parts)
 
         # Build complete URL
         url = (
