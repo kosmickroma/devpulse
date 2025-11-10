@@ -21,7 +21,7 @@ export async function saveScanResults(items: TrendingItem[]): Promise<boolean> {
       author: item.author || null,
       stars: item.stars || null,
       language: item.language || null,
-      tags: item.tags || [],
+      tags: [], // Future: add tags support to TrendingItem
       scan_date: new Date().toISOString().split('T')[0] // YYYY-MM-DD
     }))
 
@@ -78,8 +78,8 @@ export async function loadTodaysScanResults(): Promise<TrendingItem[]> {
       author: row.author || '',
       stars: row.stars || 0,
       language: row.language || '',
-      tags: row.tags || [],
-      timestamp: new Date(row.created_at).getTime()
+      category: 'repository' as const, // Default category
+      scrapedAt: new Date(row.created_at)
     }))
 
     console.log(`✅ Loaded ${items.length} cached scan results from database`)
