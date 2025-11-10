@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import TrendCard from '@/components/TrendCard'
 import InteractiveTerminal from '@/components/InteractiveTerminal'
-import FilterBar from '@/components/FilterBar'
+import SimpleFilterBar from '@/components/SimpleFilterBar'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { TrendingItem } from '@/lib/types'
@@ -98,7 +98,7 @@ export default function Home() {
       </div>
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <FilterBar
+        <SimpleFilterBar
           onSourcesChange={handleSourcesChange}
         />
 
