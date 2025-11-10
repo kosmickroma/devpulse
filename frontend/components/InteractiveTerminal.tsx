@@ -640,7 +640,22 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       const url = `https://devpulse-api.onrender.com/api/scan?platform=${platform}${language ? `&language=${language}` : ''}`
       const eventSource = new EventSource(url)
 
+      // Add timeout to detect if backend is sleeping (30 seconds)
+      const timeoutId = setTimeout(() => {
+        addLine('> ', 'output')
+        addLine('⏱️ Backend is taking longer than expected...', 'error')
+        addLine('> The Render free tier may be sleeping. This can take up to 60 seconds.', 'output')
+        addLine('> Please wait or try again in a moment.', 'output')
+      }, 30000)
+
+      let hasReceivedData = false
+
       eventSource.onmessage = (event) => {
+        if (!hasReceivedData) {
+          clearTimeout(timeoutId)
+          hasReceivedData = true
+        }
+
         const data = JSON.parse(event.data)
 
         switch (data.type) {
@@ -680,6 +695,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
             break
 
           case 'scan_complete':
+            clearTimeout(timeoutId)
             addLine('> ', 'output')
             addLine(`✓ Scan complete! Found ${data.total_items} items`, 'success')
             playSuccess()
@@ -708,6 +724,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       }
 
       eventSource.onerror = () => {
+        clearTimeout(timeoutId)
         addLine('✗ Connection error. Backend may be waking up...', 'error')
         addLine('  (Render free tier sleeps after inactivity - try again in 30 sec)', 'output')
         playError()
@@ -824,21 +841,18 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       // Try to load cached results first
       loadTodaysScanResults().then(cachedItems => {
         if (cachedItems.length > 0) {
-          // We have cached results!
+          // We have cached results! Show them and skip auto-scan
           addLine(`> Loading cached results from today...`, 'output')
           addLine(`> Found ${cachedItems.length} cached items`, 'success')
           onDataReceived(cachedItems)
           setResultsFromCache(true)
           playSuccess()
-
-          // Still run the scan but don't wait for it
-          setTimeout(() => {
-            addLine('> ', 'output')
-            addLine('> Running fresh scan in background...', 'output')
-            handleScan([])
-          }, 1000)
+          addLine('> ', 'output')
+          addLine('💡 Showing cached results. Type "scan" to refresh with latest data', 'output')
+          addLine('> ', 'output')
         } else {
           // No cache, run normal scan
+          addLine('> No cached results found. Running fresh scan...', 'output')
           handleScan([])
         }
       })

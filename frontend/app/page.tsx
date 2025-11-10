@@ -7,6 +7,7 @@ import SimpleFilterBar from '@/components/SimpleFilterBar'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { TrendingItem } from '@/lib/types'
+import { loadTodaysScanResults } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +17,8 @@ export default function Home() {
   const [selectedSources, setSelectedSources] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [isFromCache, setIsFromCache] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   // Force page to stay at top on load and check for auth errors
   useEffect(() => {
@@ -29,11 +32,28 @@ export default function Home() {
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname)
     }
+
+    // Load cached results on mount (in addition to terminal auto-scan)
+    console.log('[PAGE] Loading cached results on page mount...')
+    loadTodaysScanResults().then(cachedItems => {
+      if (cachedItems.length > 0) {
+        console.log(`[PAGE] ✅ Loaded ${cachedItems.length} cached items on mount`)
+        setTrends(cachedItems)
+        setFilteredTrends(cachedItems)
+        setIsFromCache(true)
+        setLastUpdated(new Date())
+      } else {
+        console.log('[PAGE] No cached items found on mount')
+      }
+    })
   }, [])
 
   const handleDataReceived = (items: TrendingItem[]) => {
+    console.log(`[PAGE] Received ${items.length} items from terminal`)
     setTrends(items)
     setFilteredTrends(items)
+    setIsFromCache(false) // Fresh data, not from cache
+    setLastUpdated(new Date())
   }
 
   const handleSourcesChange = (sources: string[]) => {
@@ -101,6 +121,15 @@ export default function Home() {
         <SimpleFilterBar
           onSourcesChange={handleSourcesChange}
         />
+
+        {/* Cache Status Indicator */}
+        {isFromCache && lastUpdated && (
+          <div className="text-center py-2 mb-4">
+            <span className="text-xs text-neon-cyan/60 font-mono">
+              📦 Showing cached results from today • Last updated: {lastUpdated.toLocaleTimeString()}
+            </span>
+          </div>
+        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">

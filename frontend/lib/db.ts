@@ -12,6 +12,8 @@ import { TrendingItem } from './types'
  */
 export async function saveScanResults(items: TrendingItem[]): Promise<boolean> {
   try {
+    console.log(`[DB] Attempting to save ${items.length} scan results...`)
+
     // Map TrendingItem to database format
     const dbItems = items.map(item => ({
       source: item.source,
@@ -25,6 +27,8 @@ export async function saveScanResults(items: TrendingItem[]): Promise<boolean> {
       scan_date: new Date().toISOString().split('T')[0] // YYYY-MM-DD
     }))
 
+    console.log(`[DB] Sample item being saved:`, dbItems[0])
+
     const { error } = await supabase
       .from('scan_results')
       .upsert(dbItems, {
@@ -33,14 +37,14 @@ export async function saveScanResults(items: TrendingItem[]): Promise<boolean> {
       })
 
     if (error) {
-      console.warn('Failed to save scan results (non-critical):', error.message)
+      console.error('[DB] ❌ Failed to save scan results:', error.message, error)
       return false
     }
 
-    console.log(`✅ Saved ${items.length} scan results to database`)
+    console.log(`[DB] ✅ Successfully saved ${items.length} scan results to database`)
     return true
   } catch (err) {
-    console.warn('Failed to save scan results (non-critical):', err)
+    console.error('[DB] ❌ Exception while saving scan results:', err)
     return false
   }
 }
@@ -51,6 +55,7 @@ export async function saveScanResults(items: TrendingItem[]): Promise<boolean> {
 export async function loadTodaysScanResults(): Promise<TrendingItem[]> {
   try {
     const today = new Date().toISOString().split('T')[0]
+    console.log(`[DB] Attempting to load cached results for ${today}...`)
 
     const { data, error } = await supabase
       .from('scan_results')
@@ -60,13 +65,16 @@ export async function loadTodaysScanResults(): Promise<TrendingItem[]> {
       .limit(100)
 
     if (error) {
-      console.warn('Failed to load cached results (non-critical):', error.message)
+      console.error('[DB] ❌ Failed to load cached results:', error.message, error)
       return []
     }
 
     if (!data || data.length === 0) {
+      console.log('[DB] ℹ️ No cached results found for today')
       return []
     }
+
+    console.log(`[DB] ✅ Found ${data.length} cached results, mapping to TrendingItem format...`)
 
     // Map database format back to TrendingItem
     const items: TrendingItem[] = data.map(row => ({
@@ -82,10 +90,11 @@ export async function loadTodaysScanResults(): Promise<TrendingItem[]> {
       scrapedAt: new Date(row.created_at)
     }))
 
-    console.log(`✅ Loaded ${items.length} cached scan results from database`)
+    console.log(`[DB] ✅ Successfully loaded ${items.length} cached scan results from database`)
+    console.log(`[DB] Sample cached item:`, items[0])
     return items
   } catch (err) {
-    console.warn('Failed to load cached results (non-critical):', err)
+    console.error('[DB] ❌ Exception while loading cached results:', err)
     return []
   }
 }
