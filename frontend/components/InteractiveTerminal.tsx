@@ -5,6 +5,7 @@ import { TrendingItem } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import GameOverlay from './GameOverlay'
 import SynthAvatar from './SynthAvatar'
+import SynthBackground from './SynthBackground'
 
 interface TerminalLine {
   id: string
@@ -865,11 +866,16 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
           ? `border-4 border-neon-magenta bg-dark-card/80 shadow-[0_0_30px_rgba(255,0,255,0.8),0_0_60px_rgba(255,0,255,0.4)] ${synthJustActivated ? 'synth-border-flicker-on' : 'synth-border-steady'}`
           : 'neon-border bg-dark-card/90'
       }`}>
-        {/* SYNTH Mode Overlay - Animated Grid Background + Particles */}
+        {/* SYNTH Mode Overlay - EPIC Background */}
         {synthMode && (
-          <div className="absolute inset-0 opacity-20 pointer-events-none z-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-neon-magenta/20 via-neon-cyan/20 to-neon-magenta/20 animate-pulse" />
-            <div className="perspective-grid opacity-30" style={{ height: '100%' }} />
+          <div className="absolute inset-0 pointer-events-none z-0">
+            {/* Terminator/RoboCop Background */}
+            <SynthBackground />
+
+            {/* Grid overlay */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="perspective-grid" style={{ height: '100%' }} />
+            </div>
 
             {/* BIG SYNTH Avatar - Top Right Corner */}
             <div className="absolute top-4 right-4 z-20 opacity-60">
