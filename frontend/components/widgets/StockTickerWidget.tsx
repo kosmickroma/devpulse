@@ -84,7 +84,7 @@ export default function StockTickerWidget({
 
                   if (priceMatch && changeMatch) {
                     stockResults.push({
-                      symbol: item.title?.match(/📈|📉\s*([A-Z]+)/)?.[1] || 'N/A',
+                      symbol: item.title?.match(/[📈📉]\s*([A-Z]+)/)?.[1] || 'N/A',
                       name: item.title?.split(' - ')[1] || item.title || 'Unknown',
                       price: parseFloat(priceMatch[1].replace(/,/g, '')),
                       change: parseFloat(changeMatch[1].replace(/,/g, '')),

@@ -98,7 +98,7 @@ export default function CryptoTickerWidget({
 
                   if (priceMatch) {
                     cryptoResults.push({
-                      symbol: item.title?.match(/🔥|📈|📉\s*([A-Z]+)/)?.[1] || 'N/A',
+                      symbol: item.title?.match(/[🔥📈📉]\s*([A-Z]+)/)?.[1] || 'N/A',
                       name: item.title?.split(' - ')[1]?.split(' (')[0] || item.title || 'Unknown',
                       price: parseFloat(priceMatch[1].replace(/,/g, '')),
                       change24h: 0, // Will calculate from percent
