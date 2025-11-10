@@ -362,15 +362,47 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     }
   }
 
-  // Simple SYNTH routing - default to Q&A, require explicit search
+  // Smart SYNTH routing - detect search intent
   const routeSynthQuery = async (query: string) => {
     const lowerQuery = query.toLowerCase()
-    const firstWord = lowerQuery.split(' ')[0]
 
-    // Only search if explicitly requested with first word
-    if (firstWord === 'search' || firstWord === 'find') {
-      // Remove the search keyword and search the rest
-      const searchQuery = query.split(' ').slice(1).join(' ')
+    // Search intent keywords
+    const searchVerbs = ['find', 'search', 'show', 'get', 'grab', 'lookup', 'pull']
+    const searchTargets = ['repo', 'repository', 'repositories', 'project', 'projects', 'code', 'library', 'libraries']
+
+    // Check if query contains search intent
+    const hasSearchVerb = searchVerbs.some(verb => lowerQuery.includes(verb))
+    const hasSearchTarget = searchTargets.some(target => lowerQuery.includes(target))
+
+    // Explicit GitHub mention
+    const mentionsGitHub = lowerQuery.includes('github') || lowerQuery.includes('git hub')
+
+    // Keywords that suggest they want to search for code/projects
+    const codeKeywords = ['repos', 'repositories', 'projects', 'code', 'libraries', 'packages']
+    const wantsCodeSearch = codeKeywords.some(keyword => lowerQuery.includes(keyword))
+
+    // If they're asking about repos/projects OR explicitly mention GitHub search
+    if ((hasSearchVerb && hasSearchTarget) || (hasSearchVerb && mentionsGitHub) || wantsCodeSearch) {
+      // Extract what they want to search for
+      let searchQuery = query
+
+      // Remove common leading phrases
+      const removePatterns = [
+        /^(can you |could you |please )?find( me)?/i,
+        /^(can you |could you |please )?search( for)?/i,
+        /^(can you |could you |please )?show( me)?/i,
+        /^(can you |could you |please )?get( me)?/i,
+        /^(can you |could you |please )?grab( me)?/i,
+        /^(can you |could you |please )?lookup/i,
+      ]
+
+      for (const pattern of removePatterns) {
+        searchQuery = searchQuery.replace(pattern, '').trim()
+      }
+
+      // Remove trailing "on github" or "from github"
+      searchQuery = searchQuery.replace(/(on|from|in) github$/i, '').trim()
+
       if (searchQuery) {
         await handleSynthSearch(searchQuery)
       } else {
