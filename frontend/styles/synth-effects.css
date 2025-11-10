@@ -3,21 +3,21 @@
 /* KITT Scanner - Knight Rider Style */
 @keyframes kitt-scanner {
   0% {
-    left: -120px;
+    left: -150px;
   }
   50% {
-    left: calc(100% + 120px);
+    left: calc(100% + 150px);
   }
   50.01% {
-    left: calc(100% + 120px);
+    left: calc(100% + 150px);
   }
   100% {
-    left: -120px;
+    left: -150px;
   }
 }
 
 .kitt-scanner {
-  animation: kitt-scanner 1.5s ease-in-out infinite;
+  animation: kitt-scanner 2s ease-in-out infinite;
 }
 
 /* Neon Sign Flicker - Initial Power Up (MORE DRAMATIC) */

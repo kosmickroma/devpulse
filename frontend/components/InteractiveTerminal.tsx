@@ -930,15 +930,15 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
 
             {/* KITT Scanner - Only when thinking */}
             {synthThinking && (
-              <div className="absolute top-0 left-0 right-0 h-1 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-2 overflow-hidden z-20">
                 <div
                   className="kitt-scanner"
                   style={{
                     position: 'absolute',
                     height: '100%',
-                    width: '120px',
-                    background: 'linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.9), transparent)',
-                    boxShadow: '0 0 20px rgba(255, 0, 255, 0.8)',
+                    width: '150px',
+                    background: 'linear-gradient(90deg, transparent, rgba(255, 0, 255, 1), transparent)',
+                    boxShadow: '0 0 30px rgba(255, 0, 255, 1), 0 0 60px rgba(255, 0, 255, 0.5)',
                   }}
                 />
               </div>
