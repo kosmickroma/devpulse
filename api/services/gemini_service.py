@@ -21,12 +21,11 @@ class GeminiService:
         # Configure the SDK
         genai.configure(api_key=api_key)
 
-        # Use current models (1.5 series retired, use 2.x)
+        # Use current models with free tier
         models_to_try = [
-            'gemini-2.0-flash-exp',  # Latest experimental
-            'gemini-2.0-flash',      # Latest stable
-            'gemini-1.5-flash',      # Legacy (may still work)
-            'gemini-pro',            # Oldest fallback
+            'gemini-2.5-flash',      # Latest stable with free tier
+            'gemini-2.0-flash',      # Fallback
+            'gemini-pro',            # Legacy
         ]
 
         self.model = None
@@ -76,7 +75,11 @@ Summary:"""
             )
             return response.text.strip()
         except Exception as e:
-            error_msg = f"Gemini API error ({self.model_name}): {str(e)}"
+            error_str = str(e)
+            # Check for quota/rate limit errors
+            if '429' in error_str or 'quota' in error_str.lower():
+                raise Exception("SYNTH is rate-limited. Free tier quota exceeded. Upgrade your Gemini API plan or wait for quota reset.")
+            error_msg = f"Gemini API error ({self.model_name}): {error_str}"
             print(f"❌ {error_msg}")
             raise Exception(error_msg)
 
@@ -109,7 +112,10 @@ Answer:"""
             )
             return response.text.strip()
         except Exception as e:
-            error_msg = f"Gemini API error ({self.model_name}): {str(e)}"
+            error_str = str(e)
+            if '429' in error_str or 'quota' in error_str.lower():
+                raise Exception("SYNTH is rate-limited. Free tier quota exceeded. Upgrade your Gemini API plan or wait for quota reset.")
+            error_msg = f"Gemini API error ({self.model_name}): {error_str}"
             print(f"❌ {error_msg}")
             raise Exception(error_msg)
 
@@ -142,6 +148,9 @@ Explanation:"""
             )
             return response.text.strip()
         except Exception as e:
-            error_msg = f"Gemini API error ({self.model_name}): {str(e)}"
+            error_str = str(e)
+            if '429' in error_str or 'quota' in error_str.lower():
+                raise Exception("SYNTH is rate-limited. Free tier quota exceeded. Upgrade your Gemini API plan or wait for quota reset.")
+            error_msg = f"Gemini API error ({self.model_name}): {error_str}"
             print(f"❌ {error_msg}")
             raise Exception(error_msg)
