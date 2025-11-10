@@ -1063,7 +1063,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
               DEVPULSE TERMINAL
             </div>
             <div className="text-xl text-neon-green neon-text-green font-mono mb-8">
-              v3.0
+              v4.0 - SYNTH AI EDITION
             </div>
             <div className="text-lg text-gray-300 font-mono">
               [ CLICK TO INITIALIZE ]
