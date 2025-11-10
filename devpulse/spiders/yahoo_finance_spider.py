@@ -54,73 +54,103 @@ class YahooFinanceSpider(scrapy.Spider):
     def start_requests(self):
         """Generate initial requests."""
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Referer': 'https://finance.yahoo.com/',
+            'Origin': 'https://finance.yahoo.com',
         }
 
         for url in self.start_urls:
             yield scrapy.Request(url, headers=headers, callback=self.parse)
 
     def parse(self, response: Response) -> Generator:
-        """Parse Yahoo Finance API response."""
+        """Parse Yahoo Finance API response to get trending symbols."""
         try:
             data = json.loads(response.text)
         except json.JSONDecodeError as e:
             self.logger.error(f"Failed to parse JSON: {e}")
+            self.logger.error(f"Response status: {response.status}")
+            self.logger.error(f"Response text (first 500 chars): {response.text[:500]}")
             return
 
-        # Handle trending endpoint (different structure)
-        if self.category == 'trending':
-            quotes = data.get('finance', {}).get('result', [{}])[0].get('quotes', [])
-        else:
-            # Handle screener endpoints
-            quotes = data.get('finance', {}).get('result', [{}])[0].get('quotes', [])
+        # Get symbols from trending endpoint
+        quotes = data.get('finance', {}).get('result', [{}])[0].get('quotes', [])
+        symbols = [q.get('symbol') for q in quotes if q.get('symbol')]
 
-        self.logger.info(f"Found {len(quotes)} stocks in category: {self.category}")
+        self.logger.info(f"Found {len(symbols)} trending symbols: {symbols[:10]}")
 
-        for quote in quotes:
-            try:
-                symbol = quote.get('symbol', '')
-                name = quote.get('longName') or quote.get('shortName', symbol)
-                price = quote.get('regularMarketPrice', 0)
-                change = quote.get('regularMarketChange', 0)
-                change_percent = quote.get('regularMarketChangePercent', 0)
-                volume = quote.get('regularMarketVolume', 0)
-                market_cap = quote.get('marketCap', 0)
+        # Request detailed quote data for each symbol
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Referer': 'https://finance.yahoo.com/',
+        }
 
-                # Determine if stock is up or down
-                direction = '📈' if change >= 0 else '📉'
+        for symbol in symbols[:15]:  # Limit to 15 to avoid rate limiting
+            chart_url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+            yield scrapy.Request(chart_url, headers=headers, callback=self.parse_quote)
 
-                # Format title
-                title = f"{direction} {symbol} - {name}"
+    def parse_quote(self, response: Response) -> Generator:
+        """Parse detailed quote data from chart endpoint."""
+        try:
+            data = json.loads(response.text)
+            result = data.get('chart', {}).get('result', [])
 
-                # Format description with key metrics
-                description = (
-                    f"${price:.2f} ({change:+.2f}, {change_percent:+.2f}%) "
-                    f"| Volume: {self._format_number(volume)} "
-                    f"| Market Cap: {self._format_number(market_cap)}"
-                )
+            if not result:
+                return
 
-                # Create URL to Yahoo Finance page
-                url = f"https://finance.yahoo.com/quote/{symbol}"
+            meta = result[0].get('meta', {})
 
-                yield {
-                    'title': title,
-                    'url': url,
-                    'source': 'stocks',
-                    'description': description,
-                    'language': None,
-                    'stars': int(market_cap) if market_cap else 0,  # Use market cap as "stars" for sorting
-                    'author': self.category.replace('_', ' ').title(),
-                    'comments': None,
-                    'score': int(volume) if volume else 0,
-                    'reactions': None,
-                    'category': 'stock'
-                }
+            symbol = meta.get('symbol', '')
+            name = meta.get('longName') or meta.get('shortName', symbol)
+            price = meta.get('regularMarketPrice', 0)
+            previous_close = meta.get('previousClose', 0)
+            volume = meta.get('regularMarketVolume', 0)
 
-            except Exception as e:
-                self.logger.error(f"Error parsing stock: {e}")
-                self.logger.error(f"Stock data: {quote}")
-                continue
+            # Calculate change and percent
+            if previous_close > 0:
+                change = price - previous_close
+                change_percent = (change / previous_close) * 100
+            else:
+                change = 0
+                change_percent = 0
+
+            # Determine if stock is up or down
+            direction = '📈' if change >= 0 else '📉'
+
+            # Format title
+            title = f"{direction} {symbol} - {name}"
+
+            # Format description with key metrics
+            description = (
+                f"${price:.2f} ({change:+.2f}, {change_percent:+.2f}%) "
+                f"| Volume: {self._format_number(volume)}"
+            )
+
+            # Create URL to Yahoo Finance page
+            url = f"https://finance.yahoo.com/quote/{symbol}"
+
+            yield {
+                'title': title,
+                'url': url,
+                'source': 'stocks',
+                'description': description,
+                'language': None,
+                'stars': int(volume) if volume else 0,  # Use volume for sorting
+                'author': self.category.replace('_', ' ').title(),
+                'comments': None,
+                'score': int(volume) if volume else 0,
+                'reactions': None,
+                'category': 'stock'
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error parsing quote: {e}")
+            self.logger.error(f"Response text (first 500 chars): {response.text[:500]}")
+            return
 
     def _format_number(self, num):
         """Format large numbers with K, M, B suffixes."""

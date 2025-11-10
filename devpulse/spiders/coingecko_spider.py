@@ -70,6 +70,8 @@ class CoinGeckoSpider(scrapy.Spider):
             data = json.loads(response.text)
         except json.JSONDecodeError as e:
             self.logger.error(f"Failed to parse JSON: {e}")
+            self.logger.error(f"Response status: {response.status}")
+            self.logger.error(f"Response text (first 500 chars): {response.text[:500]}")
             return
 
         # Handle trending endpoint
@@ -83,14 +85,24 @@ class CoinGeckoSpider(scrapy.Spider):
                     symbol = coin.get('symbol', '').upper()
                     name = coin.get('name', '')
                     market_cap_rank = coin.get('market_cap_rank', 0)
-                    price_btc = coin.get('price_btc', 0)
                     coin_id = coin.get('id', '')
 
+                    # Get USD price and change from nested data object
+                    coin_data = coin.get('data', {})
+                    price_usd = coin_data.get('price', 0)
+                    price_change_24h = coin_data.get('price_change_percentage_24h', {}).get('usd', 0)
+
+                    # Determine direction
+                    direction = '📈' if price_change_24h >= 0 else '📉'
+
                     # Format title
-                    title = f"🔥 {symbol} - {name} (#{market_cap_rank})"
+                    title = f"{direction} {symbol} - {name}"
 
                     # Format description
-                    description = f"Trending on CoinGecko | Price: {price_btc:.8f} BTC"
+                    description = (
+                        f"${self._format_price(price_usd)} ({price_change_24h:+.2f}% 24h) "
+                        f"| Rank: #{market_cap_rank}"
+                    )
 
                     # Create URL
                     url = f"https://www.coingecko.com/en/coins/{coin_id}"
@@ -111,6 +123,7 @@ class CoinGeckoSpider(scrapy.Spider):
 
                 except Exception as e:
                     self.logger.error(f"Error parsing trending coin: {e}")
+                    self.logger.error(f"Coin data: {coin}")
                     continue
 
         # Handle top/gainers/losers endpoint
