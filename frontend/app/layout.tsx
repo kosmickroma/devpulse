@@ -39,7 +39,6 @@ export default function RootLayout({
       <body className={`${exo2.variable} ${spaceMono.variable} font-sans`}>
         {/* CRT Effects */}
         <div className="scanline" />
-        <div className="scan-line" />
 
         {/* Main Content */}
         <div className="relative min-h-screen grid-bg">

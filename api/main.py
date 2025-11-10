@@ -54,7 +54,8 @@ async def root():
 
 @app.get("/api/scan")
 async def scan_stream(
-    platform: str = "all",
+    sources: Optional[str] = None,
+    platform: Optional[str] = None,
     language: Optional[str] = None,
     time_range: str = "daily"
 ):
@@ -62,7 +63,8 @@ async def scan_stream(
     Scan platforms and stream results in real-time using Server-Sent Events.
 
     Args:
-        platform: github_api, hackernews, devto, or all
+        sources: Comma-separated list (github, hackernews, devto, stocks, crypto) or "all"
+        platform: Legacy parameter (same as sources)
         language: Programming language filter (GitHub only)
         time_range: daily, weekly, or monthly
 
@@ -73,11 +75,25 @@ async def scan_stream(
     async def event_generator():
         """Generate SSE events as spider runs."""
 
+        # Use sources parameter, fallback to platform for backwards compatibility
+        source_param = sources or platform or "all"
+
+        # Map source names to spider names
+        source_to_spider = {
+            'github': 'github_api',
+            'hackernews': 'hackernews',
+            'devto': 'devto',
+            'stocks': 'yahoo_finance',
+            'crypto': 'coingecko'
+        }
+
         # Determine which spiders to run
-        if platform == "all":
-            spiders = ["github_api", "hackernews", "devto"]
+        if source_param == "all":
+            spiders = ["github_api", "hackernews", "devto", "yahoo_finance", "coingecko"]
         else:
-            spiders = [platform]
+            # Handle comma-separated list
+            source_list = [s.strip() for s in source_param.split(',')]
+            spiders = [source_to_spider.get(s, s) for s in source_list]
 
         # Send initial status
         yield f"data: {json.dumps({'type': 'status', 'message': f'Initializing scan for {len(spiders)} platform(s)...'})}\n\n"
@@ -142,6 +158,18 @@ async def list_spiders():
                 "display": "Dev.to",
                 "supports_language": False,
                 "supports_time_range": True
+            },
+            {
+                "name": "yahoo_finance",
+                "display": "Stocks",
+                "supports_language": False,
+                "supports_time_range": False
+            },
+            {
+                "name": "coingecko",
+                "display": "Crypto",
+                "supports_language": False,
+                "supports_time_range": False
             }
         ]
     }
@@ -152,7 +180,7 @@ async def health_check():
     """Detailed health check."""
     return {
         "status": "healthy",
-        "spiders_available": 3,
+        "spiders_available": 5,
         "ai_enabled": True,
         "api_version": "2.0.0"
     }
