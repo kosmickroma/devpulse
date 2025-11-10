@@ -179,29 +179,18 @@ class SynthSearchService:
 
         summary_text = '\n'.join(result_summary)
 
-        prompt = f"""You are SYNTH, a chill 80s-inspired AI assistant.
-
-User asked: "{query}"
-
+        # Create a prompt for SYNTH commentary
+        context = f"""User searched for: "{query}"
 Found {len(results)} results from {', '.join(intent['sources'])}.
-
-Top results:
-{summary_text}
-
-Write a 2-3 sentence commentary about these results. Be helpful and enthusiastic.
-Sign with "SYNTH OUT 🌆"
-
-Commentary:"""
+Top items: {summary_text}"""
 
         try:
-            commentary = self.gemini.model.generate_content(
-                prompt,
-                generation_config={
-                    'max_output_tokens': 150,
-                    'temperature': 0.8,
-                }
-            ).text.strip()
+            # Use the service method instead of calling model directly
+            commentary = self.gemini.generate_answer(
+                f"I found {len(results)} results for '{query}' on {', '.join(intent['sources'])}. Give me a quick 2-sentence commentary about these results."
+            )
             return commentary
         except Exception as e:
             # Fallback commentary
+            print(f"Commentary generation failed: {e}")
             return f"Found {len(results)} items matching your search! Check them out and let me know if you need something more specific. SYNTH OUT 🌆"

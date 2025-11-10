@@ -1,47 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
 export default function SynthBackground() {
-  const [scanPosition, setScanPosition] = useState(0)
-  const [scanDirection, setScanDirection] = useState(1)
-  const [verticalScan, setVerticalScan] = useState(0)
-  const [radarAngle, setRadarAngle] = useState(0)
-
-  // KITT horizontal scanner (back and forth)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setScanPosition(prev => {
-        const next = prev + (scanDirection * 2)
-        if (next >= 100) {
-          setScanDirection(-1)
-          return 100
-        }
-        if (next <= 0) {
-          setScanDirection(1)
-          return 0
-        }
-        return next
-      })
-    }, 20)
-    return () => clearInterval(interval)
-  }, [scanDirection])
-
-  // Vertical CRT scan
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVerticalScan(prev => (prev >= 100 ? 0 : prev + 1))
-    }, 15)
-    return () => clearInterval(interval)
-  }, [])
-
-  // Radar pulse
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRadarAngle(prev => (prev + 3) % 360)
-    }, 30)
-    return () => clearInterval(interval)
-  }, [])
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25">
@@ -124,57 +83,6 @@ export default function SynthBackground() {
           <line x1="100" y1="140" x2="100" y2="150" stroke="#ff00ff" strokeWidth="1" opacity="0.5" />
           <line x1="50" y1="100" x2="60" y2="100" stroke="#ff00ff" strokeWidth="1" opacity="0.5" />
           <line x1="140" y1="100" x2="150" y2="100" stroke="#ff00ff" strokeWidth="1" opacity="0.5" />
-        </svg>
-
-        {/* KITT HORIZONTAL SCANNER - Sweeps back and forth */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 h-1 w-full"
-          style={{
-            background: `linear-gradient(90deg,
-              transparent ${Math.max(0, scanPosition - 10)}%,
-              rgba(255, 0, 255, 0) ${Math.max(0, scanPosition - 5)}%,
-              rgba(255, 0, 255, 0.4) ${scanPosition - 2}%,
-              rgba(255, 0, 255, 1) ${scanPosition}%,
-              rgba(255, 0, 255, 0.4) ${scanPosition + 2}%,
-              rgba(255, 0, 255, 0) ${Math.min(100, scanPosition + 5)}%,
-              transparent ${Math.min(100, scanPosition + 10)}%
-            )`,
-            boxShadow: `0 0 20px rgba(255, 0, 255, 0.8)`
-          }}
-        />
-
-        {/* VERTICAL CRT SCAN - Top to bottom */}
-        <div
-          className="absolute left-0 w-full h-0.5"
-          style={{
-            top: `${verticalScan}%`,
-            background: 'linear-gradient(180deg, transparent, rgba(255, 0, 255, 0.6), transparent)',
-            boxShadow: '0 0 15px rgba(255, 0, 255, 0.6)'
-          }}
-        />
-
-        {/* RADAR PULSE - Rotating sweep */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full"
-          style={{
-            transform: `translate(-50%, -50%) rotate(${radarAngle}deg)`,
-            transformOrigin: 'center'
-          }}
-        >
-          <div
-            className="absolute top-1/2 left-1/2 w-full h-0.5 origin-left"
-            style={{
-              background: 'linear-gradient(90deg, rgba(255, 0, 255, 0.8), transparent)',
-              boxShadow: '0 0 10px rgba(255, 0, 255, 0.6)'
-            }}
-          />
-        </div>
-
-        {/* Radar rings */}
-        <svg viewBox="0 0 200 200" className="absolute inset-0 w-full h-full">
-          <circle cx="100" cy="100" r="80" fill="none" stroke="#ff00ff" strokeWidth="0.5" opacity="0.2" strokeDasharray="5 5" />
-          <circle cx="100" cy="100" r="60" fill="none" stroke="#ff00ff" strokeWidth="0.5" opacity="0.3" strokeDasharray="5 5" />
-          <circle cx="100" cy="100" r="40" fill="none" stroke="#ff00ff" strokeWidth="0.5" opacity="0.4" strokeDasharray="5 5" />
         </svg>
       </div>
 

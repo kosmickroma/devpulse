@@ -18,11 +18,33 @@ class GeminiService:
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable not set")
 
+        # Configure the SDK
         genai.configure(api_key=api_key)
 
-        # Use gemini-pro (older but stable, works with all SDK versions)
-        self.model = genai.GenerativeModel('gemini-pro')
-        print(f"✅ SYNTH initialized with gemini-pro")
+        # Use current models (1.5 series retired, use 2.x)
+        models_to_try = [
+            'gemini-2.0-flash-exp',  # Latest experimental
+            'gemini-2.0-flash',      # Latest stable
+            'gemini-1.5-flash',      # Legacy (may still work)
+            'gemini-pro',            # Oldest fallback
+        ]
+
+        self.model = None
+        self.model_name = None
+
+        for model_name in models_to_try:
+            try:
+                test_model = genai.GenerativeModel(model_name)
+                self.model = test_model
+                self.model_name = model_name
+                print(f"✅ SYNTH initialized with {model_name}")
+                break
+            except Exception as e:
+                print(f"⚠️  Model {model_name} failed: {e}")
+                continue
+
+        if not self.model:
+            raise ValueError("Failed to initialize any Gemini model. Check API key and SDK version.")
 
     def generate_summary(self, title: str, content: str) -> str:
         """
@@ -54,7 +76,9 @@ Summary:"""
             )
             return response.text.strip()
         except Exception as e:
-            raise Exception(f"Gemini API error: {str(e)}")
+            error_msg = f"Gemini API error ({self.model_name}): {str(e)}"
+            print(f"❌ {error_msg}")
+            raise Exception(error_msg)
 
     def generate_answer(self, question: str) -> str:
         """
@@ -85,7 +109,9 @@ Answer:"""
             )
             return response.text.strip()
         except Exception as e:
-            raise Exception(f"Gemini API error: {str(e)}")
+            error_msg = f"Gemini API error ({self.model_name}): {str(e)}"
+            print(f"❌ {error_msg}")
+            raise Exception(error_msg)
 
     def explain_concept(self, topic: str) -> str:
         """
@@ -116,4 +142,6 @@ Explanation:"""
             )
             return response.text.strip()
         except Exception as e:
-            raise Exception(f"Gemini API error: {str(e)}")
+            error_msg = f"Gemini API error ({self.model_name}): {str(e)}"
+            print(f"❌ {error_msg}")
+            raise Exception(error_msg)
