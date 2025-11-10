@@ -3,148 +3,210 @@
 import { useEffect, useState } from 'react'
 
 export default function SynthBackground() {
-  const [glitchOffset, setGlitchOffset] = useState(0)
+  const [scanPosition, setScanPosition] = useState(0)
+  const [scanDirection, setScanDirection] = useState(1)
+  const [verticalScan, setVerticalScan] = useState(0)
+  const [radarAngle, setRadarAngle] = useState(0)
 
+  // KITT horizontal scanner (back and forth)
   useEffect(() => {
     const interval = setInterval(() => {
-      setGlitchOffset(Math.random() * 4 - 2)
-    }, 100)
+      setScanPosition(prev => {
+        const next = prev + (scanDirection * 2)
+        if (next >= 100) {
+          setScanDirection(-1)
+          return 100
+        }
+        if (next <= 0) {
+          setScanDirection(1)
+          return 0
+        }
+        return next
+      })
+    }, 20)
+    return () => clearInterval(interval)
+  }, [scanDirection])
+
+  // Vertical CRT scan
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVerticalScan(prev => (prev >= 100 ? 0 : prev + 1))
+    }, 15)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Radar pulse
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRadarAngle(prev => (prev + 3) % 360)
+    }, 30)
     return () => clearInterval(interval)
   }, [])
 
   return (
-    <div className="absolute inset-0 overflow-hidden opacity-15 pointer-events-none">
-      {/* Cybernetic Eye - Terminator Style */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-        style={{
-          width: '600px',
-          height: '600px',
-          transform: `translate(-50%, -50%) translate(${glitchOffset}px, ${glitchOffset}px)`,
-        }}
-      >
-        {/* Outer Ring - Targeting System */}
-        <svg viewBox="0 0 200 200" className="w-full h-full animate-spin-slow">
-          <circle
-            cx="100"
-            cy="100"
-            r="90"
-            fill="none"
-            stroke="url(#gradient1)"
-            strokeWidth="0.5"
-            strokeDasharray="5 5"
-          />
-          <circle
-            cx="100"
-            cy="100"
-            r="70"
-            fill="none"
-            stroke="url(#gradient1)"
-            strokeWidth="0.3"
-            strokeDasharray="10 5"
-          />
-          <circle
-            cx="100"
-            cy="100"
-            r="50"
-            fill="none"
-            stroke="url(#gradient1)"
-            strokeWidth="0.3"
-          />
+    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25">
+      {/* Main Container */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px]">
 
-          {/* Crosshairs */}
-          <line x1="100" y1="10" x2="100" y2="40" stroke="#00ffff" strokeWidth="1" opacity="0.6" />
-          <line x1="100" y1="160" x2="100" y2="190" stroke="#00ffff" strokeWidth="1" opacity="0.6" />
-          <line x1="10" y1="100" x2="40" y2="100" stroke="#00ffff" strokeWidth="1" opacity="0.6" />
-          <line x1="160" y1="100" x2="190" y2="100" stroke="#00ffff" strokeWidth="1" opacity="0.6" />
-
-          {/* Corner Brackets - RoboCop HUD */}
-          <path d="M 20 20 L 20 40 M 20 20 L 40 20" stroke="#ff00ff" strokeWidth="2" opacity="0.8" />
-          <path d="M 180 20 L 180 40 M 180 20 L 160 20" stroke="#ff00ff" strokeWidth="2" opacity="0.8" />
-          <path d="M 20 180 L 20 160 M 20 180 L 40 180" stroke="#ff00ff" strokeWidth="2" opacity="0.8" />
-          <path d="M 180 180 L 180 160 M 180 180 L 160 180" stroke="#ff00ff" strokeWidth="2" opacity="0.8" />
-
+        {/* Digital Skull - Wireframe Style */}
+        <svg viewBox="0 0 200 200" className="w-full h-full">
           <defs>
-            <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#00ffff" stopOpacity="0.6" />
-              <stop offset="50%" stopColor="#ff00ff" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#00ffff" stopOpacity="0.6" />
+            {/* Magenta gradient */}
+            <linearGradient id="skull-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#ff00ff" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="#ff00ff" stopOpacity="1" />
+              <stop offset="100%" stopColor="#ff00ff" stopOpacity="0.8" />
             </linearGradient>
+
+            {/* Glow filter */}
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
           </defs>
+
+          {/* Skull Outline */}
+          <ellipse cx="100" cy="90" rx="50" ry="60" fill="none" stroke="url(#skull-gradient)" strokeWidth="1.5" filter="url(#glow)" />
+
+          {/* Top of skull - cranium */}
+          <path d="M 60 70 Q 100 50, 140 70" fill="none" stroke="url(#skull-gradient)" strokeWidth="1.5" filter="url(#glow)" />
+          <path d="M 65 80 Q 100 65, 135 80" fill="none" stroke="url(#skull-gradient)" strokeWidth="1" opacity="0.6" />
+
+          {/* Eye Sockets - Hollow and menacing */}
+          <ellipse cx="80" cy="95" rx="12" ry="15" fill="none" stroke="url(#skull-gradient)" strokeWidth="2" filter="url(#glow)" />
+          <ellipse cx="120" cy="95" rx="12" ry="15" fill="none" stroke="url(#skull-gradient)" strokeWidth="2" filter="url(#glow)" />
+
+          {/* Inner eye glow */}
+          <circle cx="80" cy="95" r="6" fill="#ff00ff" opacity="0.4" />
+          <circle cx="120" cy="95" r="6" fill="#ff00ff" opacity="0.4" />
+
+          {/* Nose cavity - triangular */}
+          <path d="M 100 110 L 95 125 L 105 125 Z" fill="none" stroke="url(#skull-gradient)" strokeWidth="1.5" filter="url(#glow)" />
+
+          {/* Cheekbones */}
+          <path d="M 60 105 Q 70 110, 80 110" fill="none" stroke="url(#skull-gradient)" strokeWidth="1" opacity="0.5" />
+          <path d="M 140 105 Q 130 110, 120 110" fill="none" stroke="url(#skull-gradient)" strokeWidth="1" opacity="0.5" />
+
+          {/* Jaw line */}
+          <path d="M 65 130 Q 100 150, 135 130" fill="none" stroke="url(#skull-gradient)" strokeWidth="1.5" filter="url(#glow)" />
+
+          {/* Teeth - segmented */}
+          {[...Array(8)].map((_, i) => {
+            const x = 70 + (i * 7.5)
+            return (
+              <line
+                key={i}
+                x1={x} y1="135"
+                x2={x} y2="145"
+                stroke="url(#skull-gradient)"
+                strokeWidth="1.5"
+                opacity="0.7"
+                filter="url(#glow)"
+              />
+            )
+          })}
+
+          {/* Circuit patterns on skull */}
+          <path d="M 75 75 L 85 75 L 85 85" fill="none" stroke="url(#skull-gradient)" strokeWidth="0.5" opacity="0.4" />
+          <path d="M 125 75 L 115 75 L 115 85" fill="none" stroke="url(#skull-gradient)" strokeWidth="0.5" opacity="0.4" />
+          <circle cx="85" cy="85" r="1.5" fill="#ff00ff" opacity="0.6" />
+          <circle cx="115" cy="85" r="1.5" fill="#ff00ff" opacity="0.6" />
+
+          {/* More circuit details */}
+          <path d="M 60 95 L 50 95 L 50 105" fill="none" stroke="url(#skull-gradient)" strokeWidth="0.5" opacity="0.3" />
+          <path d="M 140 95 L 150 95 L 150 105" fill="none" stroke="url(#skull-gradient)" strokeWidth="0.5" opacity="0.3" />
+
+          {/* Crosshairs overlay */}
+          <line x1="100" y1="50" x2="100" y2="60" stroke="#ff00ff" strokeWidth="1" opacity="0.5" />
+          <line x1="100" y1="140" x2="100" y2="150" stroke="#ff00ff" strokeWidth="1" opacity="0.5" />
+          <line x1="50" y1="100" x2="60" y2="100" stroke="#ff00ff" strokeWidth="1" opacity="0.5" />
+          <line x1="140" y1="100" x2="150" y2="100" stroke="#ff00ff" strokeWidth="1" opacity="0.5" />
         </svg>
 
-        {/* Center Eye - Red like Terminator */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div
-            className="w-32 h-32 rounded-full relative"
-            style={{
-              background: 'radial-gradient(circle at 35% 35%, #ff0000, #990000)',
-              boxShadow: `
-                0 0 40px rgba(255, 0, 0, 0.8),
-                0 0 80px rgba(255, 0, 0, 0.4),
-                inset 0 0 40px rgba(255, 0, 0, 0.6)
-              `,
-            }}
-          >
-            {/* Pupil */}
-            <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black"
-              style={{
-                boxShadow: '0 0 20px rgba(0, 0, 0, 0.9), inset 0 0 10px rgba(255, 0, 0, 0.5)'
-              }}
-            />
+        {/* KITT HORIZONTAL SCANNER - Sweeps back and forth */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 h-1 w-full"
+          style={{
+            background: `linear-gradient(90deg,
+              transparent ${Math.max(0, scanPosition - 10)}%,
+              rgba(255, 0, 255, 0) ${Math.max(0, scanPosition - 5)}%,
+              rgba(255, 0, 255, 0.4) ${scanPosition - 2}%,
+              rgba(255, 0, 255, 1) ${scanPosition}%,
+              rgba(255, 0, 255, 0.4) ${scanPosition + 2}%,
+              rgba(255, 0, 255, 0) ${Math.min(100, scanPosition + 5)}%,
+              transparent ${Math.min(100, scanPosition + 10)}%
+            )`,
+            boxShadow: `0 0 20px rgba(255, 0, 255, 0.8)`
+          }}
+        />
 
-            {/* Scanning Line */}
-            <div
-              className="absolute inset-0 rounded-full overflow-hidden"
-              style={{
-                background: `linear-gradient(180deg,
-                  transparent 0%,
-                  transparent 30%,
-                  rgba(255, 0, 0, 0.8) 50%,
-                  transparent 70%,
-                  transparent 100%
-                )`,
-                animation: 'scan-vertical 2s linear infinite'
-              }}
-            />
-          </div>
+        {/* VERTICAL CRT SCAN - Top to bottom */}
+        <div
+          className="absolute left-0 w-full h-0.5"
+          style={{
+            top: `${verticalScan}%`,
+            background: 'linear-gradient(180deg, transparent, rgba(255, 0, 255, 0.6), transparent)',
+            boxShadow: '0 0 15px rgba(255, 0, 255, 0.6)'
+          }}
+        />
+
+        {/* RADAR PULSE - Rotating sweep */}
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full"
+          style={{
+            transform: `translate(-50%, -50%) rotate(${radarAngle}deg)`,
+            transformOrigin: 'center'
+          }}
+        >
+          <div
+            className="absolute top-1/2 left-1/2 w-full h-0.5 origin-left"
+            style={{
+              background: 'linear-gradient(90deg, rgba(255, 0, 255, 0.8), transparent)',
+              boxShadow: '0 0 10px rgba(255, 0, 255, 0.6)'
+            }}
+          />
         </div>
+
+        {/* Radar rings */}
+        <svg viewBox="0 0 200 200" className="absolute inset-0 w-full h-full">
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#ff00ff" strokeWidth="0.5" opacity="0.2" strokeDasharray="5 5" />
+          <circle cx="100" cy="100" r="60" fill="none" stroke="#ff00ff" strokeWidth="0.5" opacity="0.3" strokeDasharray="5 5" />
+          <circle cx="100" cy="100" r="40" fill="none" stroke="#ff00ff" strokeWidth="0.5" opacity="0.4" strokeDasharray="5 5" />
+        </svg>
       </div>
 
-      {/* Binary Code Rain - Matrix/Cyborg Style */}
-      <div className="absolute inset-0 overflow-hidden opacity-30">
-        {[...Array(20)].map((_, i) => (
+      {/* Binary code rain in background */}
+      <div className="absolute inset-0 overflow-hidden opacity-20">
+        {[...Array(15)].map((_, i) => (
           <div
             key={i}
-            className="absolute text-neon-cyan font-mono text-xs"
+            className="absolute text-neon-magenta font-mono text-xs leading-tight"
             style={{
-              left: `${i * 5}%`,
-              top: '-20px',
-              animation: `matrix-fall ${3 + Math.random() * 3}s linear infinite`,
+              left: `${i * 6.66}%`,
+              top: '-50px',
+              animation: `binary-fall ${4 + Math.random() * 3}s linear infinite`,
               animationDelay: `${Math.random() * 3}s`,
-              opacity: 0.3,
             }}
           >
-            {Array.from({ length: 15 }, () =>
-              Math.random() > 0.5 ? '1' : '0'
-            ).join('\n')}
+            {Array.from({ length: 20 }, () => Math.random() > 0.5 ? '1' : '0').join('\n')}
           </div>
         ))}
       </div>
 
-      {/* Glitch Text - "SYNTH ONLINE" */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 font-mono text-4xl font-bold">
+      {/* "SYNTH ONLINE" glitching text */}
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 font-mono text-3xl font-bold">
         <div
-          className="relative"
           style={{
-            color: '#00ffff',
+            color: '#ff00ff',
             textShadow: `
-              -2px 0 #ff00ff,
-              2px 0 #00ff00,
-              0 0 20px #00ffff
+              -1px 0 #00ffff,
+              1px 0 #ff00ff,
+              0 0 20px #ff00ff
             `,
-            animation: 'glitch-text 5s infinite'
+            animation: 'text-glitch 6s infinite'
           }}
         >
           SYNTH ONLINE
@@ -152,40 +214,19 @@ export default function SynthBackground() {
       </div>
 
       <style jsx>{`
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        @keyframes scan-vertical {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(100%); }
-        }
-
-        @keyframes matrix-fall {
+        @keyframes binary-fall {
           0% { transform: translateY(0); opacity: 0; }
           10% { opacity: 0.3; }
           90% { opacity: 0.3; }
           100% { transform: translateY(100vh); opacity: 0; }
         }
 
-        @keyframes glitch-text {
-          0%, 90%, 100% {
-            transform: translate(0);
-            filter: brightness(1);
-          }
-          92% {
-            transform: translate(-2px, 2px);
-            filter: brightness(1.5);
-          }
-          94% {
-            transform: translate(2px, -2px);
-            filter: brightness(0.8);
-          }
-          96% {
-            transform: translate(-1px, 1px);
-            filter: brightness(1.2);
-          }
+        @keyframes text-glitch {
+          0%, 90%, 100% { transform: translate(0); filter: brightness(1); }
+          91% { transform: translate(-3px, 2px); filter: brightness(1.5); }
+          93% { transform: translate(3px, -2px); filter: brightness(0.7); }
+          95% { transform: translate(-2px, 1px); filter: brightness(1.3); }
+          97% { transform: translate(1px, -1px); filter: brightness(0.9); }
         }
       `}</style>
     </div>

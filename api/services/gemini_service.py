@@ -20,9 +20,9 @@ class GeminiService:
 
         genai.configure(api_key=api_key)
 
-        # Simple initialization - SDK 0.7.2 supports gemini-1.5-flash
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
-        print(f"✅ SYNTH initialized with gemini-1.5-flash (SDK 0.7.2)")
+        # Use gemini-pro (older but stable, works with all SDK versions)
+        self.model = genai.GenerativeModel('gemini-pro')
+        print(f"✅ SYNTH initialized with gemini-pro")
 
     def generate_summary(self, title: str, content: str) -> str:
         """
