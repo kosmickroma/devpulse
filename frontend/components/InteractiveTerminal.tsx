@@ -174,7 +174,6 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       { id: '7', text: '> ', type: 'output' as const, timestamp: Date.now() + 1800 },
       { id: '8', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 2100 },
       { id: '9', text: '> ', type: 'output' as const, timestamp: Date.now() + 2400 },
-      { id: '10', text: '> Auto-scan initiating...', type: 'output' as const, timestamp: Date.now() + 2700 },
     ]
 
     bootLines.forEach((line, index) => {
@@ -184,10 +183,10 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       }, line.timestamp - Date.now())
     })
 
-    // Trigger auto-scan after boot completes
+    // Trigger cache check after boot completes
     setTimeout(() => {
       setHasAutoScanned(true)
-    }, 2500)
+    }, 2200)
   }, [isSystemReady])
 
   // Play sound helper

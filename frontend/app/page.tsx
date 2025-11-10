@@ -126,7 +126,7 @@ export default function Home() {
         {isFromCache && lastUpdated && (
           <div className="text-center py-2 mb-4">
             <span className="text-xs text-neon-cyan/60 font-mono">
-              📦 Showing cached results from today • Last updated: {lastUpdated.toLocaleTimeString()}
+              📦 Showing cached results from today
             </span>
           </div>
         )}
