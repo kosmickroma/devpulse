@@ -11,6 +11,8 @@ const AVAILABLE_SOURCES = [
   { id: 'github', label: 'GitHub', icon: '💻', description: 'Trending repositories and code' },
   { id: 'hackernews', label: 'Hacker News', icon: '🔶', description: 'Tech news and discussions' },
   { id: 'devto', label: 'Dev.to', icon: '✍️', description: 'Developer articles and tutorials' },
+  { id: 'stocks', label: 'Stocks', icon: '📈', description: 'Trending stocks and market movers' },
+  { id: 'crypto', label: 'Crypto', icon: '₿', description: 'Trending cryptocurrencies' },
 ]
 
 export default function SettingsPage() {
@@ -18,7 +20,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto'])
+  const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto', 'stocks', 'crypto'])
   const [saveSuccess, setSaveSuccess] = useState(false)
 
   useEffect(() => {
@@ -155,11 +157,12 @@ export default function SettingsPage() {
         <div className="border-2 border-gray-600/30 rounded-lg p-6 opacity-50">
           <h2 className="text-2xl font-bold text-gray-500 mb-4">🔮 Coming Soon</h2>
           <ul className="space-y-2 text-gray-500 font-mono text-sm">
-            <li>• Financial News (Stocks, Crypto)</li>
-            <li>• Gaming News (IGN, GameSpot)</li>
+            <li>• Gaming News (IGN, GameSpot, Polygon)</li>
             <li>• Space News (NASA, SpaceX)</li>
+            <li>• Reddit Integration</li>
             <li>• SYNTH Personality Settings</li>
             <li>• Audio Effects Toggle</li>
+            <li>• Custom Widget Dashboard</li>
           </ul>
         </div>
       </div>

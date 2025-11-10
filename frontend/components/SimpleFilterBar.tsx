@@ -11,6 +11,8 @@ const AVAILABLE_SOURCES = [
   { id: 'github', label: 'GITHUB', color: 'cyan' },
   { id: 'hackernews', label: 'HACKER NEWS', color: 'magenta' },
   { id: 'devto', label: 'DEV.TO', color: 'green' },
+  { id: 'stocks', label: 'STOCKS', color: 'cyan' },
+  { id: 'crypto', label: 'CRYPTO', color: 'magenta' },
 ]
 
 export default function SimpleFilterBar({ onSourcesChange, initialSources }: SimpleFilterBarProps) {

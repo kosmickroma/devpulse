@@ -108,7 +108,7 @@ export async function loadUserPreferences() {
 
     if (!user) {
       return {
-        selectedSources: ['github', 'hackernews', 'devto'],
+        selectedSources: ['github', 'hackernews', 'devto', 'stocks', 'crypto'],
         synthPersonality: 'default',
         autoScanEnabled: true,
         audioEnabled: false
@@ -124,7 +124,7 @@ export async function loadUserPreferences() {
     if (error || !data) {
       // Return defaults
       return {
-        selectedSources: ['github', 'hackernews', 'devto'],
+        selectedSources: ['github', 'hackernews', 'devto', 'stocks', 'crypto'],
         synthPersonality: 'default',
         autoScanEnabled: true,
         audioEnabled: false
@@ -132,7 +132,7 @@ export async function loadUserPreferences() {
     }
 
     return {
-      selectedSources: data.selected_sources || ['github', 'hackernews', 'devto'],
+      selectedSources: data.selected_sources || ['github', 'hackernews', 'devto', 'stocks', 'crypto'],
       synthPersonality: data.synth_personality || 'default',
       autoScanEnabled: data.auto_scan_enabled ?? true,
       audioEnabled: data.audio_enabled ?? false
@@ -140,7 +140,7 @@ export async function loadUserPreferences() {
   } catch (err) {
     console.warn('Failed to load user preferences (non-critical):', err)
     return {
-      selectedSources: ['github', 'hackernews', 'devto'],
+      selectedSources: ['github', 'hackernews', 'devto', 'stocks', 'crypto'],
       synthPersonality: 'default',
       autoScanEnabled: true,
       audioEnabled: false

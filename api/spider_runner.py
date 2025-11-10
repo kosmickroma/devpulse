@@ -60,6 +60,14 @@ class SpiderRunner:
                 cmd.extend(["-a", f"time_range={time_range}"])
             elif spider_name == "hackernews":
                 cmd.extend(["-a", "page_limit=1"])
+            elif spider_name == "yahoo_finance":
+                # Default to trending, can be: trending, gainers, losers, most_active
+                category = "trending"
+                cmd.extend(["-a", f"category={category}"])
+            elif spider_name == "coingecko":
+                # Default to trending, can be: trending, top, gainers, losers
+                category = "trending"
+                cmd.extend(["-a", f"category={category}"])
 
             # Send connection status
             yield {
@@ -146,6 +154,8 @@ class SpiderRunner:
         names = {
             "github_api": "GitHub",
             "hackernews": "Hacker News",
-            "devto": "Dev.to"
+            "devto": "Dev.to",
+            "yahoo_finance": "Yahoo Finance",
+            "coingecko": "CoinGecko"
         }
         return names.get(spider_name, spider_name)

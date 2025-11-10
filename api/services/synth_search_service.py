@@ -22,7 +22,9 @@ class SynthSearchService:
         self.source_keywords = {
             'github': ['github', 'repo', 'repository', 'code', 'project', 'open source', 'opensource'],
             'hackernews': ['hackernews', 'hn', 'hacker news', 'discussion', 'tech news'],
-            'devto': ['dev.to', 'devto', 'article', 'tutorial', 'blog post']
+            'devto': ['dev.to', 'devto', 'article', 'tutorial', 'blog post'],
+            'stocks': ['stocks', 'stock', 'equity', 'shares', 'nasdaq', 'nyse', 's&p', 'dow'],
+            'crypto': ['crypto', 'cryptocurrency', 'bitcoin', 'ethereum', 'coin', 'token', 'blockchain']
         }
 
         # Programming language keywords
@@ -52,7 +54,7 @@ class SynthSearchService:
 
         # If no source specified, search all
         if not detected_sources:
-            detected_sources = ['github', 'hackernews', 'devto']
+            detected_sources = ['github', 'hackernews', 'devto', 'stocks', 'crypto']
 
         # Detect programming language
         detected_language = None
@@ -142,7 +144,9 @@ class SynthSearchService:
         spider_map = {
             'github': 'github_api',
             'hackernews': 'hackernews',
-            'devto': 'devto'
+            'devto': 'devto',
+            'stocks': 'yahoo_finance',
+            'crypto': 'coingecko'
         }
         return spider_map.get(source)
 
