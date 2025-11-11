@@ -60,6 +60,14 @@ class SpiderRunner:
                 cmd.extend(["-a", f"time_range={time_range}"])
             elif spider_name == "hackernews":
                 cmd.extend(["-a", "page_limit=1"])
+            elif spider_name == "reddit_api":
+                # Default subreddits for hot posts
+                subreddits = "programming,python,machinelearning"
+                limit = "50"
+                cmd.extend(["-a", f"subreddits_list={subreddits}"])
+                cmd.extend(["-a", f"limit={limit}"])
+                if search_query:
+                    cmd.extend(["-a", f"query={search_query}"])
             elif spider_name == "yahoo_finance":
                 # Default to trending, can be: trending, gainers, losers, most_active
                 category = "trending"
@@ -155,6 +163,7 @@ class SpiderRunner:
             "github_api": "GitHub",
             "hackernews": "Hacker News",
             "devto": "Dev.to",
+            "reddit_api": "Reddit",
             "yahoo_finance": "Yahoo Finance",
             "coingecko": "CoinGecko"
         }

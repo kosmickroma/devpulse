@@ -63,7 +63,7 @@ async def scan_stream(
     Scan platforms and stream results in real-time using Server-Sent Events.
 
     Args:
-        sources: Comma-separated list (github, hackernews, devto, stocks, crypto) or "all"
+        sources: Comma-separated list (github, hackernews, devto, reddit, stocks, crypto) or "all"
         platform: Legacy parameter (same as sources)
         language: Programming language filter (GitHub only)
         time_range: daily, weekly, or monthly
@@ -83,13 +83,14 @@ async def scan_stream(
             'github': 'github_api',
             'hackernews': 'hackernews',
             'devto': 'devto',
+            'reddit': 'reddit_api',
             'stocks': 'yahoo_finance',
             'crypto': 'coingecko'
         }
 
         # Determine which spiders to run
         if source_param == "all":
-            spiders = ["github_api", "hackernews", "devto", "yahoo_finance", "coingecko"]
+            spiders = ["github_api", "hackernews", "devto", "reddit_api", "yahoo_finance", "coingecko"]
         else:
             # Handle comma-separated list
             source_list = [s.strip() for s in source_param.split(',')]
@@ -160,6 +161,12 @@ async def list_spiders():
                 "supports_time_range": True
             },
             {
+                "name": "reddit_api",
+                "display": "Reddit",
+                "supports_language": False,
+                "supports_time_range": False
+            },
+            {
                 "name": "yahoo_finance",
                 "display": "Stocks",
                 "supports_language": False,
@@ -180,7 +187,7 @@ async def health_check():
     """Detailed health check."""
     return {
         "status": "healthy",
-        "spiders_available": 5,
+        "spiders_available": 6,
         "ai_enabled": True,
         "api_version": "2.0.0"
     }
