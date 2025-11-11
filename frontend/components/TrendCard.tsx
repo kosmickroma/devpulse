@@ -45,10 +45,26 @@ const sourceColors = {
     shadow: 'shadow-neon-pink',
     icon: '👽',
   },
+  stocks: {
+    bg: 'bg-green-500/10',
+    border: 'border-green-500',
+    text: 'text-green-500',
+    shadow: 'shadow-green-500',
+    icon: '📈',
+  },
+  crypto: {
+    bg: 'bg-yellow-500/10',
+    border: 'border-yellow-500',
+    text: 'text-yellow-500',
+    shadow: 'shadow-yellow-500',
+    icon: '₿',
+  },
 }
 
 export default function TrendCard({ trend, index }: TrendCardProps) {
-  const colors = sourceColors[trend.source]
+  // Extract base source (handle 'reddit/programming' format)
+  const baseSource = trend.source.split('/')[0]
+  const colors = sourceColors[baseSource] || sourceColors.github // Fallback to github colors
   const momentum = trend.momentum || 'low'
   const momentumColors = {
     high: 'text-neon-magenta',
