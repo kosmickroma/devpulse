@@ -5,9 +5,14 @@
 import { Layout } from 'react-grid-layout'
 
 export type WidgetType =
+  | 'command'        // Compact command widget
+  | 'terminal'       // Interactive terminal
+  | 'trends'         // Trending feed (GitHub, HN, Dev.to)
   | 'feed'           // Main trending feed (GitHub, HN, Dev.to)
-  | 'stock_ticker'   // Stock market ticker
-  | 'crypto_ticker'  // Cryptocurrency ticker
+  | 'stock-ticker'   // Stock market ticker
+  | 'crypto-ticker'  // Cryptocurrency ticker
+  | 'stock_ticker'   // Stock market ticker (legacy)
+  | 'crypto_ticker'  // Cryptocurrency ticker (legacy)
   | 'synth_chat'     // SYNTH AI chat
   | 'news'           // News aggregator
 
@@ -16,9 +21,10 @@ export type WidgetViewMode = 'compact' | 'card' | 'fullscreen'
 export interface WidgetConfig {
   id: string
   type: WidgetType
-  title: string
-  viewMode: WidgetViewMode
+  title?: string
+  viewMode?: WidgetViewMode
   settings: Record<string, any> // Widget-specific settings
+  layout: Layout // Position and size in grid
 }
 
 export interface StockTickerSettings {
