@@ -63,7 +63,7 @@ const sourceColors = {
 
 export default function TrendCard({ trend, index }: TrendCardProps) {
   // Extract base source (handle 'reddit/programming' format)
-  const baseSource = trend.source.split('/')[0]
+  const baseSource = trend.source.split('/')[0] as keyof typeof sourceColors
   const colors = sourceColors[baseSource] || sourceColors.github // Fallback to github colors
   const momentum = trend.momentum || 'low'
   const momentumColors = {
