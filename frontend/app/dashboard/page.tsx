@@ -14,24 +14,22 @@ export default function DashboardPage() {
     {
       id: 'stock-1',
       type: 'stock_ticker',
-      title: 'Stock Tracker',
-      viewMode: 'card',
       settings: {
         tickers: ['AAPL', 'TSLA', 'NVDA'],
         showTrending: true,
         refreshInterval: 30
-      } as StockTickerSettings
+      } as StockTickerSettings,
+      layout: { x: 0, y: 0, w: 6, h: 4 }
     },
     {
       id: 'crypto-1',
       type: 'crypto_ticker',
-      title: 'Crypto Tracker',
-      viewMode: 'card',
       settings: {
         coins: ['bitcoin', 'ethereum', 'solana'],
         showTrending: true,
         refreshInterval: 30
-      } as CryptoTickerSettings
+      } as CryptoTickerSettings,
+      layout: { x: 6, y: 0, w: 6, h: 4 }
     }
   ])
 
