@@ -172,21 +172,21 @@ export default function WorkspaceGrid({
 
     switch (widget.type) {
       case 'command':
-        return <CommandWidget {...commonProps} settings={widget.settings} />
+        return <CommandWidget {...commonProps} settings={widget.settings as any} />
 
       case 'terminal':
-        return <TerminalWidget {...commonProps} settings={widget.settings} />
+        return <TerminalWidget {...commonProps} settings={widget.settings as any} />
 
       case 'trends':
-        return <TrendsWidget {...commonProps} settings={widget.settings} />
+        return <TrendsWidget {...commonProps} settings={widget.settings as any} />
 
       case 'stock-ticker':
       case 'stock_ticker':
-        return <StockTickerWidget {...commonProps} settings={widget.settings} />
+        return <StockTickerWidget {...commonProps} settings={widget.settings as any} />
 
       case 'crypto-ticker':
       case 'crypto_ticker':
-        return <CryptoTickerWidget {...commonProps} settings={widget.settings} />
+        return <CryptoTickerWidget {...commonProps} settings={widget.settings as any} />
 
       default:
         return (
