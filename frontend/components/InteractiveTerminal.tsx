@@ -516,6 +516,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         addLine('    "show me python tutorials"', 'output')
         addLine('    "grab some rust projects"', 'output')
         addLine('  ', 'output')
+        addLine('  command center / cc - Enter Command Center workspace', 'output')
         addLine('  clear - Clear terminal', 'output')
         addLine('  help - Show this help message', 'output')
         break
@@ -616,6 +617,19 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         addLine('║                                              ║', 'output')
         addLine('║ LIMITS: 50 queries/day (sign in required)   ║', 'output')
         addLine('╚══════════════════════════════════════════════╝', 'output')
+        break
+
+      case 'command-center':
+      case 'command':
+      case 'cc':
+      case 'workspace':
+        playBeep()
+        addLine('', 'output')
+        addLine('> ENTERING COMMAND CENTER...', 'success')
+        addLine('> Initializing workspace...', 'output')
+        setTimeout(() => {
+          window.location.href = '/workspace'
+        }, 800)
         break
 
       case '':

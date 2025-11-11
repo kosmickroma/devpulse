@@ -60,7 +60,7 @@ export default function CryptoTickerWidget({
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-      const response = await fetch(`${API_URL}/api/scan?sources=crypto`, {
+      const response = await fetch(`${API_URL}/api/scan?sources=coingecko`, {
         method: 'GET',
         headers: {
           'Accept': 'text/event-stream',
@@ -89,7 +89,7 @@ export default function CryptoTickerWidget({
             if (line.startsWith('data: ')) {
               try {
                 const event = JSON.parse(line.slice(6))
-                if (event.type === 'item' && event.data.source === 'crypto') {
+                if (event.type === 'item' && event.data.source === 'coingecko') {
                   const item = event.data
                   // Parse crypto data from spider format
                   const priceMatch = item.description?.match(/\$([0-9,.]+)/)

@@ -47,7 +47,7 @@ export default function StockTickerWidget({
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
       // Fetch trending stocks from backend
-      const response = await fetch(`${API_URL}/api/scan?sources=stocks`, {
+      const response = await fetch(`${API_URL}/api/scan?sources=yahoo_finance`, {
         method: 'GET',
         headers: {
           'Accept': 'text/event-stream',
@@ -76,7 +76,7 @@ export default function StockTickerWidget({
             if (line.startsWith('data: ')) {
               try {
                 const event = JSON.parse(line.slice(6))
-                if (event.type === 'item' && event.data.source === 'stocks') {
+                if (event.type === 'item' && event.data.source === 'yahoo_finance') {
                   const item = event.data
                   // Parse stock data from spider format
                   const priceMatch = item.description?.match(/\$([0-9,.]+)/)
