@@ -54,13 +54,13 @@ export default function WorkspacePage() {
         id: 'command-1',
         type: 'command',
         settings: {},
-        layout: { x: 0, y: 0, w: 4, h: 6 }
+        layout: { i: 'command-1', x: 0, y: 0, w: 4, h: 6 }
       },
       {
         id: 'trends-1',
         type: 'trends',
         settings: {},
-        layout: { x: 4, y: 0, w: 8, h: 8 }
+        layout: { i: 'trends-1', x: 4, y: 0, w: 8, h: 8 }
       }
     ]
     setWidgets(defaultWidgets)
@@ -73,11 +73,12 @@ export default function WorkspacePage() {
   }
 
   const handleAddWidget = (type: string) => {
+    const widgetId = `${type}-${Date.now()}`
     const newWidget: WidgetConfig = {
-      id: `${type}-${Date.now()}`,
+      id: widgetId,
       type: type as any,
       settings: {},
-      layout: { x: 0, y: 0, w: 4, h: 6 }
+      layout: { i: widgetId, x: 0, y: 0, w: 4, h: 6 }
     }
     const updatedWidgets = [...widgets, newWidget]
     setWidgets(updatedWidgets)
