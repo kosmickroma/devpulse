@@ -193,6 +193,38 @@ async def health_check():
     }
 
 
+@app.get("/api/debug/env")
+async def check_environment():
+    """
+    Debug endpoint: Check environment variable status (for troubleshooting).
+    Returns which env vars are set without exposing actual values.
+    """
+    import os
+
+    env_vars = {
+        # Reddit credentials
+        "REDDIT_CLIENT_ID": "SET" if os.getenv('REDDIT_CLIENT_ID') else "MISSING",
+        "REDDIT_CLIENT_SECRET": "SET" if os.getenv('REDDIT_CLIENT_SECRET') else "MISSING",
+        "REDDIT_USERNAME": "SET" if os.getenv('REDDIT_USERNAME') else "MISSING",
+        "REDDIT_PASSWORD": "SET" if os.getenv('REDDIT_PASSWORD') else "MISSING",
+
+        # Other potential env vars
+        "GITHUB_TOKEN": "SET" if os.getenv('GITHUB_TOKEN') else "MISSING",
+    }
+
+    # Count how many are set
+    set_count = sum(1 for v in env_vars.values() if v == "SET")
+    total_count = len(env_vars)
+
+    return {
+        "environment_variables": env_vars,
+        "summary": f"{set_count}/{total_count} credentials configured",
+        "reddit_ready": all(
+            os.getenv(var) for var in ['REDDIT_CLIENT_ID', 'REDDIT_CLIENT_SECRET', 'REDDIT_USERNAME', 'REDDIT_PASSWORD']
+        )
+    }
+
+
 # Include SYNTH AI routers
 app.include_router(summarize.router, prefix='/api/ai', tags=['synth-ai'])
 app.include_router(ask.router, prefix='/api/ai', tags=['synth-ai'])

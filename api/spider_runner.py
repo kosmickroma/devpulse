@@ -99,17 +99,34 @@ class SpiderRunner:
                 "message": f"Scanning {self._get_display_name(spider_name)}..."
             }
 
-            # Wait for process to complete
-            await process.wait()
+            # Wait for process to complete and capture output
+            stdout, stderr = await process.communicate()
+
+            # Log stderr for debugging
+            if stderr:
+                stderr_text = stderr.decode('utf-8', errors='replace')
+                print(f"[{spider_name}] STDERR:", stderr_text)
+
+                # Send error info if spider failed
+                if process.returncode != 0:
+                    yield {
+                        "type": "error",
+                        "spider": spider_name,
+                        "message": f"Spider failed with exit code {process.returncode}",
+                        "details": stderr_text[-500:]  # Last 500 chars of error
+                    }
 
             # Read results from temporary file
             tmp_file = Path(tmp_path)
+            item_count = 0
+
             if tmp_file.exists() and tmp_file.stat().st_size > 0:
                 with open(tmp_path, 'r', encoding='utf-8') as f:
                     for line_num, line in enumerate(f, 1):
                         if line.strip():
                             try:
                                 item = json.loads(line)
+                                item_count += 1
                                 # Convert to frontend format
                                 yield {
                                     "type": "item",
@@ -119,6 +136,20 @@ class SpiderRunner:
                                 }
                             except json.JSONDecodeError:
                                 continue
+
+            # Log warning if no items were found
+            if item_count == 0:
+                print(f"[{spider_name}] WARNING: Spider completed but found 0 items!")
+                print(f"[{spider_name}] Exit code: {process.returncode}")
+                print(f"[{spider_name}] Temp file exists: {tmp_file.exists()}")
+                print(f"[{spider_name}] Temp file size: {tmp_file.stat().st_size if tmp_file.exists() else 0} bytes")
+
+                # Send warning to frontend
+                yield {
+                    "type": "warning",
+                    "spider": spider_name,
+                    "message": f"No items found for {self._get_display_name(spider_name)}"
+                }
 
             # Clean up temp file
             tmp_file.unlink(missing_ok=True)
