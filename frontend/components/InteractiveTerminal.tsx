@@ -170,12 +170,13 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       { id: '3', text: '> [✓] GitHub API: ONLINE', type: 'success' as const, timestamp: Date.now() + 600 },
       { id: '4', text: '> [✓] Hacker News: ONLINE', type: 'success' as const, timestamp: Date.now() + 900 },
       { id: '5', text: '> [✓] Dev.to: ONLINE', type: 'success' as const, timestamp: Date.now() + 1200 },
-      { id: '6', text: '> [✓] Yahoo Finance: ONLINE', type: 'success' as const, timestamp: Date.now() + 1500 },
-      { id: '7', text: '> [✓] CoinGecko: ONLINE', type: 'success' as const, timestamp: Date.now() + 1800 },
-      { id: '8', text: '> [✓] SYNTH AI: READY', type: 'success' as const, timestamp: Date.now() + 2100 },
-      { id: '9', text: '> ', type: 'output' as const, timestamp: Date.now() + 2400 },
-      { id: '10', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 2700 },
-      { id: '11', text: '> ', type: 'output' as const, timestamp: Date.now() + 3000 },
+      { id: '6', text: '> [✓] Reddit API: ONLINE', type: 'success' as const, timestamp: Date.now() + 1500 },
+      { id: '7', text: '> [✓] Yahoo Finance: ONLINE', type: 'success' as const, timestamp: Date.now() + 1800 },
+      { id: '8', text: '> [✓] CoinGecko: ONLINE', type: 'success' as const, timestamp: Date.now() + 2100 },
+      { id: '9', text: '> [✓] SYNTH AI: READY', type: 'success' as const, timestamp: Date.now() + 2400 },
+      { id: '10', text: '> ', type: 'output' as const, timestamp: Date.now() + 2700 },
+      { id: '11', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 3000 },
+      { id: '12', text: '> ', type: 'output' as const, timestamp: Date.now() + 3300 },
     ]
 
     bootLines.forEach((line, index) => {
@@ -613,7 +614,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         addLine('║   Type "synth mode" for continuous chat      ║', 'output')
         addLine('║                                              ║', 'output')
         addLine('║ SYNTH is your chill 80s AI powered by        ║', 'output')
-        addLine('║ Google Gemini. Searches GitHub, HN, Dev.to   ║', 'output')
+        addLine('║ Google Gemini. Searches GitHub, Reddit, etc  ║', 'output')
         addLine('║                                              ║', 'output')
         addLine('║ LIMITS: 50 queries/day (sign in required)   ║', 'output')
         addLine('╚══════════════════════════════════════════════╝', 'output')

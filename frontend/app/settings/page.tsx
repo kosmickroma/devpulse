@@ -11,6 +11,7 @@ const AVAILABLE_SOURCES = [
   { id: 'github', label: 'GitHub', icon: '💻', description: 'Trending repositories and code' },
   { id: 'hackernews', label: 'Hacker News', icon: '🔶', description: 'Tech news and discussions' },
   { id: 'devto', label: 'Dev.to', icon: '✍️', description: 'Developer articles and tutorials' },
+  { id: 'reddit', label: 'Reddit', icon: '🤖', description: 'Discussions and posts from subreddits' },
   { id: 'stocks', label: 'Stocks', icon: '📈', description: 'Trending stocks and market movers' },
   { id: 'crypto', label: 'Crypto', icon: '₿', description: 'Trending cryptocurrencies' },
 ]
@@ -20,7 +21,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto', 'stocks', 'crypto'])
+  const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto'])
   const [saveSuccess, setSaveSuccess] = useState(false)
 
   useEffect(() => {
@@ -159,7 +160,7 @@ export default function SettingsPage() {
           <ul className="space-y-2 text-gray-500 font-mono text-sm">
             <li>• Gaming News (IGN, GameSpot, Polygon)</li>
             <li>• Space News (NASA, SpaceX)</li>
-            <li>• Reddit Integration</li>
+            <li>• Detailed Reddit Subreddit Configuration</li>
             <li>• SYNTH Personality Settings</li>
             <li>• Audio Effects Toggle</li>
             <li>• Custom Widget Dashboard</li>

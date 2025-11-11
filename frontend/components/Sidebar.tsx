@@ -171,6 +171,10 @@ export default function Sidebar({
               {settingsExpanded && (
                 <div className="mt-3 space-y-2">
                   <button
+                    onClick={() => {
+                      router.push('/settings')
+                      onClose()
+                    }}
                     className="w-full text-left px-3 py-2 rounded font-mono text-sm bg-dark-bg/50 text-gray-300 border-2 border-gray-700 hover:border-neon-cyan hover:text-neon-cyan transition-all"
                   >
                     Preferences
