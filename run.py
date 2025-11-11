@@ -17,7 +17,7 @@ from typing import List
 class DevPulseCLI:
     """CLI wrapper for DevPulse spiders."""
 
-    AVAILABLE_SPIDERS = ['github_api', 'hackernews', 'devto']
+    AVAILABLE_SPIDERS = ['github_api', 'hackernews', 'devto', 'reddit_api']
 
     def __init__(self):
         """Initialize the CLI."""
@@ -64,6 +64,19 @@ class DevPulseCLI:
             cmd.extend(['-a', f'time_range={time_range}'])
             if tag:
                 cmd.extend(['-a', f'tag={tag}'])
+
+        elif spider_name == 'reddit_api':
+            subreddits = kwargs.get('subreddits', 'programming')
+            limit = kwargs.get('limit', 50)
+            query = kwargs.get('query', '')
+            print(f"    Subreddits: {subreddits}")
+            print(f"    Limit: {limit}")
+            if query:
+                print(f"    Query (Synth Mode): {query}")
+            cmd.extend(['-a', f'subreddits_list={subreddits}'])
+            cmd.extend(['-a', f'limit={limit}'])
+            if query:
+                cmd.extend(['-a', f'query={query}'])
 
         try:
             result = subprocess.run(
@@ -193,6 +206,12 @@ Examples:
 
   Dev.to with specific tag:
     python run.py --spider devto --tag python
+
+  Reddit Standard Mode (hot posts from saved subreddits):
+    python run.py --spider reddit_api --subreddits python,machinelearning --limit 50
+
+  Reddit Synth Mode (AI-powered custom search):
+    python run.py --spider reddit_api --subreddits python,machinelearning --query "LLM" --limit 25
             '''
         )
 
@@ -236,6 +255,25 @@ Examples:
         )
 
         parser.add_argument(
+            '--subreddits',
+            default='programming',
+            help='Comma-separated subreddits for Reddit (e.g., python,machinelearning)'
+        )
+
+        parser.add_argument(
+            '--limit',
+            type=int,
+            default=50,
+            help='Number of posts per subreddit for Reddit (default: 50)'
+        )
+
+        parser.add_argument(
+            '--query',
+            default='',
+            help='Search query for Reddit Synth Mode (e.g., "LLM", "arcade games")'
+        )
+
+        parser.add_argument(
             '--no-summary',
             action='store_true',
             help='Skip summary statistics'
@@ -254,7 +292,10 @@ Examples:
             'time_range': args.time_range,
             'language': args.language,
             'tag': args.tag,
-            'page_limit': args.pages
+            'page_limit': args.pages,
+            'subreddits': args.subreddits,
+            'limit': args.limit,
+            'query': args.query
         }
 
         # Run spiders
