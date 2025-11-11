@@ -44,9 +44,13 @@ class TrendingItem(BaseModel):
     @classmethod
     def validate_source(cls, v: str) -> str:
         """Ensure source is one of the supported platforms."""
-        allowed_sources = {'github', 'hackernews', 'devto'}
-        if v.lower() not in allowed_sources:
-            raise ValueError(f'Source must be one of {allowed_sources}')
+        allowed_sources = {'github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto'}
+
+        # Extract base source (handle 'reddit/subreddit' format)
+        base_source = v.lower().split('/')[0]
+
+        if base_source not in allowed_sources:
+            raise ValueError(f'Source must start with one of {allowed_sources}')
         return v.lower()
 
     @field_validator('url')
