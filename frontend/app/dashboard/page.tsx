@@ -19,7 +19,7 @@ export default function DashboardPage() {
         showTrending: true,
         refreshInterval: 30
       } as StockTickerSettings,
-      layout: { x: 0, y: 0, w: 6, h: 4 }
+      layout: { i: 'stock-1', x: 0, y: 0, w: 6, h: 4 }
     },
     {
       id: 'crypto-1',
@@ -29,7 +29,7 @@ export default function DashboardPage() {
         showTrending: true,
         refreshInterval: 30
       } as CryptoTickerSettings,
-      layout: { x: 6, y: 0, w: 6, h: 4 }
+      layout: { i: 'crypto-1', x: 6, y: 0, w: 6, h: 4 }
     }
   ])
 
