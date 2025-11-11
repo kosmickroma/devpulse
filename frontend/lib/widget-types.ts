@@ -65,6 +65,39 @@ export interface UserWidget {
 
 // Default widget configurations
 export const DEFAULT_WIDGET_CONFIGS: Record<WidgetType, Partial<WidgetConfig>> = {
+  command: {
+    title: 'Command',
+    viewMode: 'card',
+    settings: {}
+  },
+  terminal: {
+    title: 'Terminal',
+    viewMode: 'card',
+    settings: {}
+  },
+  trends: {
+    title: 'Trends',
+    viewMode: 'card',
+    settings: {}
+  },
+  'stock-ticker': {
+    title: 'Stock Tracker',
+    viewMode: 'card',
+    settings: {
+      tickers: [],
+      showTrending: true,
+      refreshInterval: 30
+    } as StockTickerSettings
+  },
+  'crypto-ticker': {
+    title: 'Crypto Tracker',
+    viewMode: 'card',
+    settings: {
+      coins: [],
+      showTrending: true,
+      refreshInterval: 30
+    } as CryptoTickerSettings
+  },
   feed: {
     title: 'Trending Feed',
     viewMode: 'card',
@@ -111,6 +144,11 @@ export const DEFAULT_WIDGET_CONFIGS: Record<WidgetType, Partial<WidgetConfig>> =
 
 // Default grid layouts for each widget type
 export const DEFAULT_WIDGET_LAYOUTS: Record<WidgetType, Partial<Layout>> = {
+  command: { w: 4, h: 6, minW: 3, minH: 4 },
+  terminal: { w: 8, h: 8, minW: 6, minH: 6 },
+  trends: { w: 8, h: 8, minW: 6, minH: 6 },
+  'stock-ticker': { w: 6, h: 4, minW: 4, minH: 3 },
+  'crypto-ticker': { w: 6, h: 4, minW: 4, minH: 3 },
   feed: { w: 12, h: 8, minW: 6, minH: 4 },
   stock_ticker: { w: 6, h: 4, minW: 4, minH: 3 },
   crypto_ticker: { w: 6, h: 4, minW: 4, minH: 3 },

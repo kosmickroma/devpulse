@@ -17,7 +17,7 @@ export default function TerminalWidget({
   onRemove,
   onSettings
 }: TerminalWidgetProps) {
-  const [, setTrends] = useState([])
+  const [, setTrends] = useState<any[]>([])
   const selectedSources = settings.selectedSources || []
 
   const handleDataReceived = (items: any[]) => {
