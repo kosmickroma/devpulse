@@ -149,7 +149,7 @@ export default function WorkspaceGrid({
   }
 
   const handleDragStart = () => {
-    // Removed for now - testing snap sound only
+    playUndockSound()
   }
 
   const handleDragStop = () => {
@@ -157,7 +157,7 @@ export default function WorkspaceGrid({
   }
 
   const handleResizeStart = () => {
-    // Removed for now - testing snap sound only
+    playUndockSound()
   }
 
   const handleResizeStop = () => {
