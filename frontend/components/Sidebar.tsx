@@ -32,8 +32,9 @@ export default function Sidebar({
   const navigationLinks = [
     { path: '/', label: 'Home', icon: '🏠' },
     { path: '/workspace', label: 'Command Center', icon: '⚡' },
-    { path: '/arcade', label: 'Arcade', icon: '🎮' },
     { path: '/jobs', label: 'Jobs', icon: '💼' },
+    { path: '/arcade', label: 'Arcade', icon: '🎮' },
+    { path: '#', label: 'API', icon: '🔌' },
   ]
 
   // Check if a widget type is currently active

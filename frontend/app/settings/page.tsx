@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import Sidebar from '@/components/Sidebar'
 import Footer from '@/components/Footer'
 import { supabase } from '@/lib/supabase'
 import { loadUserPreferences, saveUserPreferences } from '@/lib/db'
@@ -23,6 +24,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto'])
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     checkAuth()
@@ -74,7 +76,8 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <main className="min-h-screen">
-        <Navbar />
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="container mx-auto px-4 py-20 text-center">
           <p className="text-neon-cyan font-mono">Loading settings...</p>
         </div>
@@ -85,7 +88,8 @@ export default function SettingsPage() {
 
   return (
     <main className="min-h-screen">
-      <Navbar />
+      <Navbar onMenuClick={() => setSidebarOpen(true)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}

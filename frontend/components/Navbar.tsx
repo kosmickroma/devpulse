@@ -56,27 +56,8 @@ export default function Navbar({ onMenuClick }: NavbarProps = {}) {
               </span>
             </button>
 
-            {/* Navigation Links */}
+            {/* Auth Section (right side) */}
             <div className="hidden md:flex items-center gap-6 font-mono text-sm">
-              <a
-                href="/"
-                className="text-neon-cyan hover:text-white transition-colors"
-              >
-                TRENDS
-              </a>
-              <a
-                href="/jobs"
-                className="text-neon-magenta hover:text-white transition-colors"
-              >
-                JOBS
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-neon-green transition-colors"
-              >
-                API
-              </a>
-
               {user ? (
                 <div className="relative">
                   <button
@@ -93,12 +74,6 @@ export default function Navbar({ onMenuClick }: NavbarProps = {}) {
 
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-48 neon-border rounded-lg bg-dark-card p-2">
-                      <a
-                        href="/settings"
-                        className="block w-full text-left px-4 py-2 text-neon-cyan hover:bg-neon-cyan/10 rounded transition-colors"
-                      >
-                        ⚙️ SETTINGS
-                      </a>
                       <button
                         onClick={handleSignOut}
                         className="w-full text-left px-4 py-2 text-neon-magenta hover:bg-neon-magenta/10 rounded transition-colors"
