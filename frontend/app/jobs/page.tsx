@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
+import Sidebar from '@/components/Sidebar'
 import Footer from '@/components/Footer'
 
 interface Company {
@@ -29,6 +30,7 @@ export default function JobsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedSize, setSelectedSize] = useState<string>('all')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     fetch('/jobs.json')
@@ -90,7 +92,8 @@ export default function JobsPage() {
 
   return (
     <main className="min-h-screen">
-      <Navbar />
+      <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b-2 border-neon-cyan/30 py-12">

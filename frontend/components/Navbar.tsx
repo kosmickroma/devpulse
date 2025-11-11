@@ -4,7 +4,11 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import AuthModal from './AuthModal'
 
-export default function Navbar() {
+interface NavbarProps {
+  onMenuClick?: () => void
+}
+
+export default function Navbar({ onMenuClick }: NavbarProps = {}) {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -31,10 +35,13 @@ export default function Navbar() {
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
 
       <nav className="sticky top-0 z-50 border-b-2 border-neon-cyan/30 bg-dark-bg/95 backdrop-blur">
-        <div className="container mx-auto px-4 py-3 max-w-7xl">
+        <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            {/* Logo Icon + Text */}
-            <div className="flex items-center gap-3">
+            {/* Logo Icon + Text - Clickable to toggle sidebar (left-aligned) */}
+            <button
+              onClick={onMenuClick}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+            >
               <img
                 src="/devpulse_icon.svg"
                 alt="DevPulse Icon"
@@ -47,7 +54,7 @@ export default function Navbar() {
                 <span className="text-neon-magenta">Dev</span>
                 <span className="text-neon-cyan">Pulse</span>
               </span>
-            </div>
+            </button>
 
             {/* Navigation Links */}
             <div className="hidden md:flex items-center gap-6 font-mono text-sm">

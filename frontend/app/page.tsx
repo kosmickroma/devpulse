@@ -5,6 +5,7 @@ import TrendCard from '@/components/TrendCard'
 import InteractiveTerminal from '@/components/InteractiveTerminal'
 import SimpleFilterBar from '@/components/SimpleFilterBar'
 import Navbar from '@/components/Navbar'
+import Sidebar from '@/components/Sidebar'
 import Footer from '@/components/Footer'
 import { TrendingItem } from '@/lib/types'
 import { loadTodaysScanResults } from '@/lib/db'
@@ -19,6 +20,7 @@ export default function Home() {
   const [authError, setAuthError] = useState<string | null>(null)
   const [isFromCache, setIsFromCache] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Load user preferences and cached results on mount
   useEffect(() => {
@@ -79,7 +81,8 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
-      <Navbar />
+      <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Auth Error Display */}
       {authError && (
@@ -112,9 +115,6 @@ export default function Home() {
               }}
             />
           </div>
-          <p className="text-xl text-neon-green neon-text-green font-mono">
-            &gt; TRACK THE PULSE OF DEVELOPER TRENDS
-          </p>
         </div>
       </div>
 
