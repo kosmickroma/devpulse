@@ -12,6 +12,7 @@ from api.services.gemini_service import GeminiService
 from api.services.rate_limit_service import RateLimitService
 from api.services.usage_tracker import UsageTracker
 from api.services.github_search_service import GitHubSearchService
+from api.services.reddit_search_service import RedditSearchService
 from api.utils.auth import get_user_from_token
 
 router = APIRouter()
@@ -22,12 +23,14 @@ try:
     rate_limiter = RateLimitService()
     tracker = UsageTracker()
     github_search = GitHubSearchService()
+    reddit_search = RedditSearchService()
 except Exception as e:
     print(f"⚠️ SYNTH services initialization error: {e}")
     gemini = None
     rate_limiter = None
     tracker = None
     github_search = None
+    reddit_search = None
 
 
 class AskRequest(BaseModel):
@@ -107,15 +110,14 @@ async def ask_synth(
         response_text = None
 
         # Check if SYNTH determined search is needed
-        if analysis.get('needs_search') and github_search:
+        if analysis.get('needs_search'):
             source = analysis.get('source', 'github')
+            query = analysis.get('query', request.question)
 
-            if source == 'github':
-                # Extract search parameters
-                query = analysis.get('query', request.question)
+            if source == 'github' and github_search:
+                # GitHub repository search
                 print(f"🔍 SYNTH searching GitHub for: {query}")
 
-                # Execute search
                 results = github_search.search_repositories(
                     query=query,
                     min_stars=50,  # Lower threshold for more results
@@ -123,7 +125,6 @@ async def ask_synth(
                 )
 
                 if results:
-                    # Generate response with real data
                     response_text = gemini.generate_response_with_data(
                         request.question,
                         results
@@ -132,8 +133,29 @@ async def ask_synth(
                     print(f"✅ SYNTH found {len(results)} GitHub repos")
                 else:
                     response_text = f"I searched GitHub for '{query}' but didn't find any repos matching that. Try a different search term?"
+
+            elif source == 'reddit' and reddit_search:
+                # Reddit posts search
+                print(f"🔍 SYNTH searching Reddit for: {query}")
+
+                results = reddit_search.search_posts(
+                    query=query,
+                    limit=10,
+                    sort='relevance'
+                )
+
+                if results:
+                    response_text = gemini.generate_response_with_data(
+                        request.question,
+                        results
+                    )
+                    search_results = results
+                    print(f"✅ SYNTH found {len(results)} Reddit posts")
+                else:
+                    response_text = f"I searched Reddit for '{query}' but didn't find any posts matching that. Try different keywords?"
+
             else:
-                # Other sources not implemented yet
+                # Other sources not implemented yet or service not initialized
                 response_text = f"I can search {source}, but that's not wired up yet. Coming soon!"
         else:
             # No search needed, generate direct answer
