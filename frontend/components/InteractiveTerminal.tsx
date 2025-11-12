@@ -269,6 +269,15 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
         addLine(line, 'success')
       })
       addLine('', 'output')
+
+      // If SYNTH found search results, pass to parent and display count
+      if (data.search_results && data.search_results.length > 0) {
+        onDataReceived(data.search_results)
+        addLine(`✨ ${data.search_results.length} results added to cards below!`, 'output')
+        addLine('💡 Look for the 🤖 SYNTH FINDS button to see them!', 'output')
+        addLine('', 'output')
+      }
+
       if (synthMode) {
         addLine(`💭 ${data.remaining} queries left | Type "exit" to leave SYNTH mode`, 'output')
       } else {

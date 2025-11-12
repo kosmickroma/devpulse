@@ -59,6 +59,13 @@ const sourceColors = {
     shadow: 'shadow-neon-purple',
     icon: '₿',
   },
+  synth: {
+    bg: 'bg-gradient-to-br from-neon-magenta/10 to-neon-cyan/10',
+    border: 'border-neon-magenta',
+    text: 'text-neon-magenta',
+    shadow: 'shadow-neon-magenta',
+    icon: '🤖',
+  },
 }
 
 export default function TrendCard({ trend, index }: TrendCardProps) {

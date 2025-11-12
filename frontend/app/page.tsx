@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import TrendCard from '@/components/TrendCard'
 import InteractiveTerminal from '@/components/InteractiveTerminal'
 import SimpleFilterBar from '@/components/SimpleFilterBar'
+import SynthFindsButton from '@/components/SynthFindsButton'
 import Navbar from '@/components/Navbar'
 import Sidebar from '@/components/Sidebar'
 import Footer from '@/components/Footer'
@@ -18,6 +19,7 @@ export default function Home() {
   const [prioritySource, setPrioritySource] = useState<string | null>(null) // Source to show first
   const [preferenceSources, setPreferenceSources] = useState<string[]>([]) // Sources from user preferences
   const [manualSources, setManualSources] = useState<string[]>([]) // Sources scanned manually via terminal
+  const [hasSynthResults, setHasSynthResults] = useState(false) // Track if SYNTH results exist
   const [isLoading, setIsLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [isFromCache, setIsFromCache] = useState(false)
@@ -68,9 +70,16 @@ export default function Home() {
     const scannedSources = Array.from(new Set(items.map(item => item.source.split('/')[0])))
     console.log('[PAGE] Scanned sources:', scannedSources)
 
+    // Check if any are SYNTH results
+    const synthSources = scannedSources.filter(src => src === 'synth')
+    if (synthSources.length > 0) {
+      setHasSynthResults(true)
+      console.log('[PAGE] 🤖 SYNTH results detected!')
+    }
+
     // Add scanned sources to manual sources (if not already in preferences)
     setManualSources(prev => {
-      const newManualSources = scannedSources.filter(src => !preferenceSources.includes(src))
+      const newManualSources = scannedSources.filter(src => !preferenceSources.includes(src) && src !== 'synth')
       const combined = Array.from(new Set([...prev, ...newManualSources]))
       console.log('[PAGE] Manual sources updated:', combined)
       return combined
@@ -106,6 +115,18 @@ export default function Home() {
     console.log('[PAGE] Priority source selected:', source)
     setPrioritySource(source)
   }
+
+  const handleSynthFindsClick = () => {
+    // Toggle SYNTH priority
+    if (prioritySource === 'synth') {
+      setPrioritySource(null) // Clear priority
+    } else {
+      setPrioritySource('synth') // Prioritize SYNTH results
+    }
+  }
+
+  // Count SYNTH results
+  const synthResultCount = trends.filter(t => t.source.startsWith('synth/')).length
 
   useEffect(() => {
     if (!prioritySource) {
@@ -178,10 +199,19 @@ export default function Home() {
       </div>
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* SYNTH FINDS Button - Special placement above filters */}
+        {hasSynthResults && (
+          <SynthFindsButton
+            onClick={handleSynthFindsClick}
+            isActive={prioritySource === 'synth'}
+            resultCount={synthResultCount}
+          />
+        )}
+
         <SimpleFilterBar
           onSourceSelect={handleSourceSelect}
           activeSources={[...preferenceSources, ...manualSources]}
-          prioritySource={prioritySource}
+          prioritySource={prioritySource === 'synth' ? null : prioritySource}
         />
 
         {/* Cache Status Indicator */}
