@@ -22,7 +22,7 @@ export default function TrendsWidget({
 }: TrendsWidgetProps) {
   const [trends, setTrends] = useState<TrendingItem[]>([])
   const [filteredTrends, setFilteredTrends] = useState<TrendingItem[]>([])
-  const [selectedSources, setSelectedSources] = useState<string[]>([])
+  const [prioritySource, setPrioritySource] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   // Load cached results on mount
@@ -49,18 +49,23 @@ export default function TrendsWidget({
     }
   }, [])
 
-  // Filter trends by selected sources
+  // Prioritize trends by source
   useEffect(() => {
-    if (selectedSources.length === 0) {
+    if (!prioritySource) {
       setFilteredTrends(trends)
     } else {
-      setFilteredTrends(trends.filter(trend => selectedSources.includes(trend.source)))
+      const priorityItems = trends.filter(trend => trend.source.split('/')[0] === prioritySource)
+      const otherItems = trends.filter(trend => trend.source.split('/')[0] !== prioritySource)
+      setFilteredTrends([...priorityItems, ...otherItems])
     }
-  }, [selectedSources, trends])
+  }, [prioritySource, trends])
 
-  const handleSourcesChange = (sources: string[]) => {
-    setSelectedSources(sources)
+  const handleSourceSelect = (source: string | null) => {
+    setPrioritySource(source)
   }
+
+  // Get unique sources from trends
+  const activeSources = Array.from(new Set(trends.map(t => t.source.split('/')[0])))
 
   const handleRefresh = () => {
     setIsLoading(true)
@@ -84,8 +89,9 @@ export default function TrendsWidget({
         {/* Filter Bar */}
         <div className="mb-4">
           <SimpleFilterBar
-            onSourcesChange={handleSourcesChange}
-            initialSources={selectedSources}
+            onSourceSelect={handleSourceSelect}
+            activeSources={activeSources}
+            prioritySource={prioritySource}
           />
         </div>
 

@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 
 interface SimpleFilterBarProps {
-  onSourcesChange: (sources: string[]) => void
-  initialSources?: string[]
-  availableSources?: string[] // Only show buttons for these sources
+  onSourceSelect: (source: string | null) => void // Select a source to prioritize (null = no priority)
+  activeSources?: string[] // Sources to show buttons for
+  prioritySource?: string | null // Currently prioritized source
 }
 
 const ALL_SOURCES = [
@@ -17,30 +17,20 @@ const ALL_SOURCES = [
   { id: 'crypto', label: 'CRYPTO', color: 'purple' },
 ]
 
-export default function SimpleFilterBar({ onSourcesChange, initialSources, availableSources }: SimpleFilterBarProps) {
-  const [selectedSources, setSelectedSources] = useState<string[]>([])
-
-  // Filter to only show sources that are available
-  const sourcesToShow = availableSources && availableSources.length > 0
-    ? ALL_SOURCES.filter(s => availableSources.includes(s.id))
+export default function SimpleFilterBar({ onSourceSelect, activeSources, prioritySource }: SimpleFilterBarProps) {
+  // Filter to only show sources that are active
+  const sourcesToShow = activeSources && activeSources.length > 0
+    ? ALL_SOURCES.filter(s => activeSources.includes(s.id))
     : ALL_SOURCES
 
-  // Initialize with user preferences or all available sources
-  useEffect(() => {
-    const sources = initialSources && initialSources.length > 0
-      ? initialSources
-      : sourcesToShow.map(s => s.id)
-    setSelectedSources(sources)
-    onSourcesChange(sources)
-  }, [initialSources])
-
-  const toggleSource = (sourceId: string) => {
-    const newSources = selectedSources.includes(sourceId)
-      ? selectedSources.filter(id => id !== sourceId)
-      : [...selectedSources, sourceId]
-
-    setSelectedSources(newSources)
-    onSourcesChange(newSources)
+  const handleSourceClick = (sourceId: string) => {
+    // If clicking the already-prioritized source, clear the priority
+    if (prioritySource === sourceId) {
+      onSourceSelect(null)
+    } else {
+      // Otherwise, prioritize this source
+      onSourceSelect(sourceId)
+    }
   }
 
   const colorClasses = {
@@ -75,20 +65,20 @@ export default function SimpleFilterBar({ onSourcesChange, initialSources, avail
       <div className="flex flex-wrap gap-3 justify-center items-center">
         <span className="text-gray-400 font-mono text-sm">&gt; FILTER:</span>
         {sourcesToShow.map(source => {
-          const isSelected = selectedSources.includes(source.id)
+          const isPriority = prioritySource === source.id
           const classes = colorClasses[source.color as keyof typeof colorClasses]
 
           return (
             <button
               key={source.id}
-              onClick={() => toggleSource(source.id)}
+              onClick={() => handleSourceClick(source.id)}
               className={`
                 px-4 py-2 border-2 rounded font-mono text-xs font-bold
                 transition-all cursor-pointer
-                ${isSelected ? classes.active : classes.inactive}
+                ${isPriority ? classes.active : classes.inactive}
               `}
             >
-              {source.label}
+              {source.label} {isPriority && '↑'}
             </button>
           )
         })}

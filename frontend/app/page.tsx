@@ -12,20 +12,10 @@ import { loadTodaysScanResults } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-// Define available sources for comparison
-const AVAILABLE_SOURCES = [
-  { id: 'github' },
-  { id: 'hackernews' },
-  { id: 'devto' },
-  { id: 'reddit' },
-  { id: 'stocks' },
-  { id: 'crypto' },
-]
-
 export default function Home() {
   const [trends, setTrends] = useState<TrendingItem[]>([])
   const [filteredTrends, setFilteredTrends] = useState<TrendingItem[]>([])
-  const [selectedSources, setSelectedSources] = useState<string[]>([])
+  const [prioritySource, setPrioritySource] = useState<string | null>(null) // Source to show first
   const [preferenceSources, setPreferenceSources] = useState<string[]>([]) // Sources from user preferences
   const [manualSources, setManualSources] = useState<string[]>([]) // Sources scanned manually via terminal
   const [isLoading, setIsLoading] = useState(false)
@@ -53,7 +43,6 @@ export default function Home() {
       const prefs = await loadUserPreferences()
       console.log('[PAGE] Loaded user preferences:', prefs.selectedSources)
       setPreferenceSources(prefs.selectedSources)
-      setSelectedSources(prefs.selectedSources)
     }
     loadPreferences()
 
@@ -113,32 +102,33 @@ export default function Home() {
     setLastUpdated(new Date())
   }
 
-  const handleSourcesChange = (sources: string[]) => {
-    setSelectedSources(sources)
+  const handleSourceSelect = (source: string | null) => {
+    console.log('[PAGE] Priority source selected:', source)
+    setPrioritySource(source)
   }
 
   useEffect(() => {
-    if (selectedSources.length === 0 || selectedSources.length === AVAILABLE_SOURCES.length) {
-      // No filter or all sources selected - show everything as-is
+    if (!prioritySource) {
+      // No priority - show everything as-is
       setFilteredTrends(trends)
     } else {
-      // Move selected sources to the top, keep others at the bottom
-      const matching: TrendingItem[] = []
-      const nonMatching: TrendingItem[] = []
+      // Move priority source to the top, keep others at the bottom
+      const priorityItems: TrendingItem[] = []
+      const otherItems: TrendingItem[] = []
 
       trends.forEach(trend => {
         // Extract base source (handle 'reddit/programming' format)
         const baseSource = trend.source.split('/')[0]
-        if (selectedSources.includes(baseSource)) {
-          matching.push(trend)
+        if (baseSource === prioritySource) {
+          priorityItems.push(trend)
         } else {
-          nonMatching.push(trend)
+          otherItems.push(trend)
         }
       })
 
-      setFilteredTrends([...matching, ...nonMatching])
+      setFilteredTrends([...priorityItems, ...otherItems])
     }
-  }, [selectedSources, trends])
+  }, [prioritySource, trends])
 
   return (
     <main className="min-h-screen">
@@ -183,15 +173,15 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <InteractiveTerminal
           onDataReceived={handleDataReceived}
-          selectedSources={selectedSources}
+          selectedSources={preferenceSources}
         />
       </div>
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <SimpleFilterBar
-          onSourcesChange={handleSourcesChange}
-          initialSources={selectedSources}
-          availableSources={[...preferenceSources, ...manualSources]}
+          onSourceSelect={handleSourceSelect}
+          activeSources={[...preferenceSources, ...manualSources]}
+          prioritySource={prioritySource}
         />
 
         {/* Cache Status Indicator */}
