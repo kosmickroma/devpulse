@@ -11,6 +11,7 @@ from typing import Optional
 from api.services.gemini_service import GeminiService
 from api.services.rate_limit_service import RateLimitService
 from api.services.usage_tracker import UsageTracker
+from api.services.github_search_service import GitHubSearchService
 
 router = APIRouter()
 
@@ -19,11 +20,13 @@ try:
     gemini = GeminiService()
     rate_limiter = RateLimitService()
     tracker = UsageTracker()
+    github_search = GitHubSearchService()
 except Exception as e:
     print(f"⚠️ SYNTH services initialization error: {e}")
     gemini = None
     rate_limiter = None
     tracker = None
+    github_search = None
 
 
 class AskRequest(BaseModel):
@@ -35,6 +38,7 @@ class AskResponse(BaseModel):
     """Response model for Q&A."""
     response: str
     remaining: int
+    search_results: Optional[list] = None  # SYNTH search results (if any)
 
 
 def get_user_from_token(authorization: Optional[str]) -> Optional[str]:
@@ -105,9 +109,45 @@ async def ask_synth(
     except Exception as e:
         print(f"Rate limit error: {e}")
 
-    # Generate answer
+    # Analyze query to see if we need to search
     try:
-        response = gemini.generate_answer(request.question)
+        analysis = gemini.analyze_query_with_functions(request.question)
+
+        search_results = None
+        response_text = None
+
+        # Check if SYNTH determined search is needed
+        if analysis.get('needs_search') and github_search:
+            source = analysis.get('source', 'github')
+
+            if source == 'github':
+                # Extract search parameters
+                query = analysis.get('query', request.question)
+                print(f"🔍 SYNTH searching GitHub for: {query}")
+
+                # Execute search
+                results = github_search.search_repositories(
+                    query=query,
+                    min_stars=50,  # Lower threshold for more results
+                    limit=10
+                )
+
+                if results:
+                    # Generate response with real data
+                    response_text = gemini.generate_response_with_data(
+                        request.question,
+                        results
+                    )
+                    search_results = results
+                    print(f"✅ SYNTH found {len(results)} GitHub repos")
+                else:
+                    response_text = f"I searched GitHub for '{query}' but didn't find any repos matching that. Try a different search term?"
+            else:
+                # Other sources not implemented yet
+                response_text = f"I can search {source}, but that's not wired up yet. Coming soon!"
+        else:
+            # No search needed, generate direct answer
+            response_text = analysis.get('direct_answer') or gemini.generate_answer(request.question)
 
         # Log usage
         try:
@@ -116,11 +156,13 @@ async def ask_synth(
             print(f"Tracking error: {e}")
 
         return AskResponse(
-            response=response,
-            remaining=max(0, user_limit['remaining'] - 1)
+            response=response_text,
+            remaining=max(0, user_limit['remaining'] - 1),
+            search_results=search_results
         )
 
     except Exception as e:
+        print(f"❌ Ask endpoint error: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"SYNTH encountered an error: {str(e)}"
