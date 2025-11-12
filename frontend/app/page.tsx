@@ -12,6 +12,16 @@ import { loadTodaysScanResults } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
+// Define available sources for comparison
+const AVAILABLE_SOURCES = [
+  { id: 'github' },
+  { id: 'hackernews' },
+  { id: 'devto' },
+  { id: 'reddit' },
+  { id: 'stocks' },
+  { id: 'crypto' },
+]
+
 export default function Home() {
   const [trends, setTrends] = useState<TrendingItem[]>([])
   const [filteredTrends, setFilteredTrends] = useState<TrendingItem[]>([])
@@ -61,8 +71,29 @@ export default function Home() {
 
   const handleDataReceived = (items: TrendingItem[]) => {
     console.log(`[PAGE] Received ${items.length} items from terminal`)
-    setTrends(items)
-    setFilteredTrends(items)
+
+    // Merge new items with existing trends instead of replacing
+    // This preserves data from other sources when scanning a specific source
+    setTrends(prevTrends => {
+      // Create a map of existing items by URL (for deduplication)
+      const existingMap = new Map(prevTrends.map(item => [item.url, item]))
+
+      // Add or update items
+      items.forEach(item => {
+        existingMap.set(item.url, item)
+      })
+
+      return Array.from(existingMap.values())
+    })
+
+    setFilteredTrends(prevFiltered => {
+      const existingMap = new Map(prevFiltered.map(item => [item.url, item]))
+      items.forEach(item => {
+        existingMap.set(item.url, item)
+      })
+      return Array.from(existingMap.values())
+    })
+
     setIsFromCache(false) // Fresh data, not from cache
     setLastUpdated(new Date())
   }
@@ -72,10 +103,25 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (selectedSources.length === 0) {
+    if (selectedSources.length === 0 || selectedSources.length === AVAILABLE_SOURCES.length) {
+      // No filter or all sources selected - show everything as-is
       setFilteredTrends(trends)
     } else {
-      setFilteredTrends(trends.filter(trend => selectedSources.includes(trend.source)))
+      // Move selected sources to the top, keep others at the bottom
+      const matching: TrendingItem[] = []
+      const nonMatching: TrendingItem[] = []
+
+      trends.forEach(trend => {
+        // Extract base source (handle 'reddit/programming' format)
+        const baseSource = trend.source.split('/')[0]
+        if (selectedSources.includes(baseSource)) {
+          matching.push(trend)
+        } else {
+          nonMatching.push(trend)
+        }
+      })
+
+      setFilteredTrends([...matching, ...nonMatching])
     }
   }, [selectedSources, trends])
 

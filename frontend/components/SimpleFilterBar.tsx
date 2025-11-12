@@ -11,8 +11,9 @@ const AVAILABLE_SOURCES = [
   { id: 'github', label: 'GITHUB', color: 'cyan' },
   { id: 'hackernews', label: 'HACKER NEWS', color: 'magenta' },
   { id: 'devto', label: 'DEV.TO', color: 'green' },
-  { id: 'stocks', label: 'STOCKS', color: 'cyan' },
-  { id: 'crypto', label: 'CRYPTO', color: 'magenta' },
+  { id: 'reddit', label: 'REDDIT', color: 'orange' },
+  { id: 'stocks', label: 'STOCKS', color: 'blue' },
+  { id: 'crypto', label: 'CRYPTO', color: 'purple' },
 ]
 
 export default function SimpleFilterBar({ onSourcesChange, initialSources }: SimpleFilterBarProps) {
@@ -32,9 +33,6 @@ export default function SimpleFilterBar({ onSourcesChange, initialSources }: Sim
       ? selectedSources.filter(id => id !== sourceId)
       : [...selectedSources, sourceId]
 
-    // Don't allow deselecting all sources
-    if (newSources.length === 0) return
-
     setSelectedSources(newSources)
     onSourcesChange(newSources)
   }
@@ -51,6 +49,18 @@ export default function SimpleFilterBar({ onSourcesChange, initialSources }: Sim
     green: {
       active: 'border-neon-green text-neon-green shadow-neon-green bg-neon-green/10',
       inactive: 'border-neon-green/30 text-neon-green/40 hover:border-neon-green/50 hover:text-neon-green/60'
+    },
+    orange: {
+      active: 'border-neon-orange text-neon-orange shadow-neon-orange bg-neon-orange/10',
+      inactive: 'border-neon-orange/30 text-neon-orange/40 hover:border-neon-orange/50 hover:text-neon-orange/60'
+    },
+    blue: {
+      active: 'border-neon-blue text-neon-blue shadow-neon-blue bg-neon-blue/10',
+      inactive: 'border-neon-blue/30 text-neon-blue/40 hover:border-neon-blue/50 hover:text-neon-blue/60'
+    },
+    purple: {
+      active: 'border-neon-purple text-neon-purple shadow-neon-purple bg-neon-purple/10',
+      inactive: 'border-neon-purple/30 text-neon-purple/40 hover:border-neon-purple/50 hover:text-neon-purple/60'
     },
   }
 

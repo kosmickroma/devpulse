@@ -17,6 +17,7 @@ const config: Config = {
           green: '#39FF14',
           pink: '#FF10F0',
           blue: '#00D9FF',
+          orange: '#FF6600',
         },
         dark: {
           bg: '#0a0a0f',
@@ -35,6 +36,8 @@ const config: Config = {
         'neon-magenta': '0 0 20px rgba(255, 0, 255, 0.5), 0 0 40px rgba(255, 0, 255, 0.3)',
         'neon-purple': '0 0 20px rgba(157, 0, 255, 0.5), 0 0 40px rgba(157, 0, 255, 0.3)',
         'neon-green': '0 0 20px rgba(57, 255, 20, 0.5), 0 0 40px rgba(57, 255, 20, 0.3)',
+        'neon-orange': '0 0 20px rgba(255, 102, 0, 0.5), 0 0 40px rgba(255, 102, 0, 0.3)',
+        'neon-blue': '0 0 20px rgba(0, 217, 255, 0.5), 0 0 40px rgba(0, 217, 255, 0.3)',
       },
       animation: {
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
