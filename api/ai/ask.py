@@ -12,6 +12,7 @@ from api.services.gemini_service import GeminiService
 from api.services.rate_limit_service import RateLimitService
 from api.services.usage_tracker import UsageTracker
 from api.services.github_search_service import GitHubSearchService
+from api.utils.auth import get_user_from_token
 
 router = APIRouter()
 
@@ -39,17 +40,6 @@ class AskResponse(BaseModel):
     response: str
     remaining: int
     search_results: Optional[list] = None  # SYNTH search results (if any)
-
-
-def get_user_from_token(authorization: Optional[str]) -> Optional[str]:
-    """Extract user ID from JWT token (placeholder)."""
-    if not authorization:
-        return None
-
-    if authorization.startswith('Bearer '):
-        return "authenticated"  # Placeholder
-
-    return None
 
 
 @router.post('/ask', response_model=AskResponse)

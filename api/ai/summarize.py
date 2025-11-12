@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from api.services.gemini_service import GeminiService
 from api.services.rate_limit_service import RateLimitService
 from api.services.usage_tracker import UsageTracker
+from api.utils.auth import get_user_from_token
 
 router = APIRouter()
 
@@ -41,23 +42,6 @@ class SummarizeResponse(BaseModel):
     summary: str
     remaining: int
     cached: bool = False
-
-
-def get_user_from_token(authorization: Optional[str]) -> Optional[str]:
-    """
-    Extract user ID from JWT token.
-
-    For now, this is a placeholder. In production, you'd verify the JWT.
-    """
-    if not authorization:
-        return None
-
-    # TODO: Implement proper JWT verification with Supabase
-    # For now, just check if token exists
-    if authorization.startswith('Bearer '):
-        return "authenticated"  # Placeholder
-
-    return None
 
 
 @router.post('/summarize', response_model=SummarizeResponse)

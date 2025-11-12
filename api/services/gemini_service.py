@@ -29,13 +29,7 @@ class GeminiService:
         self.model = genai.GenerativeModel('gemini-2.5-flash')
         self.model_name = 'gemini-2.5-flash'
 
-        # Model with function calling support
-        self.function_model = genai.GenerativeModel(
-            'gemini-2.5-flash',
-            tools=self._get_function_tools()
-        )
-
-        print(f"✅ SYNTH initialized with {self.model_name} + function calling")
+        print(f"✅ SYNTH initialized with {self.model_name}")
 
     def _get_function_tools(self) -> List[Dict]:
         """Define function calling tools available to SYNTH."""

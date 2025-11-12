@@ -12,6 +12,7 @@ from typing import Optional, List, Dict, Any
 from api.services.synth_search_service import SynthSearchService
 from api.services.rate_limit_service import RateLimitService
 from api.services.usage_tracker import UsageTracker
+from api.utils.auth import get_user_from_token
 
 router = APIRouter()
 
@@ -41,17 +42,6 @@ class SearchResponse(BaseModel):
     commentary: str
     remaining: int
     errors: Optional[List[str]] = None
-
-
-def get_user_from_token(authorization: Optional[str]) -> Optional[str]:
-    """Extract user ID from JWT token (placeholder)."""
-    if not authorization:
-        return None
-
-    if authorization.startswith('Bearer '):
-        return "authenticated"  # Placeholder
-
-    return None
 
 
 @router.post('/search', response_model=SearchResponse)
