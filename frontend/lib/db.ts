@@ -104,9 +104,11 @@ export async function loadTodaysScanResults(): Promise<TrendingItem[]> {
  */
 export async function loadUserPreferences() {
   try {
+    console.log('[DB] Loading user preferences...')
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
+      console.log('[DB] ℹ️ No user logged in, returning defaults')
       return {
         selectedSources: ['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto'],
         synthPersonality: 'default',
@@ -115,6 +117,8 @@ export async function loadUserPreferences() {
       }
     }
 
+    console.log('[DB] User ID:', user.id)
+
     const { data, error } = await supabase
       .from('user_preferences')
       .select('*')
@@ -122,6 +126,7 @@ export async function loadUserPreferences() {
       .single()
 
     if (error || !data) {
+      console.log('[DB] ℹ️ No preferences found for user, returning defaults. Error:', error?.message)
       // Return defaults
       return {
         selectedSources: ['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto'],
@@ -131,6 +136,8 @@ export async function loadUserPreferences() {
       }
     }
 
+    console.log('[DB] ✅ Loaded user preferences from database:', data)
+
     return {
       selectedSources: data.selected_sources || ['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto'],
       synthPersonality: data.synth_personality || 'default',
@@ -138,7 +145,7 @@ export async function loadUserPreferences() {
       audioEnabled: data.audio_enabled ?? false
     }
   } catch (err) {
-    console.warn('Failed to load user preferences (non-critical):', err)
+    console.warn('[DB] ❌ Exception loading user preferences:', err)
     return {
       selectedSources: ['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto'],
       synthPersonality: 'default',
@@ -158,32 +165,39 @@ export async function saveUserPreferences(prefs: {
   audioEnabled?: boolean
 }): Promise<boolean> {
   try {
+    console.log('[DB] Saving user preferences:', prefs)
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      console.warn('Cannot save preferences: user not logged in')
+      console.warn('[DB] ❌ Cannot save preferences: user not logged in')
       return false
     }
 
-    const { error } = await supabase
+    console.log('[DB] User ID:', user.id)
+
+    const { data, error } = await supabase
       .from('user_preferences')
       .upsert({
         user_id: user.id,
         selected_sources: prefs.selectedSources,
         synth_personality: prefs.synthPersonality,
         auto_scan_enabled: prefs.autoScanEnabled,
-        audio_enabled: prefs.audioEnabled
+        audio_enabled: prefs.audioEnabled,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id'
       })
+      .select()
 
     if (error) {
-      console.warn('Failed to save user preferences (non-critical):', error.message)
+      console.error('[DB] ❌ Failed to save user preferences:', error.message, error)
       return false
     }
 
-    console.log('✅ Saved user preferences to database')
+    console.log('[DB] ✅ Saved user preferences to database:', data)
     return true
   } catch (err) {
-    console.warn('Failed to save user preferences (non-critical):', err)
+    console.error('[DB] ❌ Exception saving user preferences:', err)
     return false
   }
 }

@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto'])
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
@@ -61,6 +62,9 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true)
     setSaveSuccess(false)
+    setSaveError(null)
+
+    console.log('[SETTINGS] Saving preferences:', selectedSources)
 
     const success = await saveUserPreferences({
       selectedSources
@@ -70,6 +74,10 @@ export default function SettingsPage() {
     if (success) {
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
+      console.log('[SETTINGS] ✅ Preferences saved successfully')
+    } else {
+      setSaveError('Failed to save preferences. Check console for details.')
+      console.error('[SETTINGS] ❌ Failed to save preferences')
     }
   }
 
@@ -154,6 +162,10 @@ export default function SettingsPage() {
 
             {saveSuccess && (
               <span className="text-neon-green font-mono">✓ Saved successfully!</span>
+            )}
+
+            {saveError && (
+              <span className="text-neon-magenta font-mono text-sm">✗ {saveError}</span>
             )}
           </div>
         </div>

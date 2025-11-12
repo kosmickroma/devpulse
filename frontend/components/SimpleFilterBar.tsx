@@ -5,9 +5,10 @@ import { useState, useEffect } from 'react'
 interface SimpleFilterBarProps {
   onSourcesChange: (sources: string[]) => void
   initialSources?: string[]
+  availableSources?: string[] // Only show buttons for these sources
 }
 
-const AVAILABLE_SOURCES = [
+const ALL_SOURCES = [
   { id: 'github', label: 'GITHUB', color: 'cyan' },
   { id: 'hackernews', label: 'HACKER NEWS', color: 'magenta' },
   { id: 'devto', label: 'DEV.TO', color: 'green' },
@@ -16,14 +17,19 @@ const AVAILABLE_SOURCES = [
   { id: 'crypto', label: 'CRYPTO', color: 'purple' },
 ]
 
-export default function SimpleFilterBar({ onSourcesChange, initialSources }: SimpleFilterBarProps) {
+export default function SimpleFilterBar({ onSourcesChange, initialSources, availableSources }: SimpleFilterBarProps) {
   const [selectedSources, setSelectedSources] = useState<string[]>([])
 
-  // Initialize with user preferences or all sources
+  // Filter to only show sources that are available
+  const sourcesToShow = availableSources && availableSources.length > 0
+    ? ALL_SOURCES.filter(s => availableSources.includes(s.id))
+    : ALL_SOURCES
+
+  // Initialize with user preferences or all available sources
   useEffect(() => {
     const sources = initialSources && initialSources.length > 0
       ? initialSources
-      : AVAILABLE_SOURCES.map(s => s.id)
+      : sourcesToShow.map(s => s.id)
     setSelectedSources(sources)
     onSourcesChange(sources)
   }, [initialSources])
@@ -68,7 +74,7 @@ export default function SimpleFilterBar({ onSourcesChange, initialSources }: Sim
     <div className="py-6">
       <div className="flex flex-wrap gap-3 justify-center items-center">
         <span className="text-gray-400 font-mono text-sm">&gt; FILTER:</span>
-        {AVAILABLE_SOURCES.map(source => {
+        {sourcesToShow.map(source => {
           const isSelected = selectedSources.includes(source.id)
           const classes = colorClasses[source.color as keyof typeof colorClasses]
 

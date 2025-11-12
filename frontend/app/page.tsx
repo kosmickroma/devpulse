@@ -26,6 +26,8 @@ export default function Home() {
   const [trends, setTrends] = useState<TrendingItem[]>([])
   const [filteredTrends, setFilteredTrends] = useState<TrendingItem[]>([])
   const [selectedSources, setSelectedSources] = useState<string[]>([])
+  const [preferenceSources, setPreferenceSources] = useState<string[]>([]) // Sources from user preferences
+  const [manualSources, setManualSources] = useState<string[]>([]) // Sources scanned manually via terminal
   const [isLoading, setIsLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [isFromCache, setIsFromCache] = useState(false)
@@ -50,6 +52,7 @@ export default function Home() {
       const { loadUserPreferences } = await import('@/lib/db')
       const prefs = await loadUserPreferences()
       console.log('[PAGE] Loaded user preferences:', prefs.selectedSources)
+      setPreferenceSources(prefs.selectedSources)
       setSelectedSources(prefs.selectedSources)
     }
     loadPreferences()
@@ -71,6 +74,18 @@ export default function Home() {
 
   const handleDataReceived = (items: TrendingItem[]) => {
     console.log(`[PAGE] Received ${items.length} items from terminal`)
+
+    // Track which sources were scanned (extract unique sources from items)
+    const scannedSources = Array.from(new Set(items.map(item => item.source.split('/')[0])))
+    console.log('[PAGE] Scanned sources:', scannedSources)
+
+    // Add scanned sources to manual sources (if not already in preferences)
+    setManualSources(prev => {
+      const newManualSources = scannedSources.filter(src => !preferenceSources.includes(src))
+      const combined = Array.from(new Set([...prev, ...newManualSources]))
+      console.log('[PAGE] Manual sources updated:', combined)
+      return combined
+    })
 
     // Merge new items with existing trends instead of replacing
     // This preserves data from other sources when scanning a specific source
@@ -176,6 +191,7 @@ export default function Home() {
         <SimpleFilterBar
           onSourcesChange={handleSourcesChange}
           initialSources={selectedSources}
+          availableSources={[...preferenceSources, ...manualSources]}
         />
 
         {/* Cache Status Indicator */}
