@@ -374,56 +374,10 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     }
   }
 
-  // Smart SYNTH routing - detect search intent
+  // Smart SYNTH routing - ALL queries go to ask endpoint with intelligent search
   const routeSynthQuery = async (query: string) => {
-    const lowerQuery = query.toLowerCase()
-
-    // Search intent keywords
-    const searchVerbs = ['find', 'search', 'show', 'get', 'grab', 'lookup', 'pull']
-    const searchTargets = ['repo', 'repository', 'repositories', 'project', 'projects', 'code', 'library', 'libraries']
-
-    // Check if query contains search intent
-    const hasSearchVerb = searchVerbs.some(verb => lowerQuery.includes(verb))
-    const hasSearchTarget = searchTargets.some(target => lowerQuery.includes(target))
-
-    // Explicit GitHub mention
-    const mentionsGitHub = lowerQuery.includes('github') || lowerQuery.includes('git hub')
-
-    // Keywords that suggest they want to search for code/projects
-    const codeKeywords = ['repos', 'repositories', 'projects', 'code', 'libraries', 'packages']
-    const wantsCodeSearch = codeKeywords.some(keyword => lowerQuery.includes(keyword))
-
-    // If they're asking about repos/projects OR explicitly mention GitHub search
-    if ((hasSearchVerb && hasSearchTarget) || (hasSearchVerb && mentionsGitHub) || wantsCodeSearch) {
-      // Extract what they want to search for
-      let searchQuery = query
-
-      // Remove common leading phrases
-      const removePatterns = [
-        /^(can you |could you |please )?find( me)?/i,
-        /^(can you |could you |please )?search( for)?/i,
-        /^(can you |could you |please )?show( me)?/i,
-        /^(can you |could you |please )?get( me)?/i,
-        /^(can you |could you |please )?grab( me)?/i,
-        /^(can you |could you |please )?lookup/i,
-      ]
-
-      for (const pattern of removePatterns) {
-        searchQuery = searchQuery.replace(pattern, '').trim()
-      }
-
-      // Remove trailing "on github" or "from github"
-      searchQuery = searchQuery.replace(/(on|from|in) github$/i, '').trim()
-
-      if (searchQuery) {
-        await handleSynthSearch(searchQuery)
-      } else {
-        addLine('🤖 SYNTH: What do you want me to search for?', 'output')
-      }
-    } else {
-      // Everything else - just answer the question
-      await handleAskSynth(query)
-    }
+    // Let the ask endpoint handle everything - it has intelligent GitHub search
+    await handleAskSynth(query)
   }
 
   // Handle command execution

@@ -15,7 +15,14 @@ class UsageTracker:
     def __init__(self):
         """Initialize with Supabase connection."""
         supabase_url = os.getenv('NEXT_PUBLIC_SUPABASE_URL')
-        supabase_key = os.getenv('SUPABASE_SERVICE_KEY', os.getenv('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
+        # MUST use service role key to bypass RLS when tracking usage
+        supabase_key = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+
+        if not supabase_key:
+            # Fallback to anon key but log warning - RLS will block writes
+            supabase_key = os.getenv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+            print("⚠️ WARNING: No service role key found. Usage tracking may fail due to RLS.")
+            print("   Set SUPABASE_SERVICE_KEY environment variable to fix this.")
 
         if not supabase_url or not supabase_key:
             raise ValueError("Supabase credentials not configured")
