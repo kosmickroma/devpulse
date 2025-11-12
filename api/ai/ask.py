@@ -13,6 +13,7 @@ from api.services.rate_limit_service import RateLimitService
 from api.services.usage_tracker import UsageTracker
 from api.services.github_search_service import GitHubSearchService
 from api.services.reddit_search_service import RedditSearchService
+from api.services.hackernews_search_service import HackerNewsSearchService
 from api.utils.auth import get_user_from_token
 
 router = APIRouter()
@@ -24,6 +25,7 @@ try:
     tracker = UsageTracker()
     github_search = GitHubSearchService()
     reddit_search = RedditSearchService()
+    hn_search = HackerNewsSearchService()
 except Exception as e:
     print(f"⚠️ SYNTH services initialization error: {e}")
     gemini = None
@@ -31,6 +33,7 @@ except Exception as e:
     tracker = None
     github_search = None
     reddit_search = None
+    hn_search = None
 
 
 class AskRequest(BaseModel):
@@ -153,6 +156,26 @@ async def ask_synth(
                     print(f"✅ SYNTH found {len(results)} Reddit posts")
                 else:
                     response_text = f"I searched Reddit for '{query}' but didn't find any posts matching that. Try different keywords?"
+
+            elif source == 'hackernews' and hn_search:
+                # HackerNews stories search
+                print(f"🔍 SYNTH searching HackerNews for: {query}")
+
+                results = hn_search.search_stories(
+                    query=query,
+                    min_points=10,
+                    limit=10
+                )
+
+                if results:
+                    response_text = gemini.generate_response_with_data(
+                        request.question,
+                        results
+                    )
+                    search_results = results
+                    print(f"✅ SYNTH found {len(results)} HackerNews stories")
+                else:
+                    response_text = f"I searched HackerNews for '{query}' but didn't find any stories matching that. Try different keywords?"
 
             else:
                 # Other sources not implemented yet or service not initialized
