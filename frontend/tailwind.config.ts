@@ -6,6 +6,21 @@ const config: Config = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  safelist: [
+    // Safelist all neon color variants for dynamic usage
+    'border-neon-cyan', 'text-neon-cyan', 'bg-neon-cyan/10', 'shadow-neon-cyan',
+    'border-neon-cyan/30', 'text-neon-cyan/40', 'border-neon-cyan/50', 'text-neon-cyan/60',
+    'border-neon-magenta', 'text-neon-magenta', 'bg-neon-magenta/10', 'shadow-neon-magenta',
+    'border-neon-magenta/30', 'text-neon-magenta/40', 'border-neon-magenta/50', 'text-neon-magenta/60',
+    'border-neon-green', 'text-neon-green', 'bg-neon-green/10', 'shadow-neon-green',
+    'border-neon-green/30', 'text-neon-green/40', 'border-neon-green/50', 'text-neon-green/60',
+    'border-neon-orange', 'text-neon-orange', 'bg-neon-orange/10', 'shadow-neon-orange',
+    'border-neon-orange/30', 'text-neon-orange/40', 'border-neon-orange/50', 'text-neon-orange/60',
+    'border-neon-blue', 'text-neon-blue', 'bg-neon-blue/10', 'shadow-neon-blue',
+    'border-neon-blue/30', 'text-neon-blue/40', 'border-neon-blue/50', 'text-neon-blue/60',
+    'border-neon-purple', 'text-neon-purple', 'bg-neon-purple/10', 'shadow-neon-purple',
+    'border-neon-purple/30', 'text-neon-purple/40', 'border-neon-purple/50', 'text-neon-purple/60',
+  ],
   theme: {
     extend: {
       colors: {
