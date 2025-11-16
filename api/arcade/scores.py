@@ -7,11 +7,15 @@ from api.utils.auth import get_current_user
 
 router = APIRouter()
 
-# Supabase client
-supabase: Client = create_client(
-    os.getenv("SUPABASE_URL"),
-    os.getenv("SUPABASE_KEY")
-)
+# Supabase client - initialize only if env vars are set
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("WARNING: SUPABASE_URL and SUPABASE_KEY must be set for arcade features to work")
+    supabase = None
+else:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 class ScoreSubmission(BaseModel):
     game_id: str
@@ -44,6 +48,9 @@ async def submit_score(submission: ScoreSubmission, current_user: dict = Depends
     Submit a score for a game.
     Awards XP automatically and updates leaderboard.
     """
+    if supabase is None:
+        raise HTTPException(status_code=503, detail="Arcade features not configured")
+
     try:
         user_id = current_user['id']
 
@@ -125,6 +132,9 @@ async def get_leaderboard(game_id: str, limit: int = 50):
     """
     Get global leaderboard for a specific game.
     """
+    if supabase is None:
+        raise HTTPException(status_code=503, detail="Arcade features not configured")
+
     try:
         result = supabase.table('leaderboard')\
             .select('rank, username, score, achieved_at, metadata')\
@@ -148,6 +158,9 @@ async def get_arcade_profile(current_user: dict = Depends(get_current_user)):
     """
     Get user's arcade profile including XP, level, and badges.
     """
+    if supabase is None:
+        raise HTTPException(status_code=503, detail="Arcade features not configured")
+
     try:
         user_id = current_user['id']
 
@@ -187,6 +200,9 @@ async def get_all_high_scores(current_user: dict = Depends(get_current_user)):
     """
     Get all high scores for current user across all games.
     """
+    if supabase is None:
+        raise HTTPException(status_code=503, detail="Arcade features not configured")
+
     try:
         user_id = current_user['id']
 
@@ -209,6 +225,9 @@ async def get_all_leaderboards(limit: int = 10):
     """
     Get top players across all games.
     """
+    if supabase is None:
+        raise HTTPException(status_code=503, detail="Arcade features not configured")
+
     try:
         # Get unique game IDs
         games = ['snake', 'spaceinvaders', 'minesweeper', 'guess', 'bagels', 'nim', 'amazing', 'stock', 'oregon', 'startrek']
