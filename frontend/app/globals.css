@@ -346,3 +346,12 @@ body {
     top: 100%;
   }
 }
+
+@keyframes scanline {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}

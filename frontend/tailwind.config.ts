@@ -58,6 +58,7 @@ const config: Config = {
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
         'scan': 'scan 8s linear infinite',
         'flicker': 'flicker 0.15s infinite',
+        'scanline': 'scanline 8s linear infinite',
       },
       keyframes: {
         'glow-pulse': {
@@ -71,6 +72,10 @@ const config: Config = {
         'flicker': {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.95' },
+        },
+        'scanline': {
+          '0%': { backgroundPosition: '0 0' },
+          '100%': { backgroundPosition: '0 100%' },
         },
       },
     },
