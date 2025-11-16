@@ -44,13 +44,31 @@ export interface ArcadeProfile {
 
 /**
  * Submit a score to the arcade system
- * Automatically awards XP and updates leaderboard
+ * Automatically saves to localStorage AND submits to backend
+ * - localStorage: immediate local storage for display
+ * - Backend: global leaderboards and XP (requires authentication)
  */
 export async function submitScore(submission: ScoreSubmission): Promise<ScoreResponse> {
+  // Always save to localStorage first (works for everyone)
+  const currentBest = getLocalHighScore(submission.gameId)
+  const isNewLocalBest = submission.score > currentBest
+
+  if (isNewLocalBest) {
+    saveLocalHighScore(submission.gameId, submission.score)
+  }
+
+  // Try to submit to backend (requires authentication)
   try {
     const token = localStorage.getItem('token')
     if (!token) {
-      throw new Error('Not authenticated')
+      // Not authenticated - return local-only response
+      return {
+        success: true,
+        is_new_high_score: isNewLocalBest,
+        xp_awarded: 0,
+        global_rank: null,
+        score: submission.score
+      }
     }
 
     const response = await fetch(`${API_URL}/api/arcade/submit-score`, {
@@ -68,11 +86,11 @@ export async function submitScore(submission: ScoreSubmission): Promise<ScoreRes
 
     return await response.json()
   } catch (error) {
-    console.error('Failed to submit score:', error)
-    // Return fallback response if API fails
+    console.error('Failed to submit score to backend:', error)
+    // Return fallback response with local info
     return {
-      success: false,
-      is_new_high_score: false,
+      success: true,
+      is_new_high_score: isNewLocalBest,
       xp_awarded: 0,
       global_rank: null,
       score: submission.score
