@@ -87,6 +87,21 @@ export default function SnakeGame() {
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(0);
 
+    // Load high score from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem('snake-highscore')
+        if (saved) {
+            setHighScore(parseInt(saved))
+        }
+    }, [])
+
+    // Save high score to localStorage when it changes
+    useEffect(() => {
+        if (highScore > 0) {
+            localStorage.setItem('snake-highscore', highScore.toString())
+        }
+    }, [highScore])
+
     /********************************************
      * SOUND EFFECTS
      ********************************************/
