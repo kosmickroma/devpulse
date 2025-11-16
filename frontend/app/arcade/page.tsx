@@ -27,16 +27,13 @@ export default function ArcadePage() {
   const [terminalHistory, setTerminalHistory] = useState<string[]>([])
   const [commandHistory, setCommandHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
-  const terminalRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const games: GameCardData[] = [
+  const [games, setGames] = useState<GameCardData[]>([
     {
       id: 'snake',
       title: 'SNAKE',
       emoji: '🐍',
       description: 'Classic snake with neon vibes',
-      highScore: typeof window !== 'undefined' ? parseInt(localStorage.getItem('snake-highscore') || '0') : 0,
+      highScore: 0,
       command: 'play snake'
     },
     {
@@ -44,7 +41,7 @@ export default function ArcadePage() {
       title: 'SPACE INVADERS',
       emoji: '👾',
       description: 'Defend Earth from alien invasion',
-      highScore: typeof window !== 'undefined' ? parseInt(localStorage.getItem('spaceinvaders-highscore') || '0') : 0,
+      highScore: 0,
       command: 'play space'
     },
     {
@@ -52,7 +49,7 @@ export default function ArcadePage() {
       title: 'MINESWEEPER',
       emoji: '💣',
       description: 'Neon minefield puzzle',
-      highScore: typeof window !== 'undefined' ? parseInt(localStorage.getItem('minesweeper-highscore') || '0') : 0,
+      highScore: 0,
       command: 'play mines'
     },
     {
@@ -60,10 +57,20 @@ export default function ArcadePage() {
       title: 'BRICK BREAKER',
       emoji: '🧱',
       description: 'Arkanoid-style brick breaking',
-      highScore: typeof window !== 'undefined' ? parseInt(localStorage.getItem('brickbreaker-highscore') || '0') : 0,
+      highScore: 0,
       command: 'play brick'
     }
-  ]
+  ])
+  const terminalRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Load high scores from localStorage on client side
+  useEffect(() => {
+    setGames(prevGames => prevGames.map(game => ({
+      ...game,
+      highScore: parseInt(localStorage.getItem(`${game.id}-highscore`) || '0')
+    })))
+  }, [])
 
   useEffect(() => {
     inputRef.current?.focus()

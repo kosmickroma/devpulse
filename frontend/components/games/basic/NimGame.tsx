@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { submitScore } from '@/lib/arcade'
 
 export default function NimGame() {
   const [piles, setPiles] = useState<number[]>([7, 5, 3])
@@ -114,6 +115,16 @@ export default function NimGame() {
         addOutput('  🎉 COMPUTER TOOK THE LAST!')
         addOutput('  YOU WIN!')
         setPlayerWins(playerWins + 1)
+
+        // Submit win score
+        submitScore({
+          gameId: 'nim',
+          score: 100,
+          metadata: {
+            totalWins: playerWins + 1,
+            totalLosses: computerWins
+          }
+        }).catch(err => console.error('Failed to submit score:', err))
       }
       addOutput('━━━━━━━━━━━━━━━━━━━━━━━━')
       addOutput('')

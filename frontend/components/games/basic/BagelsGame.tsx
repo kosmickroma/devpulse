@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { submitScore } from '@/lib/arcade'
 
 export default function BagelsGame() {
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'won' | 'askAgain'>('intro')
@@ -16,6 +17,19 @@ export default function BagelsGame() {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight
     }
   }, [output])
+
+  // Submit score when game is won
+  useEffect(() => {
+    if (gameState === 'won' && guessCount > 0) {
+      // Score: fewer guesses = higher score (200 - guesses * 10)
+      const score = Math.max(0, 200 - (guessCount * 10))
+      submitScore({
+        gameId: 'bagels',
+        score,
+        metadata: { guesses: guessCount }
+      }).catch(err => console.error('Failed to submit score:', err))
+    }
+  }, [gameState, guessCount])
 
   useEffect(() => {
     addOutput('BAGELS - NUMBER LOGIC GAME')

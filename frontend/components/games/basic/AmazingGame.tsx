@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { submitScore } from '@/lib/arcade'
 
 type Cell = {
   north: boolean
@@ -214,6 +215,18 @@ export default function AmazingGame() {
         addOutput('')
         addOutput('GENERATE ANOTHER MAZE? (YES/NO)')
         setInputMode('again')
+
+        // Submit score based on maze complexity (width * height)
+        const score = mazeWidth * num
+        submitScore({
+          gameId: 'amazing',
+          score,
+          metadata: {
+            width: mazeWidth,
+            height: num,
+            complexity: score
+          }
+        }).catch(err => console.error('Failed to submit score:', err))
       }, 500)
     } else if (inputMode === 'again') {
       const answer = value.trim().toUpperCase()

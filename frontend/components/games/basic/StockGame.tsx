@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { submitScore } from '@/lib/arcade'
 
 interface Stock {
   symbol: string
@@ -220,6 +221,19 @@ export default function StockGame() {
     }
     addOutput('')
     addOutput('Press ESC to exit.')
+
+    // Submit score based on total portfolio value
+    const score = Math.round(totalValue)
+    submitScore({
+      gameId: 'stock',
+      score,
+      metadata: {
+        finalDay: day,
+        cash: cash,
+        totalValue: totalValue,
+        profit: profit
+      }
+    }).catch(err => console.error('Failed to submit score:', err))
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {

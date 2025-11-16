@@ -6,6 +6,7 @@ Handles JWT token extraction and validation for Supabase auth.
 
 from typing import Optional
 from jose import jwt, JWTError
+from fastapi import Header, HTTPException
 
 
 def get_user_from_token(authorization: Optional[str]) -> Optional[str]:
@@ -40,3 +41,24 @@ def get_user_from_token(authorization: Optional[str]) -> Optional[str]:
     except Exception as e:
         print(f"Token extraction error: {e}")
         return None
+
+
+async def get_current_user(authorization: Optional[str] = Header(None)):
+    """
+    FastAPI dependency to get current authenticated user.
+
+    Args:
+        authorization: The Authorization header value
+
+    Returns:
+        Dict with user information
+
+    Raises:
+        HTTPException: If authentication fails
+    """
+    user_id = get_user_from_token(authorization)
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or missing authentication token")
+
+    return {"id": user_id}

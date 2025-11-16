@@ -17,6 +17,7 @@
 
 import React, { useState, useEffect, useCallback, useContext } from "react";
 import { GameNotificationContext } from "../GameOverlay";
+import { submitScore } from "@/lib/arcade";
 
 /********************************************
  * TYPES
@@ -266,6 +267,26 @@ export default function SnakeGame() {
 
         return () => clearInterval(interval);
     }, [direction, food, isGameOver, isPaused, generateNewFoodPosition, score, highScore, playEatSound, playGameOverSound]);
+
+    // Submit score when game ends
+    useEffect(() => {
+        if (isGameOver && score > 0) {
+            submitScore({
+                gameId: 'snake',
+                score,
+                metadata: {
+                    length: snake.length,
+                    finalSnakeLength: snake.length
+                }
+            }).then(response => {
+                if (response.is_new_high_score) {
+                    console.log(`New high score! XP awarded: ${response.xp_awarded}`)
+                }
+            }).catch(err => {
+                console.error('Failed to submit score:', err)
+            })
+        }
+    }, [isGameOver, score, snake.length])
 
     /********************************************
      * RENDER BOARD

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { submitScore } from '@/lib/arcade'
 
 export default function OregonGame() {
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'ended'>('intro')
@@ -174,6 +175,20 @@ export default function OregonGame() {
     }
     addOutput('')
     addOutput('Press ESC to exit.')
+
+    // Submit score - 1000 base + bonuses for health/food + speed bonus
+    const speedBonus = Math.max(0, (60 - day) * 10)
+    const score = 1000 + health + Math.floor(food / 2) + speedBonus
+    submitScore({
+      gameId: 'oregon',
+      score,
+      metadata: {
+        days: day,
+        health: health,
+        food: food,
+        won: true
+      }
+    }).catch(err => console.error('Failed to submit score:', err))
   }
 
   const loseGame = (reason: string) => {
@@ -189,6 +204,21 @@ export default function OregonGame() {
     addOutput('Better luck next time, pioneer!')
     addOutput('')
     addOutput('Press ESC to exit.')
+
+    // Submit score based on distance traveled
+    const score = miles
+    submitScore({
+      gameId: 'oregon',
+      score,
+      metadata: {
+        days: day,
+        miles: miles,
+        health: health,
+        food: food,
+        won: false,
+        deathReason: reason
+      }
+    }).catch(err => console.error('Failed to submit score:', err))
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {

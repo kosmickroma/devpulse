@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { submitScore } from '@/lib/arcade'
 
 export default function GuessGame() {
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'won' | 'askAgain'>('intro')
@@ -26,6 +27,19 @@ export default function GuessGame() {
     addOutput('')
     startNewGame()
   }, [])
+
+  // Submit score when game is won
+  useEffect(() => {
+    if (gameState === 'won' && guessCount > 0) {
+      // Score: fewer guesses = higher score (100 - guesses)
+      const score = Math.max(0, 100 - guessCount)
+      submitScore({
+        gameId: 'guess',
+        score,
+        metadata: { guesses: guessCount }
+      }).catch(err => console.error('Failed to submit score:', err))
+    }
+  }, [gameState, guessCount])
 
   const startNewGame = () => {
     const num = Math.floor(Math.random() * maxNumber) + 1
