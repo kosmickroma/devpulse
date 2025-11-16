@@ -7,6 +7,8 @@ import AmazingGame from '@/components/games/basic/AmazingGame'
 import StockGame from '@/components/games/basic/StockGame'
 import OregonGame from '@/components/games/basic/OregonGame'
 import StarTrekGame from '@/components/games/basic/StarTrekGame'
+import BagelsGame from '@/components/games/basic/BagelsGame'
+import NimGame from '@/components/games/basic/NimGame'
 
 interface BasicProgram {
   id: string
@@ -18,6 +20,7 @@ interface BasicProgram {
   status: 'restored' | 'locked' | 'corrupted'
   difficulty: 'beginner' | 'intermediate' | 'advanced'
   category: string
+  basicCode?: string
 }
 
 export default function VaultPage() {
@@ -43,7 +46,75 @@ export default function VaultPage() {
       year: '1973',
       status: 'restored',
       difficulty: 'beginner',
-      category: 'Game'
+      category: 'Game',
+      basicCode: `10 PRINT "GUESS THE NUMBER"
+20 N=INT(RND(1)*100)+1
+30 PRINT "I'M THINKING OF A NUMBER FROM 1 TO 100"
+40 PRINT "TRY TO GUESS IT"
+50 INPUT G
+60 IF G=N THEN 100
+70 IF G<N THEN PRINT "TOO LOW"
+80 IF G>N THEN PRINT "TOO HIGH"
+90 GOTO 50
+100 PRINT "YOU GOT IT!"
+110 END`
+    },
+    {
+      id: 'bagels',
+      number: 17,
+      title: 'BAGELS',
+      fullTitle: 'Number Logic Game',
+      description: 'Deduce a 3-digit number using logic clues. PICO = right digit, wrong position. FERMI = right digit, right position. Teaches deductive reasoning.',
+      year: '1971',
+      status: 'restored',
+      difficulty: 'beginner',
+      category: 'Logic',
+      basicCode: `10 PRINT "BAGELS"
+20 DIM A(3),B(3)
+30 FOR I=1 TO 3
+40 A(I)=INT(10*RND(1))
+50 FOR J=1 TO I-1
+60 IF A(I)=A(J) THEN 40
+70 NEXT J
+80 NEXT I
+90 PRINT "I HAVE A 3-DIGIT NUMBER"
+100 INPUT B$
+110 FOR J=1 TO 3
+120 B(J)=VAL(MID$(B$,J,1))
+130 NEXT J
+140 C=0
+150 FOR J=1 TO 3
+160 IF B(J)=A(J) THEN PRINT "FERMI";:C=1
+170 IF B(J)=A(1) OR B(J)=A(2) OR B(J)=A(3) THEN PRINT "PICO";:C=1
+180 NEXT J
+190 IF C=0 THEN PRINT "BAGELS"
+200 END`
+    },
+    {
+      id: 'nim',
+      number: 62,
+      title: 'NIM',
+      fullTitle: 'Mathematical Strategy Game',
+      description: 'Classic game theory challenge. Remove objects from piles strategically. Last player to move loses. Teaches optimal strategy and XOR operations.',
+      year: '1970',
+      status: 'restored',
+      difficulty: 'intermediate',
+      category: 'Strategy',
+      basicCode: `10 PRINT "NIM"
+20 DIM A(3)
+30 A(1)=7:A(2)=5:A(3)=3
+40 PRINT "PILE 1:";A(1)
+50 PRINT "PILE 2:";A(2)
+60 PRINT "PILE 3:";A(3)
+70 INPUT "YOUR MOVE (PILE,AMOUNT)";P,N
+80 A(P)=A(P)-N
+90 IF A(1)+A(2)+A(3)=0 THEN 200
+100 REM COMPUTER MOVE
+110 FOR I=1 TO 3
+120 IF A(I)>0 THEN A(I)=A(I)-1:GOTO 40
+130 NEXT I
+200 PRINT "GAME OVER"
+210 END`
     },
     {
       id: 'amazing',
@@ -54,7 +125,27 @@ export default function VaultPage() {
       year: '1972',
       status: 'restored',
       difficulty: 'intermediate',
-      category: 'Graphics'
+      category: 'Graphics',
+      basicCode: `10 PRINT "AMAZING MAZE GENERATOR"
+20 INPUT "WIDTH";W
+30 INPUT "HEIGHT";H
+40 DIM M(W,H)
+50 REM DEPTH-FIRST SEARCH
+60 X=INT(RND(1)*W)+1
+70 Y=INT(RND(1)*H)+1
+80 M(X,Y)=1
+90 REM GENERATE MAZE
+100 FOR I=1 TO W*H
+110 REM CARVE PATHS
+120 NEXT I
+130 REM PRINT MAZE
+140 FOR Y=1 TO H
+150 FOR X=1 TO W
+160 IF M(X,Y)=1 THEN PRINT " "; ELSE PRINT "#";
+170 NEXT X
+180 PRINT
+190 NEXT Y
+200 END`
     },
     {
       id: 'stock',
@@ -65,7 +156,25 @@ export default function VaultPage() {
       year: '1976',
       status: 'restored',
       difficulty: 'intermediate',
-      category: 'Simulation'
+      category: 'Simulation',
+      basicCode: `10 PRINT "STOCK MARKET"
+20 C=10000:REM CASH
+30 DIM S(5),P(5),O(5)
+40 FOR I=1 TO 5
+50 P(I)=100+RND(1)*100
+60 NEXT I
+70 PRINT "YOUR CASH:";C
+80 FOR I=1 TO 5
+90 PRINT "STOCK";I;":$";P(I)
+100 NEXT I
+110 INPUT "BUY STOCK#, SHARES";N,A
+120 IF C>=P(N)*A THEN C=C-P(N)*A:O(N)=O(N)+A
+130 REM UPDATE PRICES
+140 FOR I=1 TO 5
+150 P(I)=P(I)*(0.9+RND(1)*0.2)
+160 NEXT I
+170 GOTO 70
+180 END`
     },
     {
       id: 'oregon',
@@ -76,7 +185,19 @@ export default function VaultPage() {
       year: '1978',
       status: 'restored',
       difficulty: 'intermediate',
-      category: 'Adventure'
+      category: 'Adventure',
+      basicCode: `10 PRINT "OREGON TRAIL"
+20 F=500:M=0:H=100
+30 PRINT "FOOD:";F;" MILES:";M;" HEALTH:";H
+40 PRINT "1=TRAVEL 2=REST 3=HUNT"
+50 INPUT A
+60 IF A=1 THEN M=M+50:F=F-20:H=H-5
+70 IF A=2 THEN H=H+20:F=F-10
+80 IF A=3 AND RND(1)>0.3 THEN F=F+80
+90 IF RND(1)<0.1 THEN PRINT "STORM!":F=F-30
+100 IF M>=2000 THEN PRINT "YOU MADE IT!":END
+110 IF H<=0 OR F<=0 THEN PRINT "YOU DIED":END
+120 GOTO 30`
     },
     {
       id: 'startrek',
@@ -87,7 +208,23 @@ export default function VaultPage() {
       year: '1974',
       status: 'restored',
       difficulty: 'advanced',
-      category: 'Strategy'
+      category: 'Strategy',
+      basicCode: `10 PRINT "SUPER STAR TREK"
+20 E=3000:T=10:K=3
+30 PRINT "ENERGY:";E;" TORPEDOES:";T
+40 PRINT "KLINGONS:";K
+50 PRINT "1=FIRE 2=SHIELDS 3=MOVE"
+60 INPUT C
+70 IF C=1 AND T>0 THEN T=T-1:K=K-1
+80 IF C=2 THEN INPUT "SHIELDS";S:E=E-S
+90 IF C=3 THEN E=E-100
+100 REM KLINGON ATTACK
+110 D=K*50
+120 E=E-D
+130 PRINT "KLINGON HIT:";D
+140 IF K<=0 THEN PRINT "VICTORY!":END
+150 IF E<=0 THEN PRINT "DESTROYED!":END
+160 GOTO 30`
     }
   ]
 
@@ -439,10 +576,8 @@ Commands:
                   <h4 className="text-green-500 font-mono mb-2 pb-2 border-b border-green-700">
                     ORIGINAL BASIC ({selectedProgram.year})
                   </h4>
-                  <div className="bg-black p-4 rounded border border-green-900 font-mono text-xs text-green-400">
-                    <div>10 PRINT &quot;COMING SOON&quot;</div>
-                    <div>20 PRINT &quot;Original BASIC code will be displayed here&quot;</div>
-                    <div>30 GOTO 10</div>
+                  <div className="bg-black p-4 rounded border border-green-900 font-mono text-xs text-green-400 whitespace-pre-wrap max-h-96 overflow-y-auto">
+                    {selectedProgram.basicCode || '10 PRINT "CODE NOT AVAILABLE"\n20 END'}
                   </div>
                 </div>
                 <div>
@@ -488,6 +623,8 @@ Commands:
             </div>
             <div className="overflow-y-auto max-h-[calc(90vh-80px)] bg-black">
               {runningGame === 'guess' && <GuessGame />}
+              {runningGame === 'bagels' && <BagelsGame />}
+              {runningGame === 'nim' && <NimGame />}
               {runningGame === 'amazing' && <AmazingGame />}
               {runningGame === 'stock' && <StockGame />}
               {runningGame === 'oregon' && <OregonGame />}
