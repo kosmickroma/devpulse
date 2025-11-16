@@ -17,6 +17,9 @@ from api.spider_runner import SpiderRunner
 # Import SYNTH AI routers
 from api.ai import summarize, ask, search
 
+# Import Market data routers
+from api.market import stocks, crypto
+
 app = FastAPI(
     title="DevPulse API",
     description="Real-time developer trends aggregation with AI assistant",
@@ -229,6 +232,10 @@ async def check_environment():
 app.include_router(summarize.router, prefix='/api/ai', tags=['synth-ai'])
 app.include_router(ask.router, prefix='/api/ai', tags=['synth-ai'])
 app.include_router(search.router, prefix='/api/ai', tags=['synth-ai'])
+
+# Include Market data routers
+app.include_router(stocks.router, prefix='/api', tags=['market-data'])
+app.include_router(crypto.router, prefix='/api', tags=['market-data'])
 
 
 if __name__ == "__main__":

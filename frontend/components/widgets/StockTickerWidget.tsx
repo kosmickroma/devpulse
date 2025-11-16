@@ -46,11 +46,21 @@ export default function StockTickerWidget({
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-      // Fetch trending stocks from backend
-      const response = await fetch(`${API_URL}/api/scan?sources=yahoo_finance`, {
+      // Use new dedicated stocks endpoint
+      let endpoint = `${API_URL}/api/stocks`
+
+      if (watchlist.length > 0) {
+        // Fetch specific watchlist symbols
+        endpoint += `?symbols=${watchlist.join(',')}`
+      } else if (settings.showTrending) {
+        // Fetch trending stocks
+        endpoint += '/trending'
+      }
+
+      const response = await fetch(endpoint, {
         method: 'GET',
         headers: {
-          'Accept': 'text/event-stream',
+          'Accept': 'application/json',
         },
       })
 
@@ -58,51 +68,20 @@ export default function StockTickerWidget({
         throw new Error(`HTTP ${response.status}: Failed to fetch stocks`)
       }
 
-      const reader = response.body?.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
-      const stockResults: StockData[] = []
+      const data = await response.json()
 
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
+      // Map API response to widget format
+      const stockResults: StockData[] = data.stocks.map((stock: any) => ({
+        symbol: stock.symbol,
+        name: stock.name,
+        price: stock.price,
+        change: stock.change,
+        changePercent: stock.changePercent,
+        volume: stock.volume || 0,
+        marketCap: stock.marketCap || 0
+      }))
 
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n')
-          buffer = lines.pop() || ''
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const event = JSON.parse(line.slice(6))
-                if (event.type === 'item' && event.data.source === 'yahoo_finance') {
-                  const item = event.data
-                  // Parse stock data from spider format
-                  const priceMatch = item.description?.match(/\$([0-9,.]+)/)
-                  const changeMatch = item.description?.match(/\(([+-][0-9,.]+),\s*([+-][0-9.]+%)\)/)
-
-                  if (priceMatch && changeMatch) {
-                    stockResults.push({
-                      symbol: item.title?.match(/[📈📉]\s*([A-Z]+)/)?.[1] || 'N/A',
-                      name: item.title?.split(' - ')[1] || item.title || 'Unknown',
-                      price: parseFloat(priceMatch[1].replace(/,/g, '')),
-                      change: parseFloat(changeMatch[1].replace(/,/g, '')),
-                      changePercent: parseFloat(changeMatch[2]),
-                      volume: item.score || 0,
-                      marketCap: item.stars || 0
-                    })
-                  }
-                }
-              } catch (e) {
-                console.error('Parse error:', e)
-              }
-            }
-          }
-        }
-      }
-
-      setStocks(stockResults.slice(0, 10))
+      setStocks(stockResults)
     } catch (err: any) {
       setError(err.message || 'Failed to fetch stock data')
       console.error('[STOCK WIDGET] Error:', err)

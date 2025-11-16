@@ -60,10 +60,21 @@ export default function CryptoTickerWidget({
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-      const response = await fetch(`${API_URL}/api/scan?sources=coingecko`, {
+      // Use new dedicated crypto endpoint
+      let endpoint = `${API_URL}/api/crypto`
+
+      if (watchlist.length > 0) {
+        // Fetch specific watchlist coins (use CoinGecko IDs)
+        endpoint += `?coins=${watchlist.join(',')}`
+      } else if (settings.showTrending) {
+        // Fetch trending crypto
+        endpoint += '/trending'
+      }
+
+      const response = await fetch(endpoint, {
         method: 'GET',
         headers: {
-          'Accept': 'text/event-stream',
+          'Accept': 'application/json',
         },
       })
 
@@ -71,52 +82,21 @@ export default function CryptoTickerWidget({
         throw new Error(`HTTP ${response.status}: Failed to fetch crypto`)
       }
 
-      const reader = response.body?.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
-      const cryptoResults: CryptoData[] = []
+      const data = await response.json()
 
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
+      // Map API response to widget format
+      const cryptoResults: CryptoData[] = data.coins.map((coin: any) => ({
+        symbol: coin.symbol,
+        name: coin.name,
+        price: coin.price,
+        change24h: coin.change24h,
+        changePercent24h: coin.changePercent24h,
+        marketCap: coin.marketCap,
+        volume24h: coin.volume24h,
+        rank: coin.rank
+      }))
 
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n')
-          buffer = lines.pop() || ''
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const event = JSON.parse(line.slice(6))
-                if (event.type === 'item' && event.data.source === 'coingecko') {
-                  const item = event.data
-                  // Parse crypto data from spider format
-                  const priceMatch = item.description?.match(/\$([0-9,.]+)/)
-                  const changeMatch = item.description?.match(/\(([+-][0-9.]+)%/)
-                  const rankMatch = item.description?.match(/Rank:\s*#([0-9]+)/)
-
-                  if (priceMatch) {
-                    cryptoResults.push({
-                      symbol: item.title?.match(/[🔥📈📉]\s*([A-Z]+)/)?.[1] || 'N/A',
-                      name: item.title?.split(' - ')[1]?.split(' (')[0] || item.title || 'Unknown',
-                      price: parseFloat(priceMatch[1].replace(/,/g, '')),
-                      change24h: 0, // Will calculate from percent
-                      changePercent24h: changeMatch ? parseFloat(changeMatch[1]) : 0,
-                      marketCap: item.stars || 0,
-                      rank: rankMatch ? parseInt(rankMatch[1]) : undefined
-                    })
-                  }
-                }
-              } catch (e) {
-                console.error('Parse error:', e)
-              }
-            }
-          }
-        }
-      }
-
-      setCoins(cryptoResults.slice(0, 10))
+      setCoins(cryptoResults)
     } catch (err: any) {
       setError(err.message || 'Failed to fetch crypto data')
       console.error('[CRYPTO WIDGET] Error:', err)
