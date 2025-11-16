@@ -20,6 +20,9 @@ from api.ai import summarize, ask, search
 # Import Market data routers
 from api.market import stocks, crypto
 
+# Import Arcade routers
+from api.arcade import scores
+
 app = FastAPI(
     title="DevPulse API",
     description="Real-time developer trends aggregation with AI assistant",
@@ -236,6 +239,9 @@ app.include_router(search.router, prefix='/api/ai', tags=['synth-ai'])
 # Include Market data routers
 app.include_router(stocks.router, prefix='/api', tags=['market-data'])
 app.include_router(crypto.router, prefix='/api', tags=['market-data'])
+
+# Include Arcade routers
+app.include_router(scores.router, prefix='/api/arcade', tags=['arcade'])
 
 
 if __name__ == "__main__":
