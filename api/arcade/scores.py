@@ -8,11 +8,11 @@ from api.utils.auth import get_current_user
 router = APIRouter()
 
 # Supabase client - initialize only if env vars are set
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_URL = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    print("WARNING: SUPABASE_URL and SUPABASE_KEY must be set for arcade features to work")
+    print("WARNING: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_KEY must be set for arcade features to work")
     supabase = None
 else:
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
