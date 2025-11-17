@@ -208,21 +208,23 @@ export default function CodeQuest({ onGameOver }: GameProps) {
       } else {
         // Wrong answer
         setCombo(0)
-        setLives(prev => {
-          const newLives = prev - 1
-          if (newLives <= 0) {
-            // Game over
+        const newLives = lives - 1
+        setLives(newLives)
+
+        if (newLives <= 0) {
+          // Game over - delay to show feedback first
+          setTimeout(() => {
             endGame()
-          }
-          return newLives
-        })
+          }, 3000)
+        }
       }
 
       setGameState('feedback')
 
-      // Auto-continue after 3 seconds
+      // Auto-continue after 3 seconds (only if game not over)
       setTimeout(() => {
-        if (lives > 1 || result.correct) {
+        const newLives = result.correct ? lives : lives - 1
+        if (newLives > 0) {
           nextQuestion()
         }
       }, 3000)
@@ -340,7 +342,7 @@ export default function CodeQuest({ onGameOver }: GameProps) {
     const timerColor = timeLeft < 5 ? 'text-red-500' : 'text-cyan-400'
 
     return (
-      <div className="h-full flex flex-col p-6">
+      <div className="h-full flex flex-col p-6 max-w-4xl mx-auto w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
