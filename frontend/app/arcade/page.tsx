@@ -298,6 +298,39 @@ Available commands:
           </div>
         </div>
 
+        {/* Exclusive Badge Notice - Genesis Phase */}
+        <div className="mb-8 relative border-4 border-neon-magenta/50 bg-gradient-to-r from-black via-purple-900/20 to-black rounded-lg p-6 overflow-hidden">
+          {/* Animated background effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 animate-pulse" />
+
+          <div className="relative z-10 text-center space-y-3">
+            <div className="text-6xl animate-bounce-slow">🌈</div>
+            <div className="text-3xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 drop-shadow-[0_0_15px_rgba(255,0,255,0.8)]">
+              ⚡ GENESIS PHASE EXCLUSIVE ⚡
+            </div>
+            <div className="text-xl font-mono text-cyan-400">
+              Reach <span className="text-neon-magenta font-bold">2500 XP</span> and unlock the legendary{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 font-bold">
+                NEON PIONEER
+              </span>{' '}
+              holographic badge
+            </div>
+            <div className="text-sm font-mono text-gray-400 max-w-2xl mx-auto">
+              This ultra-rare holographic badge is exclusively available to early operators during the Genesis Phase.
+              Once this era ends, it will never be available again. Secure your place in DevPulse history!
+            </div>
+            <div className="text-xs font-mono text-neon-magenta/70 animate-pulse pt-2">
+              [ LIMITED TIME ONLY - GENESIS PHASE OPERATORS ONLY ]
+            </div>
+          </div>
+
+          {/* Corner decorations */}
+          <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-neon-magenta animate-pulse" />
+          <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-neon-cyan animate-pulse animation-delay-150" />
+          <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-neon-cyan animate-pulse animation-delay-300" />
+          <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-neon-magenta animate-pulse animation-delay-450" />
+        </div>
+
         {/* Game Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {games.map(game => (

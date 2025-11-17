@@ -98,6 +98,7 @@ export default function OperatorProfileModal({ isOpen, onClose }: OperatorProfil
 
   const getRarityColor = (rarity: string) => {
     switch (rarity.toLowerCase()) {
+      case 'holographic': return 'holographic'
       case 'legendary': return 'neon-magenta'
       case 'epic': return 'neon-purple'
       case 'rare': return 'neon-blue'
@@ -211,17 +212,30 @@ export default function OperatorProfileModal({ isOpen, onClose }: OperatorProfil
                     <span>⭐</span>
                     CURRENTLY EQUIPPED
                   </h3>
-                  <div className={`flex items-center gap-4 p-4 border-2 border-${getRarityColor(profile.equipped_badge.badges.rarity)} rounded bg-black/50`}>
-                    <div className="text-6xl">{profile.equipped_badge.badges.icon}</div>
-                    <div>
-                      <div className={`text-2xl font-mono font-bold text-${getRarityColor(profile.equipped_badge.badges.rarity)}`}>
-                        {profile.equipped_badge.badges.name}
+                  {(() => {
+                    const isHolographic = profile.equipped_badge.badges.rarity.toLowerCase() === 'holographic'
+                    const color = getRarityColor(profile.equipped_badge.badges.rarity)
+
+                    return (
+                      <div
+                        className={`flex items-center gap-4 p-4 border-2 ${isHolographic ? 'border-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 p-[2px]' : `border-${color}`} rounded bg-black/50`}
+                        style={isHolographic ? {
+                          boxShadow: '0 0 30px rgba(255, 0, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)'
+                        } : undefined}
+                      >
+                        {isHolographic && <div className="absolute inset-[2px] bg-black/50 rounded z-0" />}
+                        <div className="text-6xl relative z-10">{profile.equipped_badge.badges.icon}</div>
+                        <div className="relative z-10">
+                          <div className={`text-2xl font-mono font-bold ${isHolographic ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500' : `text-${color}`}`}>
+                            {profile.equipped_badge.badges.name}
+                          </div>
+                          <div className={`text-xs font-mono uppercase ${isHolographic ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500' : `text-${color}/70`}`}>
+                            {profile.equipped_badge.badges.rarity}
+                          </div>
+                        </div>
                       </div>
-                      <div className={`text-xs font-mono text-${getRarityColor(profile.equipped_badge.badges.rarity)}/70 uppercase`}>
-                        {profile.equipped_badge.badges.rarity}
-                      </div>
-                    </div>
-                  </div>
+                    )
+                  })()}
                 </div>
               )}
 
@@ -242,30 +256,37 @@ export default function OperatorProfileModal({ isOpen, onClose }: OperatorProfil
                       const badge = userBadge.badges
                       const color = getRarityColor(badge.rarity)
                       const isEquipped = userBadge.is_equipped
+                      const isHolographic = badge.rarity.toLowerCase() === 'holographic'
 
                       return (
                         <div
                           key={userBadge.id}
-                          className={`border-2 border-${color}/30 rounded-lg p-4 bg-black/50 transition-all hover:border-${color} hover:shadow-[0_0_20px_rgba(255,0,255,0.3)]`}
+                          className={`border-2 ${isHolographic ? 'border-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 p-[2px]' : `border-${color}/30`} rounded-lg ${isHolographic ? '' : 'p-4'} bg-black/50 transition-all ${isHolographic ? '' : `hover:border-${color} hover:shadow-[0_0_20px_rgba(255,0,255,0.3)]`}`}
+                          style={isHolographic ? {
+                            boxShadow: '0 0 30px rgba(255, 0, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)'
+                          } : undefined}
                         >
-                          <div className="flex items-start gap-3">
+                          {isHolographic && <div className="absolute inset-[2px] bg-black/50 rounded-lg z-0" />}
+                          <div className={`flex items-start gap-3 ${isHolographic ? 'p-4 relative z-10' : ''}`}>
                             <div className="text-4xl">{badge.icon}</div>
                             <div className="flex-1">
-                              <div className={`font-mono font-bold text-${color} mb-1`}>
+                              <div className={`font-mono font-bold mb-1 ${isHolographic ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500' : `text-${color}`}`}>
                                 {badge.name}
                               </div>
                               <div className="text-xs text-gray-400 font-mono mb-2">
                                 {badge.description}
                               </div>
-                              <div className={`text-xs font-mono text-${color}/70 uppercase mb-3`}>
+                              <div className={`text-xs font-mono uppercase mb-3 ${isHolographic ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500' : `text-${color}/70`}`}>
                                 {badge.rarity}
                               </div>
                               <button
                                 onClick={() => handleEquipBadge(badge.id, isEquipped)}
                                 className={`px-3 py-1 text-xs font-mono font-bold rounded transition-all ${
                                   isEquipped
-                                    ? `bg-${color}/20 border-2 border-${color} text-${color}`
-                                    : `bg-gray-700 border-2 border-gray-600 text-gray-300 hover:border-${color} hover:text-${color}`
+                                    ? isHolographic
+                                      ? 'bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 text-black border-2 border-transparent'
+                                      : `bg-${color}/20 border-2 border-${color} text-${color}`
+                                    : `bg-gray-700 border-2 border-gray-600 text-gray-300 ${isHolographic ? 'hover:border-pink-500 hover:text-pink-500' : `hover:border-${color} hover:text-${color}`}`
                                 }`}
                               >
                                 {isEquipped ? '✓ EQUIPPED' : 'EQUIP'}

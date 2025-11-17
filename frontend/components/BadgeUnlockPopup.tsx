@@ -35,6 +35,7 @@ export default function BadgeUnlockPopup({ badge, onClose }: BadgeUnlockPopupPro
   // Get color based on rarity
   const getRarityColor = (rarity: string) => {
     switch (rarity.toLowerCase()) {
+      case 'holographic': return 'holographic' // Special handling
       case 'legendary': return 'neon-magenta'
       case 'epic': return 'neon-purple'
       case 'rare': return 'neon-blue'
@@ -45,9 +46,11 @@ export default function BadgeUnlockPopup({ badge, onClose }: BadgeUnlockPopupPro
   }
 
   const color = getRarityColor(badge.rarity)
-  const textColorClass = `text-${color}`
-  const borderColorClass = `border-${color}`
-  const shadowClass = `shadow-${color}`
+  const isHolographic = badge.rarity.toLowerCase() === 'holographic'
+
+  const textColorClass = isHolographic ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500' : `text-${color}`
+  const borderColorClass = isHolographic ? 'border-transparent' : `border-${color}`
+  const shadowClass = isHolographic ? '' : `shadow-${color}`
 
   return (
     <>
@@ -66,7 +69,7 @@ export default function BadgeUnlockPopup({ badge, onClose }: BadgeUnlockPopupPro
           fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
           z-[10000]
           p-8
-          border-4 ${borderColorClass}
+          ${isHolographic ? 'border-4 border-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 p-[4px]' : `border-4 ${borderColorClass}`}
           bg-dark-bg/90
           backdrop-blur-md
           rounded-lg
@@ -75,11 +78,17 @@ export default function BadgeUnlockPopup({ badge, onClose }: BadgeUnlockPopupPro
           w-96
           ${show ? 'animate-in zoom-in-95 fade-in duration-300' : 'animate-out zoom-out-95 fade-out duration-300'}
         `}
-        style={{
+        style={isHolographic ? {
+          boxShadow: '0 0 60px rgba(255, 0, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.4), inset 0 0 40px rgba(255, 255, 255, 0.2)',
+          animation: 'neon-flicker 0.3s ease-in-out 6, glow-pulse 2s ease-in-out infinite 2s, hue-rotate 3s linear infinite'
+        } : {
           boxShadow: `0 0 60px var(--${color}), inset 0 0 40px rgba(57, 255, 20, 0.3)`,
           animation: 'neon-flicker 0.3s ease-in-out 6, glow-pulse 2s ease-in-out infinite 2s'
         }}
       >
+        {isHolographic && (
+          <div className="absolute inset-[4px] bg-dark-bg/90 backdrop-blur-md rounded-lg z-0" />
+        )}
         <div className="text-center space-y-4">
           {/* Achievement Header */}
           <div className={`${textColorClass} font-bold font-mono text-2xl tracking-wider drop-shadow-[0_0_10px_currentColor]`}>
