@@ -7,6 +7,7 @@ import SimpleFilterBar from '@/components/SimpleFilterBar'
 import SynthFindsButton from '@/components/SynthFindsButton'
 import Navbar from '@/components/Navbar'
 import Sidebar from '@/components/Sidebar'
+import OperatorProfileModal from '@/components/OperatorProfileModal'
 import Footer from '@/components/Footer'
 import { TrendingItem } from '@/lib/types'
 import { loadTodaysScanResults } from '@/lib/db'
@@ -25,6 +26,7 @@ export default function Home() {
   const [isFromCache, setIsFromCache] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
 
   // Load user preferences and cached results on mount
   useEffect(() => {
@@ -154,7 +156,15 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onOpenProfile={() => setShowProfile(true)}
+      />
+      <OperatorProfileModal
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+      />
 
       {/* Auth Error Display */}
       {authError && (

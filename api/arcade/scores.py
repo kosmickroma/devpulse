@@ -143,7 +143,7 @@ async def get_leaderboard(game_id: str, limit: int = 50):
 
     try:
         result = supabase.table('leaderboard')\
-            .select('rank, username, score, achieved_at, metadata')\
+            .select('rank, username, score, achieved_at, metadata, badge_icon, badge_name, badge_rarity')\
             .eq('game_id', game_id)\
             .order('rank')\
             .limit(limit)\
@@ -241,7 +241,7 @@ async def get_all_leaderboards(limit: int = 10):
         all_leaderboards = {}
         for game_id in games:
             result = supabase.table('leaderboard')\
-                .select('rank, username, score, achieved_at')\
+                .select('rank, username, score, achieved_at, badge_icon, badge_name, badge_rarity')\
                 .eq('game_id', game_id)\
                 .order('rank')\
                 .limit(limit)\
