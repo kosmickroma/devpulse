@@ -96,8 +96,18 @@ export default function BadgeUnlockPopup({ badge, onClose }: BadgeUnlockPopupPro
           </div>
 
           {/* Badge Icon - HUGE */}
-          <div className="text-8xl animate-bounce-slow my-6 filter drop-shadow-[0_0_20px_rgba(255,255,255,0.8)]">
-            {badge.icon}
+          <div className="my-6 flex justify-center items-center">
+            {badge.icon.startsWith('/') ? (
+              <img
+                src={badge.icon}
+                alt={badge.name}
+                className="w-32 h-32 animate-bounce-slow filter drop-shadow-[0_0_30px_rgba(255,0,255,0.9)]"
+              />
+            ) : (
+              <div className="text-8xl animate-bounce-slow filter drop-shadow-[0_0_20px_rgba(255,255,255,0.8)]">
+                {badge.icon}
+              </div>
+            )}
           </div>
 
           {/* Badge Name */}

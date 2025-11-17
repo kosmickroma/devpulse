@@ -304,7 +304,13 @@ Available commands:
           <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 animate-pulse" />
 
           <div className="relative z-10 text-center space-y-3">
-            <div className="text-6xl animate-bounce-slow">🌈</div>
+            <div className="flex justify-center my-4">
+              <img
+                src="/badges/neon-pioneer.svg"
+                alt="Neon Pioneer Badge"
+                className="w-24 h-24 animate-bounce-slow filter drop-shadow-[0_0_40px_rgba(255,0,255,0.9)]"
+              />
+            </div>
             <div className="text-3xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 drop-shadow-[0_0_15px_rgba(255,0,255,0.8)]">
               ⚡ GENESIS PHASE EXCLUSIVE ⚡
             </div>

@@ -231,7 +231,16 @@ export default function ArcadeLeaderboard({ onClose }: { onClose: () => void }) 
                           <div className="flex items-center gap-2 mt-1">
                             <div className={`text-sm font-mono flex items-center gap-1 ${isTopThree ? 'text-black/80' : isCurrentUser ? 'text-purple-300' : 'text-gray-300'}`}>
                               {entry.badge_icon ? (
-                                <span className="text-base" title={entry.badge_name || ''}>{entry.badge_icon}</span>
+                                entry.badge_icon.startsWith('/') ? (
+                                  <img
+                                    src={entry.badge_icon}
+                                    alt={entry.badge_name || 'Badge'}
+                                    title={entry.badge_name || ''}
+                                    className="w-5 h-5"
+                                  />
+                                ) : (
+                                  <span className="text-base" title={entry.badge_name || ''}>{entry.badge_icon}</span>
+                                )
                               ) : (
                                 <span>👤</span>
                               )}

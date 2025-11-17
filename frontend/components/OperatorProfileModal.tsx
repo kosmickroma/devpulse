@@ -224,7 +224,17 @@ export default function OperatorProfileModal({ isOpen, onClose }: OperatorProfil
                         } : undefined}
                       >
                         {isHolographic && <div className="absolute inset-[2px] bg-black/50 rounded z-0" />}
-                        <div className="text-6xl relative z-10">{profile.equipped_badge.badges.icon}</div>
+                        <div className="relative z-10">
+                          {profile.equipped_badge.badges.icon.startsWith('/') ? (
+                            <img
+                              src={profile.equipped_badge.badges.icon}
+                              alt={profile.equipped_badge.badges.name}
+                              className="w-20 h-20"
+                            />
+                          ) : (
+                            <div className="text-6xl">{profile.equipped_badge.badges.icon}</div>
+                          )}
+                        </div>
                         <div className="relative z-10">
                           <div className={`text-2xl font-mono font-bold ${isHolographic ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500' : `text-${color}`}`}>
                             {profile.equipped_badge.badges.name}
@@ -268,7 +278,17 @@ export default function OperatorProfileModal({ isOpen, onClose }: OperatorProfil
                         >
                           {isHolographic && <div className="absolute inset-[2px] bg-black/50 rounded-lg z-0" />}
                           <div className={`flex items-start gap-3 ${isHolographic ? 'p-4 relative z-10' : ''}`}>
-                            <div className="text-4xl">{badge.icon}</div>
+                            <div className="flex-shrink-0">
+                              {badge.icon.startsWith('/') ? (
+                                <img
+                                  src={badge.icon}
+                                  alt={badge.name}
+                                  className="w-12 h-12"
+                                />
+                              ) : (
+                                <div className="text-4xl">{badge.icon}</div>
+                              )}
+                            </div>
                             <div className="flex-1">
                               <div className={`font-mono font-bold mb-1 ${isHolographic ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500' : `text-${color}`}`}>
                                 {badge.name}

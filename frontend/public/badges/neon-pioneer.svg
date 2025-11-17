@@ -1,0 +1,136 @@
+<svg width="200" height="240" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Holographic gradient that will animate -->
+    <linearGradient id="holoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ffff;stop-opacity:1">
+        <animate attributeName="stop-color" values="#00ffff;#ff00ff;#00ffff" dur="3s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" style="stop-color:#ff00ff;stop-opacity:1">
+        <animate attributeName="stop-color" values="#ff00ff;#00ffff;#ff00ff" dur="3s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#00ffff;stop-opacity:1">
+        <animate attributeName="stop-color" values="#00ffff;#ff00ff;#00ffff" dur="3s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+
+    <!-- Outer glow -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Shimmer effect -->
+    <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.3"/>
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Diamond/Triangle Frame -->
+  <path d="M 100 20 L 180 120 L 100 220 L 20 120 Z"
+        fill="none"
+        stroke="url(#holoGradient)"
+        stroke-width="4"
+        filter="url(#glow)"/>
+
+  <!-- Inner triangle accent -->
+  <path d="M 100 40 L 160 120 L 100 200 L 40 120 Z"
+        fill="none"
+        stroke="url(#holoGradient)"
+        stroke-width="2"
+        opacity="0.5"/>
+
+  <!-- Sphere/Sun at top -->
+  <circle cx="100" cy="70" r="18"
+          fill="url(#holoGradient)"
+          filter="url(#glow)"
+          opacity="0.9">
+    <animate attributeName="r" values="18;20;18" dur="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Sphere inner glow -->
+  <circle cx="100" cy="70" r="12"
+          fill="#ffffff"
+          opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.9;0.6" dur="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Pioneer Figure - simplified running/reaching pose -->
+  <!-- Head -->
+  <circle cx="100" cy="115" r="8"
+          fill="none"
+          stroke="url(#holoGradient)"
+          stroke-width="2.5"/>
+
+  <!-- Body -->
+  <line x1="100" y1="123" x2="100" y2="155"
+        stroke="url(#holoGradient)"
+        stroke-width="2.5"
+        stroke-linecap="round"/>
+
+  <!-- Reaching arm (toward sphere) -->
+  <path d="M 100 130 Q 95 105 100 85"
+        fill="none"
+        stroke="url(#holoGradient)"
+        stroke-width="2.5"
+        stroke-linecap="round">
+    <animate attributeName="d"
+             values="M 100 130 Q 95 105 100 85;M 100 130 Q 95 100 100 82;M 100 130 Q 95 105 100 85"
+             dur="1.5s"
+             repeatCount="indefinite"/>
+  </path>
+
+  <!-- Back arm -->
+  <path d="M 100 130 Q 110 135 115 145"
+        fill="none"
+        stroke="url(#holoGradient)"
+        stroke-width="2.5"
+        stroke-linecap="round"/>
+
+  <!-- Front leg (running) -->
+  <path d="M 100 155 Q 95 170 90 185"
+        fill="none"
+        stroke="url(#holoGradient)"
+        stroke-width="2.5"
+        stroke-linecap="round"/>
+
+  <!-- Back leg (running) -->
+  <path d="M 100 155 Q 105 170 110 185"
+        fill="none"
+        stroke="url(#holoGradient)"
+        stroke-width="2.5"
+        stroke-linecap="round"/>
+
+  <!-- Energy lines radiating from sphere -->
+  <line x1="100" y1="70" x2="100" y2="95"
+        stroke="url(#holoGradient)"
+        stroke-width="1"
+        opacity="0.4">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1s" repeatCount="indefinite"/>
+  </line>
+
+  <!-- Shimmer overlay -->
+  <path d="M 100 20 L 180 120 L 100 220 L 20 120 Z"
+        fill="url(#shimmer)"
+        opacity="0.15">
+    <animate attributeName="opacity" values="0.1;0.3;0.1" dur="2s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Corner accent dots -->
+  <circle cx="100" cy="20" r="3" fill="#00ffff" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="180" cy="120" r="3" fill="#ff00ff" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="1.5s" begin="0.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="100" cy="220" r="3" fill="#00ffff" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="1.5s" begin="1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="20" cy="120" r="3" fill="#ff00ff" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="1.5s" begin="1.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>

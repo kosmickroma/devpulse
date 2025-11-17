@@ -8,8 +8,8 @@ INSERT INTO badges (id, name, description, icon, rarity, unlockable) VALUES
   (
     'neon_pioneer',
     'Neon Pioneer',
-    '⚡ EXCLUSIVE ⚡ Awarded to early operators who reached 2500 XP during the Genesis Phase. This holographic badge is a permanent mark of being among the first to explore the DevPulse Arcade.',
-    '🌈',
+    '⚡ GENESIS PHASE RELIC ⚡ You stood at the edge of the digital frontier when DevPulse first ignited. While others hesitated, you pushed forward, earning 2500 XP in the legendary Genesis era. This holographic emblem marks you as an Original Pioneer - a title that will never be granted again. The neon-lit arcade remembers its first explorers. You are DevPulse history.',
+    '/badges/neon-pioneer.svg',
     'holographic',
     true
   )

@@ -178,7 +178,9 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     hasBooted.current = true // Mark as booted
 
     // Build operator line with badge if equipped
-    const operatorBadge = profile?.equipped_badge?.badges?.icon || ''
+    const badgeIcon = profile?.equipped_badge?.badges?.icon || ''
+    // For SVG badges, use a special symbol in terminal text
+    const operatorBadge = badgeIcon.startsWith('/') ? '◆' : badgeIcon
     const operatorName = profile?.username || 'Guest'
     const operatorLine = operatorBadge
       ? `> Operator: ${operatorBadge} @${operatorName}`

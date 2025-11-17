@@ -80,9 +80,18 @@ export default function Navbar({ onMenuClick }: NavbarProps = {}) {
                     className="flex items-center gap-2 px-4 py-2 border-2 border-neon-cyan text-neon-cyan rounded hover:bg-neon-cyan/10 transition-all"
                   >
                     {profile?.equipped_badge?.badges ? (
-                      <span className="text-lg" title={profile.equipped_badge.badges.name}>
-                        {profile.equipped_badge.badges.icon}
-                      </span>
+                      profile.equipped_badge.badges.icon.startsWith('/') ? (
+                        <img
+                          src={profile.equipped_badge.badges.icon}
+                          alt={profile.equipped_badge.badges.name}
+                          title={profile.equipped_badge.badges.name}
+                          className="w-6 h-6"
+                        />
+                      ) : (
+                        <span className="text-lg" title={profile.equipped_badge.badges.name}>
+                          {profile.equipped_badge.badges.icon}
+                        </span>
+                      )
                     ) : (
                       <div className="w-6 h-6 rounded-full bg-neon-cyan/20 border border-neon-cyan flex items-center justify-center">
                         <span className="text-xs font-bold">
