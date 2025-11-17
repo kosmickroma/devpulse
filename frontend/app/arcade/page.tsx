@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import SnakeGame from '@/components/games/SnakeGame'
 import Minesweeper from '@/components/games/Minesweeper'
+import CodeQuest from '@/components/games/CodeQuest'
 import GameOverlay from '@/components/GameOverlay'
 import ArcadeLeaderboard from '@/components/ArcadeLeaderboard'
 import BadgeUnlockPopup from '@/components/BadgeUnlockPopup'
@@ -11,7 +12,7 @@ import Sidebar from '@/components/Sidebar'
 import OperatorProfileModal from '@/components/OperatorProfileModal'
 import { checkNewBadges, type Badge } from '@/lib/arcade'
 
-type GameType = 'snake' | 'minesweeper' | null
+type GameType = 'snake' | 'minesweeper' | 'codequest' | null
 
 interface GameCardData {
   id: GameType
@@ -35,6 +36,14 @@ export default function ArcadePage() {
   const [historyIndex, setHistoryIndex] = useState(-1)
   const [unlockedBadge, setUnlockedBadge] = useState<Badge | null>(null)
   const [games, setGames] = useState<GameCardData[]>([
+    {
+      id: 'codequest',
+      title: 'PYTHON CODE QUEST',
+      emoji: '🐍',
+      description: 'Learn Python through addictive quizzes',
+      highScore: 0,
+      command: 'play codequest'
+    },
     {
       id: 'snake',
       title: 'SNAKE',
@@ -144,6 +153,10 @@ Available commands:
     } else if (trimmed.startsWith('play ')) {
       const gameName = trimmed.slice(5).trim()
       const gameMap: { [key: string]: GameType } = {
+        'codequest': 'codequest',
+        'code': 'codequest',
+        'python': 'codequest',
+        'quest': 'codequest',
         'snake': 'snake',
         'mines': 'minesweeper',
         'minesweeper': 'minesweeper',
@@ -418,7 +431,7 @@ Available commands:
       {/* Game Overlay */}
       {activeGame && (
         <GameOverlay
-          game={activeGame === 'snake' ? 'snake' : 'minesweeper'}
+          game={activeGame}
           onClose={() => setActiveGame(null)}
         />
       )}
