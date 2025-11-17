@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useContext } from 'react'
 import { GameNotificationContext } from '../GameOverlay'
+import { submitScore } from '@/lib/arcade'
 
 type Cell = {
   isMine: boolean
@@ -195,6 +196,18 @@ export default function Minesweeper() {
       }
 
       playSound(1000, 0.5, 'square')
+
+      // Submit score to backend
+      submitScore({
+        gameId: 'minesweeper',
+        score: finalScore,
+        metadata: {
+          difficulty,
+          time,
+          grid: `${config.rows}x${config.cols}`,
+          mines: config.mines
+        }
+      }).catch(err => console.error('Failed to submit score:', err))
     }
   }, [grid, gameOver, gameWon, flagMode, firstClick, initGrid, revealCell, playSound, time, difficulty, config.rows, config.cols, config.mines, highScore])
 
