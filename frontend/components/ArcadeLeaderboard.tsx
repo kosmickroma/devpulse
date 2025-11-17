@@ -1,17 +1,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { GAME_INFO } from '@/lib/arcade'
+import { GAME_INFO, getAllLeaderboards, getLeaderboard } from '@/lib/arcade'
 
-interface LeaderboardData {
-  gameId: string
+interface LeaderboardEntry {
+  rank: number
+  username: string
   score: number
-  rank?: number
+  achieved_at: string
+  metadata?: Record<string, any>
+  isCurrentUser?: boolean
+}
+
+interface GameLeaderboards {
+  [gameId: string]: LeaderboardEntry[]
 }
 
 export default function ArcadeLeaderboard({ onClose }: { onClose: () => void }) {
   const [selectedGame, setSelectedGame] = useState<string>('all')
-  const [localScores, setLocalScores] = useState<LeaderboardData[]>([])
+  const [globalLeaderboards, setGlobalLeaderboards] = useState<GameLeaderboards>({})
+  const [loading, setLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState<string | null>(null)
 
   const allGames = [
     { id: 'snake', name: 'SNAKE', emoji: '🐍', color: 'cyan' },
@@ -27,25 +36,56 @@ export default function ArcadeLeaderboard({ onClose }: { onClose: () => void }) 
   ]
 
   useEffect(() => {
-    loadLocalScores()
+    loadGlobalLeaderboards()
+    loadCurrentUser()
   }, [])
 
-  const loadLocalScores = () => {
-    const scores: LeaderboardData[] = allGames.map(game => ({
-      gameId: game.id,
-      score: parseInt(localStorage.getItem(`${game.id}-highscore`) || '0')
-    })).filter(s => s.score > 0).sort((a, b) => b.score - a.score)
+  const loadCurrentUser = () => {
+    // Get current username from localStorage (set during login)
+    const username = localStorage.getItem('username')
+    setCurrentUser(username)
+  }
 
-    setLocalScores(scores)
+  const loadGlobalLeaderboards = async () => {
+    setLoading(true)
+    try {
+      const leaderboards = await getAllLeaderboards(50)
+      setGlobalLeaderboards(leaderboards)
+    } catch (error) {
+      console.error('Failed to load global leaderboards:', error)
+      // Leaderboards will be empty, component will show "no scores" message
+    } finally {
+      setLoading(false)
+    }
   }
 
   const getGameInfo = (gameId: string) => {
     return allGames.find(g => g.id === gameId) || allGames[0]
   }
 
-  const displayedScores = selectedGame === 'all'
-    ? localScores
-    : localScores.filter(s => s.gameId === selectedGame)
+  // Get displayed entries based on selected game
+  const getDisplayedEntries = (): Array<LeaderboardEntry & { gameId: string }> => {
+    if (selectedGame === 'all') {
+      // Combine all games, take top entry from each, sort by score
+      const topScores: Array<LeaderboardEntry & { gameId: string }> = []
+      Object.entries(globalLeaderboards).forEach(([gameId, entries]) => {
+        if (entries.length > 0) {
+          topScores.push({ ...entries[0], gameId })
+        }
+      })
+      return topScores.sort((a, b) => b.score - a.score).slice(0, 50)
+    } else {
+      // Show full leaderboard for selected game
+      const entries = globalLeaderboards[selectedGame] || []
+      return entries.map(e => ({ ...e, gameId: selectedGame }))
+    }
+  }
+
+  const displayedEntries = getDisplayedEntries()
+
+  // Calculate stats
+  const totalGamesWithScores = Object.keys(globalLeaderboards).filter(k => globalLeaderboards[k].length > 0).length
+  const totalPlayers = new Set(Object.values(globalLeaderboards).flat().map(e => e.username)).size
 
   const getRarityColor = (gameId: string) => {
     const rarity = GAME_INFO[gameId]?.rarity || 'common'
@@ -74,9 +114,11 @@ export default function ArcadeLeaderboard({ onClose }: { onClose: () => void }) 
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-4xl font-bold font-mono text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-2 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
-                ⚡ LEADERBOARD ⚡
+                ⚡ GLOBAL LEADERBOARD ⚡
               </h2>
-              <p className="text-cyan-300/70 font-mono text-sm">Your Personal High Scores - Local Storage</p>
+              <p className="text-cyan-300/70 font-mono text-sm">
+                {loading ? 'Loading rankings...' : `${totalPlayers} Players • ${totalGamesWithScores} Games Active`}
+              </p>
             </div>
             <button
               onClick={onClose}
@@ -116,53 +158,73 @@ export default function ArcadeLeaderboard({ onClose }: { onClose: () => void }) 
 
         {/* Leaderboard Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {displayedScores.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-full text-center py-20">
+              <div className="text-8xl mb-6 animate-spin">⚡</div>
+              <h3 className="text-3xl font-bold text-cyan-400 mb-4 font-mono">LOADING...</h3>
+              <p className="text-gray-400 font-mono">Fetching global rankings...</p>
+            </div>
+          ) : displayedEntries.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-20">
               <div className="text-8xl mb-6 animate-pulse">🎮</div>
               <h3 className="text-3xl font-bold text-cyan-400 mb-4 font-mono">NO SCORES YET</h3>
               <p className="text-gray-400 font-mono">
                 {selectedGame === 'all'
-                  ? 'Start playing games to build your leaderboard!'
-                  : 'Play this game to set your first high score!'}
+                  ? 'Be the first to set a high score!'
+                  : 'Be the first to conquer this game!'}
               </p>
             </div>
           ) : (
             <div className="grid gap-4">
-              {displayedScores.map((entry, index) => {
+              {displayedEntries.map((entry, index) => {
                 const game = getGameInfo(entry.gameId)
+                const isCurrentUser = currentUser && entry.username === currentUser
                 const rankColors = [
                   'from-yellow-500 to-yellow-700 border-yellow-300 shadow-[0_0_30px_rgba(234,179,8,0.6)]', // 1st
                   'from-gray-300 to-gray-500 border-gray-200 shadow-[0_0_30px_rgba(156,163,175,0.6)]', // 2nd
                   'from-orange-600 to-orange-800 border-orange-400 shadow-[0_0_30px_rgba(234,88,12,0.6)]', // 3rd
                 ]
-                const isTopThree = index < 3
+                const isTopThree = entry.rank <= 3
 
                 return (
                   <div
-                    key={`${entry.gameId}-${index}`}
+                    key={`${entry.gameId}-${entry.rank}-${entry.username}`}
                     className={`relative flex items-center gap-4 p-4 rounded-lg border-2 transition-all duration-300 ${
                       isTopThree
-                        ? `bg-gradient-to-r ${rankColors[index]} animate-pulse-slow`
+                        ? `bg-gradient-to-r ${rankColors[entry.rank - 1]} animate-pulse-slow`
+                        : isCurrentUser
+                        ? 'bg-purple-900/30 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]'
                         : 'bg-gray-800/50 border-cyan-700/50 hover:border-cyan-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]'
                     }`}
                   >
+                    {/* Current user indicator */}
+                    {isCurrentUser && !isTopThree && (
+                      <div className="absolute -left-2 top-1/2 -translate-y-1/2 text-2xl animate-pulse">👈</div>
+                    )}
+
                     {/* Rank */}
                     <div className={`flex-shrink-0 w-16 h-16 flex items-center justify-center font-mono text-2xl font-bold rounded ${
-                      isTopThree ? 'text-black' : 'text-cyan-400 bg-gray-900/50 border-2 border-cyan-700'
+                      isTopThree ? 'text-black' : isCurrentUser ? 'text-purple-400 bg-purple-900/50 border-2 border-purple-500' : 'text-cyan-400 bg-gray-900/50 border-2 border-cyan-700'
                     }`}>
-                      #{index + 1}
+                      #{entry.rank}
                     </div>
 
-                    {/* Game Info */}
+                    {/* Game Info & Username */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-1">
                         <span className="text-3xl">{game.emoji}</span>
                         <div>
-                          <h3 className={`font-mono font-bold text-lg ${isTopThree ? 'text-black' : 'text-cyan-400'}`}>
+                          <h3 className={`font-mono font-bold text-lg ${isTopThree ? 'text-black' : isCurrentUser ? 'text-purple-400' : 'text-cyan-400'}`}>
                             {game.name}
                           </h3>
-                          <div className={`text-xs font-mono uppercase px-2 py-0.5 rounded border inline-block ${getRarityColor(entry.gameId)}`}>
-                            {GAME_INFO[entry.gameId]?.rarity || 'common'}
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className={`text-sm font-mono ${isTopThree ? 'text-black/80' : isCurrentUser ? 'text-purple-300' : 'text-gray-300'}`}>
+                              👤 {entry.username}
+                              {isCurrentUser && <span className="ml-2 text-xs">(YOU)</span>}
+                            </div>
+                            <div className={`text-xs font-mono uppercase px-2 py-0.5 rounded border inline-block ${isTopThree ? 'text-black/60 border-black/40' : getRarityColor(entry.gameId)}`}>
+                              {GAME_INFO[entry.gameId]?.rarity || 'common'}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -197,20 +259,20 @@ export default function ArcadeLeaderboard({ onClose }: { onClose: () => void }) 
         <div className="bg-gray-900/90 p-4 border-t-2 border-cyan-500/50">
           <div className="flex justify-around text-center">
             <div>
-              <div className="text-2xl font-bold text-cyan-400 font-mono">{localScores.length}</div>
-              <div className="text-xs text-gray-400 font-mono">GAMES PLAYED</div>
+              <div className="text-2xl font-bold text-cyan-400 font-mono">{totalGamesWithScores}</div>
+              <div className="text-xs text-gray-400 font-mono">ACTIVE GAMES</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-purple-400 font-mono">
-                {localScores.reduce((sum, s) => sum + s.score, 0).toLocaleString()}
+                {totalPlayers}
               </div>
-              <div className="text-xs text-gray-400 font-mono">TOTAL SCORE</div>
+              <div className="text-xs text-gray-400 font-mono">TOTAL PLAYERS</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-pink-400 font-mono">
-                {localScores.length > 0 ? Math.round(localScores.reduce((sum, s) => sum + s.score, 0) / localScores.length).toLocaleString() : 0}
+                {displayedEntries.length}
               </div>
-              <div className="text-xs text-gray-400 font-mono">AVG SCORE</div>
+              <div className="text-xs text-gray-400 font-mono">RANKINGS SHOWN</div>
             </div>
           </div>
         </div>
