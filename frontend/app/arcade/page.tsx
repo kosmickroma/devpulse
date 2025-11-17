@@ -8,6 +8,7 @@ import GameOverlay from '@/components/GameOverlay'
 import ArcadeLeaderboard from '@/components/ArcadeLeaderboard'
 import BadgeUnlockPopup from '@/components/BadgeUnlockPopup'
 import Sidebar from '@/components/Sidebar'
+import OperatorProfileModal from '@/components/OperatorProfileModal'
 import { checkNewBadges, type Badge } from '@/lib/arcade'
 
 type GameType = 'snake' | 'minesweeper' | null
@@ -27,6 +28,7 @@ export default function ArcadePage() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
   const [terminalInput, setTerminalInput] = useState('')
   const [terminalHistory, setTerminalHistory] = useState<string[]>([])
   const [commandHistory, setCommandHistory] = useState<string[]>([])
@@ -386,6 +388,13 @@ Available commands:
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        onOpenProfile={() => setShowProfile(true)}
+      />
+
+      {/* Operator Profile Modal */}
+      <OperatorProfileModal
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
       />
 
       {/* Badge Unlock Popup */}

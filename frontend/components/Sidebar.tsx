@@ -12,6 +12,8 @@ interface SidebarProps {
   onRemoveWidget?: (id: string) => void
   onResetLayout?: () => void
   availableWidgets?: Array<{ type: string; name: string; description: string }>
+  // Operator Profile callback
+  onOpenProfile?: () => void
 }
 
 export default function Sidebar({
@@ -21,7 +23,8 @@ export default function Sidebar({
   onAddWidget,
   onRemoveWidget,
   onResetLayout,
-  availableWidgets = []
+  availableWidgets = [],
+  onOpenProfile
 }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
@@ -173,8 +176,9 @@ export default function Sidebar({
                 <div className="mt-3 space-y-2">
                   <button
                     onClick={() => {
-                      // TODO: Open Operator Profile modal
-                      console.log('Open Operator Profile')
+                      if (onOpenProfile) {
+                        onOpenProfile()
+                      }
                       onClose()
                     }}
                     className="w-full text-left px-3 py-2 rounded font-mono text-sm bg-dark-bg/50 text-gray-300 border-2 border-gray-700 hover:border-neon-magenta hover:text-neon-magenta transition-all"
