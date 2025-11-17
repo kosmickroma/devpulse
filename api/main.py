@@ -21,7 +21,7 @@ from api.ai import summarize, ask, search
 from api.market import stocks, crypto
 
 # Import Arcade routers
-from api.arcade import scores, badges
+from api.arcade import scores, badges, profile
 
 app = FastAPI(
     title="DevPulse API",
@@ -243,6 +243,7 @@ app.include_router(crypto.router, prefix='/api', tags=['market-data'])
 # Include Arcade routers
 app.include_router(scores.router, prefix='/api/arcade', tags=['arcade'])
 app.include_router(badges.router, prefix='/api/arcade/badges', tags=['badges'])
+app.include_router(profile.router, prefix='/api/arcade/profile', tags=['profile'])
 
 
 if __name__ == "__main__":
