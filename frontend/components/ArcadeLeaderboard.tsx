@@ -25,7 +25,6 @@ export default function ArcadeLeaderboard({ onClose }: { onClose: () => void }) 
 
   const allGames = [
     { id: 'snake', name: 'SNAKE', emoji: '🐍', color: 'cyan' },
-    { id: 'spaceinvaders', name: 'SPACE INVADERS', emoji: '👾', color: 'purple' },
     { id: 'minesweeper', name: 'MINESWEEPER', emoji: '💣', color: 'yellow' },
     { id: 'guess', name: 'GUESS', emoji: '🎲', color: 'green' },
     { id: 'bagels', name: 'BAGELS', emoji: '🥯', color: 'green' },

@@ -3,13 +3,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import SnakeGame from '@/components/games/SnakeGame'
-import SpaceInvaders from '@/components/games/SpaceInvaders'
 import Minesweeper from '@/components/games/Minesweeper'
-import BrickBreaker from '@/components/games/BrickBreaker'
 import GameOverlay from '@/components/GameOverlay'
 import ArcadeLeaderboard from '@/components/ArcadeLeaderboard'
 
-type GameType = 'snake' | 'spaceinvaders' | 'minesweeper' | 'brickbreaker' | null
+type GameType = 'snake' | 'minesweeper' | null
 
 interface GameCardData {
   id: GameType
@@ -39,28 +37,12 @@ export default function ArcadePage() {
       command: 'play snake'
     },
     {
-      id: 'spaceinvaders',
-      title: 'SPACE INVADERS',
-      emoji: '👾',
-      description: 'Defend Earth from alien invasion',
-      highScore: 0,
-      command: 'play space'
-    },
-    {
       id: 'minesweeper',
       title: 'MINESWEEPER',
       emoji: '💣',
       description: 'Neon minefield puzzle',
       highScore: 0,
       command: 'play mines'
-    },
-    {
-      id: 'brickbreaker',
-      title: 'BRICK BREAKER',
-      emoji: '🧱',
-      description: 'Arkanoid-style brick breaking',
-      highScore: 0,
-      command: 'play brick'
     }
   ])
   const terminalRef = useRef<HTMLDivElement>(null)
@@ -104,7 +86,7 @@ export default function ArcadePage() {
     if (trimmed === 'help') {
       response = `
 Available commands:
-  play [game]  - Launch a game (snake, space, mines, brick)
+  play [game]  - Launch a game (snake, mines)
   games        - List all games
   scores       - Show high scores
   vault        - Navigate to The Vault
@@ -135,15 +117,9 @@ Available commands:
       const gameName = trimmed.slice(5).trim()
       const gameMap: { [key: string]: GameType } = {
         'snake': 'snake',
-        'space': 'spaceinvaders',
-        'spaceinvaders': 'spaceinvaders',
-        'invaders': 'spaceinvaders',
         'mines': 'minesweeper',
         'minesweeper': 'minesweeper',
-        'mine': 'minesweeper',
-        'brick': 'brickbreaker',
-        'brickbreaker': 'brickbreaker',
-        'breaker': 'brickbreaker'
+        'mine': 'minesweeper'
       }
 
       const gameId = gameMap[gameName]
@@ -355,32 +331,11 @@ Available commands:
       </div>
 
       {/* Game Overlay */}
-      {activeGame && activeGame !== 'brickbreaker' && (
+      {activeGame && (
         <GameOverlay
-          game={activeGame === 'snake' ? 'snake' : activeGame === 'spaceinvaders' ? 'spaceinvaders' : 'minesweeper'}
+          game={activeGame === 'snake' ? 'snake' : 'minesweeper'}
           onClose={() => setActiveGame(null)}
         />
-      )}
-
-      {/* BrickBreaker Modal (doesn't use GameOverlay) */}
-      {activeGame === 'brickbreaker' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setActiveGame(null)} />
-          <div className="relative z-10 w-full max-w-6xl h-[95vh] flex flex-col bg-black border-2 border-cyan-500 rounded-lg">
-            <div className="flex justify-between items-center bg-gray-900/90 p-2 border-b border-cyan-500/30">
-              <div className="text-cyan-400 font-mono text-sm">🎮 BRICK BREAKER</div>
-              <button
-                onClick={() => setActiveGame(null)}
-                className="px-3 py-1 border border-purple-500 bg-purple-900/50 text-purple-400 hover:bg-purple-900 transition-colors"
-              >
-                ESC
-              </button>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <BrickBreaker />
-            </div>
-          </div>
-        </div>
       )}
 
       {/* Leaderboard */}

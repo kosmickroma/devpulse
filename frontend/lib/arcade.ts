@@ -203,7 +203,6 @@ export function saveLocalHighScore(gameId: string, score: number): void {
  */
 export const GAME_INFO: Record<string, { name: string; rarity: string }> = {
   snake: { name: 'Snake', rarity: 'common' },
-  spaceinvaders: { name: 'Space Invaders', rarity: 'rare' },
   minesweeper: { name: 'Minesweeper', rarity: 'uncommon' },
   guess: { name: 'GUESS', rarity: 'common' },
   bagels: { name: 'BAGELS', rarity: 'common' },
