@@ -60,7 +60,7 @@ async def get_random_question(
         progress = supabase.rpc('get_or_create_cq_progress', {'p_user_id': user_id}).execute()
 
         # Debug logging
-        print(f"DEBUG: RPC response - data: {progress.data}, error: {progress.error}")
+        print(f"DEBUG: RPC response - data: {progress.data}")
 
         user_level = progress.data[0]['level'] if progress.data else 1
         user_tier = progress.data[0]['current_tier'] if progress.data else 1
