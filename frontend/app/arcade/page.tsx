@@ -213,10 +213,15 @@ Available commands:
 
       <div className="relative z-10 container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-pulse">
-            DEVPULSE ARCADE
-          </h1>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-5xl md:text-6xl font-bold font-mono text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-pulse drop-shadow-[0_0_30px_rgba(6,182,212,0.8)]">
+              ⚡ DEVPULSE ARCADE
+            </h1>
+            <p className="text-cyan-400/70 font-mono text-sm mt-2 tracking-widest">
+              &gt; INSERT_COIN // PRESS_START // GET_READY
+            </p>
+          </div>
           <div className="flex items-center gap-4">
             <button
               onClick={() => setShowLeaderboard(true)}
@@ -276,50 +281,74 @@ Available commands:
           {games.map(game => (
             <div
               key={game.id}
-              className="group bg-black/60 border-2 border-cyan-500/50 rounded-lg p-6 hover:border-purple-500 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all duration-300 cursor-pointer transform hover:scale-105"
+              className="group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 border-2 border-cyan-500/50 rounded-lg p-6 hover:border-purple-500 hover:shadow-[0_0_40px_rgba(168,85,247,0.6)] transition-all duration-300 cursor-pointer transform hover:scale-105 hover:-translate-y-2 overflow-hidden"
               onClick={() => launchGame(game.id)}
             >
-              <div className="text-6xl mb-4 text-center group-hover:animate-bounce">
-                {game.emoji}
-              </div>
-              <h3 className="text-xl font-bold text-cyan-400 mb-2 text-center group-hover:text-purple-400 transition-colors">
-                {game.title}
-              </h3>
-              <p className="text-sm text-gray-400 mb-4 text-center">
-                {game.description}
-              </p>
-              <div className="text-center mb-4">
-                <div className="text-xs text-cyan-500/60 mb-1">HIGH SCORE</div>
-                <div className="text-2xl font-bold text-yellow-400">{game.highScore}</div>
-              </div>
-              <button
-                className="w-full py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-black font-bold hover:from-purple-500 hover:to-pink-500 transition-all duration-300"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  launchGame(game.id)
-                }}
-              >
-                PLAY
-              </button>
-              <div className="text-xs text-center text-cyan-500/40 mt-2 font-mono">
-                {game.command}
+              {/* Animated corner accents */}
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400 group-hover:border-purple-400 transition-colors" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400 group-hover:border-purple-400 transition-colors" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400 group-hover:border-purple-400 transition-colors" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400 group-hover:border-purple-400 transition-colors" />
+
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              <div className="relative z-10">
+                <div className="text-6xl mb-4 text-center group-hover:animate-bounce filter drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                  {game.emoji}
+                </div>
+                <h3 className="text-xl font-bold font-mono text-cyan-400 mb-2 text-center group-hover:text-purple-400 transition-colors tracking-wider">
+                  {game.title}
+                </h3>
+                <p className="text-sm text-gray-400 mb-4 text-center font-mono">
+                  {game.description}
+                </p>
+                <div className="text-center mb-4 bg-black/50 border border-cyan-500/30 rounded p-2">
+                  <div className="text-xs text-cyan-500/60 mb-1 font-mono">HIGH SCORE</div>
+                  <div className="text-2xl font-bold font-mono text-yellow-400 drop-shadow-[0_0_10px_rgba(234,179,8,0.8)]">{game.highScore.toLocaleString()}</div>
+                </div>
+                <button
+                  className="w-full py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-black font-bold font-mono hover:from-purple-500 hover:to-pink-500 transition-all duration-300 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.8)] relative overflow-hidden group/btn"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    launchGame(game.id)
+                  }}
+                >
+                  <span className="relative z-10">▶ PLAY</span>
+                  <div className="absolute inset-0 bg-white/20 translate-x-full group-hover/btn:translate-x-0 transition-transform duration-300" />
+                </button>
+                <div className="text-xs text-center text-cyan-500/40 mt-2 font-mono">
+                  &gt; {game.command}
+                </div>
               </div>
             </div>
           ))}
         </div>
 
         {/* Vault Promo */}
-        <div className="mt-12 bg-gradient-to-r from-purple-900/20 to-pink-900/20 border border-purple-500 p-6 rounded-lg">
-          <div className="flex items-center justify-between">
+        <div className="mt-12 relative bg-gradient-to-r from-purple-900/30 to-pink-900/30 border-2 border-purple-500 p-8 rounded-lg overflow-hidden shadow-[0_0_40px_rgba(168,85,247,0.4)]">
+          <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(168,85,247,0.1)_50%,transparent_75%)] bg-[length:250%_250%] animate-pulse" />
+
+          <div className="relative z-10 flex items-center justify-between">
             <div>
-              <h3 className="text-2xl font-bold text-purple-400 mb-2">📼 THE VAULT</h3>
-              <p className="text-gray-400">Explore restored BASIC games from 1978. Coding archaeology awaits.</p>
+              <h3 className="text-3xl font-bold font-mono text-purple-400 mb-2 drop-shadow-[0_0_15px_rgba(168,85,247,0.8)]">
+                📼 THE VAULT
+              </h3>
+              <p className="text-gray-300 font-mono text-sm">
+                &gt; EXPLORE RESTORED BASIC GAMES FROM 1978<br/>
+                &gt; CODING ARCHAEOLOGY AWAITS...
+              </p>
+              <div className="mt-2 flex gap-2">
+                <span className="text-xs px-2 py-1 bg-green-500/20 border border-green-500 text-green-400 font-mono">7 GAMES</span>
+                <span className="text-xs px-2 py-1 bg-yellow-500/20 border border-yellow-500 text-yellow-400 font-mono">AUTHENTIC CODE</span>
+                <span className="text-xs px-2 py-1 bg-purple-500/20 border border-purple-500 text-purple-400 font-mono">CLASSIC</span>
+              </div>
             </div>
             <button
               onClick={() => router.push('/vault')}
-              className="px-6 py-3 bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors"
+              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 border-2 border-purple-400 text-white font-bold font-mono hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-[0_0_20px_rgba(168,85,247,0.6)] hover:shadow-[0_0_40px_rgba(168,85,247,0.9)] transform hover:scale-105"
             >
-              ENTER THE VAULT
+              ▶ ENTER THE VAULT
             </button>
           </div>
         </div>

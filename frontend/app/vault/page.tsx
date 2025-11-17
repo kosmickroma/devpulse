@@ -411,14 +411,21 @@ Commands:
 
       <div className="relative z-10 container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h1 className="text-4xl font-bold text-green-500 font-mono tracking-wider mb-1"
-                style={{ textShadow: '0 0 10px rgba(34,197,94,0.7)' }}>
+              <h1 className="text-5xl md:text-6xl font-bold text-green-400 font-mono tracking-wider mb-1"
+                style={{ textShadow: '0 0 20px rgba(34,197,94,0.8), 0 0 40px rgba(34,197,94,0.5)' }}>
                 📼 THE VAULT
               </h1>
-              <p className="text-sm text-green-600">DEVPULSE ARCHIVES - BASIC COMPUTER GAMES COLLECTION</p>
+              <p className="text-sm text-green-500 font-mono tracking-widest mt-2">
+                &gt; DEVPULSE_ARCHIVES // BASIC_COMPUTER_GAMES_1978 // STATUS:_RESTORED
+              </p>
+              <div className="flex gap-2 mt-2">
+                <span className="text-xs px-2 py-1 bg-green-500/20 border border-green-500 text-green-400 font-mono animate-pulse">⚡ LIVE</span>
+                <span className="text-xs px-2 py-1 bg-yellow-500/20 border border-yellow-500 text-yellow-400 font-mono">🔐 AUTHENTICATED</span>
+                <span className="text-xs px-2 py-1 bg-cyan-500/20 border border-cyan-500 text-cyan-400 font-mono">📡 CONNECTED</span>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <button
@@ -499,17 +506,28 @@ Commands:
         </div>
 
         {/* Program Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {programs.map(program => (
             <div
               key={program.id}
-              className={`relative bg-gradient-to-br from-gray-900/80 to-black/80 border-2 p-5 rounded transition-all duration-300 cursor-pointer ${
+              className={`group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 border-2 p-5 rounded transition-all duration-300 cursor-pointer overflow-hidden ${
                 program.status === 'restored'
-                  ? 'border-green-500/50 hover:border-green-400 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)]'
+                  ? 'border-green-500/50 hover:border-green-400 hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] hover:scale-105 hover:-translate-y-1'
                   : 'border-gray-700/50 opacity-60'
               }`}
               onClick={() => program.status === 'restored' && setRunningGame(program.id)}
             >
+              {/* Corner accents */}
+              {program.status === 'restored' && (
+                <>
+                  <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-green-400" />
+                  <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-green-400" />
+                  <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-green-400" />
+                  <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-green-400" />
+                  {/* Hover glow */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </>
+              )}
               {/* Program Header */}
               <div className="flex items-start justify-between mb-3">
                 <div className="font-mono">
