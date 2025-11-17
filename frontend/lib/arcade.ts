@@ -1,5 +1,7 @@
 // Arcade API utilities for score submission and leaderboards
 
+import { supabase } from './supabase'
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 export interface ScoreSubmission {
@@ -59,9 +61,13 @@ export async function submitScore(submission: ScoreSubmission): Promise<ScoreRes
 
   // Try to submit to backend (requires authentication)
   try {
-    const token = localStorage.getItem('token')
+    // Get token from Supabase session
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+
     if (!token) {
       // Not authenticated - return local-only response
+      console.log('[Arcade] No auth token, score saved locally only')
       return {
         success: true,
         is_new_high_score: isNewLocalBest,
@@ -71,6 +77,7 @@ export async function submitScore(submission: ScoreSubmission): Promise<ScoreRes
       }
     }
 
+    console.log('[Arcade] Submitting score to backend...', submission)
     const response = await fetch(`${API_URL}/api/arcade/submit-score`, {
       method: 'POST',
       headers: {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { GAME_INFO, getAllLeaderboards, getLeaderboard } from '@/lib/arcade'
+import { supabase } from '@/lib/supabase'
 
 interface LeaderboardEntry {
   rank: number
@@ -40,10 +41,18 @@ export default function ArcadeLeaderboard({ onClose }: { onClose: () => void }) 
     loadCurrentUser()
   }, [])
 
-  const loadCurrentUser = () => {
-    // Get current username from localStorage (set during login)
-    const username = localStorage.getItem('username')
-    setCurrentUser(username)
+  const loadCurrentUser = async () => {
+    // Get current username from Supabase
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        // Try to get username from user metadata or email
+        const username = user.user_metadata?.username || user.email?.split('@')[0] || null
+        setCurrentUser(username)
+      }
+    } catch (error) {
+      console.error('Failed to load current user:', error)
+    }
   }
 
   const loadGlobalLeaderboards = async () => {
