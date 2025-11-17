@@ -219,15 +219,20 @@ Available commands:
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            {/* Menu Button */}
+            {/* Menu Button - DevPulse Icon */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-3 bg-cyan-600/20 border-2 border-cyan-500 text-cyan-400 hover:bg-cyan-600/40 transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.6)]"
+              className="hover:opacity-80 transition-opacity"
               title="Open Menu"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <img
+                src="/devpulse_icon.svg"
+                alt="Menu"
+                className="w-10 h-10"
+                style={{
+                  filter: 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.6))',
+                }}
+              />
             </button>
 
             <div>
