@@ -212,3 +212,118 @@ export const GAME_INFO: Record<string, { name: string; rarity: string }> = {
   oregon: { name: 'OREGON', rarity: 'rare' },
   startrek: { name: 'SUPER STAR TREK', rarity: 'epic' }
 }
+
+/**
+ * Badge types
+ */
+export interface Badge {
+  id: string
+  name: string
+  description: string
+  icon: string
+  rarity: string
+}
+
+export interface UserBadge {
+  id: string
+  badge_id: string
+  unlocked_at: string
+  is_equipped: boolean
+  badges: Badge
+}
+
+/**
+ * Check for newly unlocked badges (last 60 seconds)
+ * Returns badges that should trigger the unlock popup
+ */
+export async function checkNewBadges(): Promise<Badge[]> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+
+    if (!token) {
+      return []
+    }
+
+    const response = await fetch(`${API_URL}/api/arcade/badges/new`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data.new_badges?.map((ub: UserBadge) => ub.badges) || []
+  } catch (error) {
+    console.error('Failed to check new badges:', error)
+    return []
+  }
+}
+
+/**
+ * Get all user's badges
+ */
+export async function getUserBadges(): Promise<UserBadge[]> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+
+    if (!token) {
+      return []
+    }
+
+    const response = await fetch(`${API_URL}/api/arcade/badges/user`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data.badges || []
+  } catch (error) {
+    console.error('Failed to fetch user badges:', error)
+    return []
+  }
+}
+
+/**
+ * Equip or unequip a badge
+ */
+export async function equipBadge(badgeId: string, isEquipped: boolean): Promise<boolean> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+
+    if (!token) {
+      return false
+    }
+
+    const response = await fetch(`${API_URL}/api/arcade/badges/equip`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        badge_id: badgeId,
+        is_equipped: isEquipped
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+
+    return true
+  } catch (error) {
+    console.error('Failed to equip badge:', error)
+    return false
+  }
+}

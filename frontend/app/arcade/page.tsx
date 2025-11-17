@@ -6,6 +6,8 @@ import SnakeGame from '@/components/games/SnakeGame'
 import Minesweeper from '@/components/games/Minesweeper'
 import GameOverlay from '@/components/GameOverlay'
 import ArcadeLeaderboard from '@/components/ArcadeLeaderboard'
+import BadgeUnlockPopup from '@/components/BadgeUnlockPopup'
+import { checkNewBadges, type Badge } from '@/lib/arcade'
 
 type GameType = 'snake' | 'minesweeper' | null
 
@@ -27,6 +29,7 @@ export default function ArcadePage() {
   const [terminalHistory, setTerminalHistory] = useState<string[]>([])
   const [commandHistory, setCommandHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
+  const [unlockedBadge, setUnlockedBadge] = useState<Badge | null>(null)
   const [games, setGames] = useState<GameCardData[]>([
     {
       id: 'snake',
@@ -63,8 +66,26 @@ export default function ArcadePage() {
         ...game,
         highScore: parseInt(localStorage.getItem(`${game.id}-highscore`) || '0')
       })))
+
+      // Check for newly unlocked badges when returning from game
+      checkForNewBadges()
     }
   }, [activeGame])
+
+  // Check for new badges (called after games and on interval)
+  const checkForNewBadges = async () => {
+    const badges = await checkNewBadges()
+    if (badges.length > 0) {
+      // Show the first new badge (they unlock one at a time typically)
+      setUnlockedBadge(badges[0])
+    }
+  }
+
+  // Poll for new badges every 10 seconds (catches Beta Explorer and other auto-grants)
+  useEffect(() => {
+    const interval = setInterval(checkForNewBadges, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -342,6 +363,12 @@ Available commands:
       {showLeaderboard && (
         <ArcadeLeaderboard onClose={() => setShowLeaderboard(false)} />
       )}
+
+      {/* Badge Unlock Popup */}
+      <BadgeUnlockPopup
+        badge={unlockedBadge}
+        onClose={() => setUnlockedBadge(null)}
+      />
 
       {/* Scanlines effect */}
       <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent bg-[length:100%_4px] animate-scanline" />
