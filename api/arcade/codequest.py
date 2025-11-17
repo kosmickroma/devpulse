@@ -59,8 +59,13 @@ async def get_random_question(
         # Get or create user progress
         progress = supabase.rpc('get_or_create_cq_progress', {'p_user_id': user_id}).execute()
 
+        # Debug logging
+        print(f"DEBUG: RPC response - data: {progress.data}, error: {progress.error}")
+
         user_level = progress.data[0]['level'] if progress.data else 1
         user_tier = progress.data[0]['current_tier'] if progress.data else 1
+
+        print(f"DEBUG: User level={user_level}, tier={user_tier}")
 
         # Build query
         query = supabase.table('code_quest_questions').select('*')
@@ -92,8 +97,11 @@ async def get_random_question(
         # Execute query
         result = query.execute()
 
+        print(f"DEBUG: Query found {len(result.data) if result.data else 0} questions")
+        print(f"DEBUG: Filters - difficulty={target_difficulty if not difficulty else difficulty}, tier<={user_tier + 1}")
+
         if not result.data:
-            raise HTTPException(status_code=404, detail="No questions found matching criteria")
+            raise HTTPException(status_code=404, detail=f"No questions found matching criteria (difficulty={target_difficulty if not difficulty else difficulty}, tier<={user_tier + 1})")
 
         # Select random question from results
         question = random.choice(result.data)
