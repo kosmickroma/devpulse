@@ -78,13 +78,21 @@ export async function submitScore(submission: ScoreSubmission): Promise<ScoreRes
     }
 
     console.log('[Arcade] Submitting score to backend...', submission)
+
+    // Convert to snake_case for backend
+    const backendPayload = {
+      game_id: submission.gameId,
+      score: submission.score,
+      metadata: submission.metadata || {}
+    }
+
     const response = await fetch(`${API_URL}/api/arcade/submit-score`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(submission)
+      body: JSON.stringify(backendPayload)
     })
 
     if (!response.ok) {
