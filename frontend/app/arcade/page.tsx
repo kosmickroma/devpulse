@@ -39,7 +39,7 @@ export default function ArcadePage() {
     {
       id: 'codequest',
       title: 'PYTHON CODE QUEST',
-      emoji: '🐍',
+      emoji: '/icons/python-quest.svg',
       description: 'Learn Python through addictive quizzes',
       highScore: 0,
       command: 'play codequest'
@@ -368,8 +368,16 @@ Available commands:
               <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
               <div className="relative z-10">
-                <div className="text-6xl mb-4 text-center group-hover:animate-bounce filter drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
-                  {game.emoji}
+                <div className="mb-4 text-center group-hover:animate-bounce filter drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] flex justify-center items-center h-24">
+                  {game.emoji.startsWith('/') ? (
+                    <img
+                      src={game.emoji}
+                      alt={game.title}
+                      className="w-20 h-20"
+                    />
+                  ) : (
+                    <span className="text-6xl">{game.emoji}</span>
+                  )}
                 </div>
                 <h3 className="text-xl font-bold font-mono text-cyan-400 mb-2 text-center group-hover:text-purple-400 transition-colors tracking-wider">
                   {game.title}
