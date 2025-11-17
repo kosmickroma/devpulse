@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, KeyboardEvent } from 'react'
 import { TrendingItem } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import { loadTodaysScanResults, saveScanResults } from '@/lib/db'
+import { getMyProfile, type UserProfile } from '@/lib/profile'
 import GameOverlay from './GameOverlay'
 import SynthAvatar from './SynthAvatar'
 
@@ -36,6 +37,9 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
   const [scanCompleteNotification, setScanCompleteNotification] = useState(false)
   const [scanCompleteMessage, setScanCompleteMessage] = useState('')
   const [resultsFromCache, setResultsFromCache] = useState(false)
+
+  // User profile state
+  const [profile, setProfile] = useState<UserProfile | null>(null)
 
   // SYNTH AI mode state
   const [synthMode, setSynthMode] = useState(false)
@@ -155,6 +159,15 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     }
   }, [synthMode])
 
+  // Load user profile
+  useEffect(() => {
+    const loadProfile = async () => {
+      const profileData = await getMyProfile()
+      setProfile(profileData)
+    }
+    loadProfile()
+  }, [])
+
   // Auto-scan after boot sequence completes
   const [hasAutoScanned, setHasAutoScanned] = useState(false)
 
@@ -163,6 +176,13 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     if (!isSystemReady || hasBooted.current) return // Don't run if not ready or already booted
 
     hasBooted.current = true // Mark as booted
+
+    // Build operator line with badge if equipped
+    const operatorBadge = profile?.equipped_badge?.badges?.icon || ''
+    const operatorName = profile?.username || 'Guest'
+    const operatorLine = operatorBadge
+      ? `> Operator: ${operatorBadge} @${operatorName}`
+      : `> Operator: @${operatorName}`
 
     const bootLines = [
       { id: '1', text: '> DevPulse Terminal v4.0 - SYNTH AI Edition', type: 'output' as const, timestamp: Date.now() },
@@ -174,9 +194,10 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       { id: '7', text: '> [✓] Yahoo Finance: ONLINE', type: 'success' as const, timestamp: Date.now() + 1800 },
       { id: '8', text: '> [✓] CoinGecko: ONLINE', type: 'success' as const, timestamp: Date.now() + 2100 },
       { id: '9', text: '> [✓] SYNTH AI: READY', type: 'success' as const, timestamp: Date.now() + 2400 },
-      { id: '10', text: '> ', type: 'output' as const, timestamp: Date.now() + 2700 },
-      { id: '11', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 3000 },
-      { id: '12', text: '> ', type: 'output' as const, timestamp: Date.now() + 3300 },
+      { id: '10', text: operatorLine, type: 'success' as const, timestamp: Date.now() + 2700 },
+      { id: '11', text: '> ', type: 'output' as const, timestamp: Date.now() + 3000 },
+      { id: '12', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 3300 },
+      { id: '13', text: '> ', type: 'output' as const, timestamp: Date.now() + 3600 },
     ]
 
     bootLines.forEach((line, index) => {
@@ -190,7 +211,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     setTimeout(() => {
       setHasAutoScanned(true)
     }, 2200)
-  }, [isSystemReady])
+  }, [isSystemReady, profile])
 
   // Play sound helper
   const playSound = (soundType: 'typing' | 'beep' | 'error' | 'success') => {

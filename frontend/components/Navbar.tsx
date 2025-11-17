@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { getMyProfile, type UserProfile } from '@/lib/profile'
 import AuthModal from './AuthModal'
 
 interface NavbarProps {
@@ -11,19 +12,33 @@ interface NavbarProps {
 export default function Navbar({ onMenuClick }: NavbarProps = {}) {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
+      if (session?.user) {
+        loadProfile()
+      }
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
+      if (session?.user) {
+        loadProfile()
+      } else {
+        setProfile(null)
+      }
     })
 
     return () => subscription.unsubscribe()
   }, [])
+
+  const loadProfile = async () => {
+    const profileData = await getMyProfile()
+    setProfile(profileData)
+  }
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -64,12 +79,18 @@ export default function Navbar({ onMenuClick }: NavbarProps = {}) {
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center gap-2 px-4 py-2 border-2 border-neon-cyan text-neon-cyan rounded hover:bg-neon-cyan/10 transition-all"
                   >
-                    <div className="w-6 h-6 rounded-full bg-neon-cyan/20 border border-neon-cyan flex items-center justify-center">
-                      <span className="text-xs font-bold">
-                        {user.email?.[0].toUpperCase()}
+                    {profile?.equipped_badge?.badges ? (
+                      <span className="text-lg" title={profile.equipped_badge.badges.name}>
+                        {profile.equipped_badge.badges.icon}
                       </span>
-                    </div>
-                    <span>{user.email?.split('@')[0]}</span>
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-neon-cyan/20 border border-neon-cyan flex items-center justify-center">
+                        <span className="text-xs font-bold">
+                          {(profile?.username || user.email)?.[0].toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <span>{profile?.username || user.email?.split('@')[0]}</span>
                   </button>
 
                   {showUserMenu && (

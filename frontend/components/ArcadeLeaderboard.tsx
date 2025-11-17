@@ -11,6 +11,9 @@ interface LeaderboardEntry {
   achieved_at: string
   metadata?: Record<string, any>
   isCurrentUser?: boolean
+  badge_icon?: string | null
+  badge_name?: string | null
+  badge_rarity?: string | null
 }
 
 interface GameLeaderboards {
@@ -226,8 +229,13 @@ export default function ArcadeLeaderboard({ onClose }: { onClose: () => void }) 
                             {game.name}
                           </h3>
                           <div className="flex items-center gap-2 mt-1">
-                            <div className={`text-sm font-mono ${isTopThree ? 'text-black/80' : isCurrentUser ? 'text-purple-300' : 'text-gray-300'}`}>
-                              👤 {entry.username}
+                            <div className={`text-sm font-mono flex items-center gap-1 ${isTopThree ? 'text-black/80' : isCurrentUser ? 'text-purple-300' : 'text-gray-300'}`}>
+                              {entry.badge_icon ? (
+                                <span className="text-base" title={entry.badge_name || ''}>{entry.badge_icon}</span>
+                              ) : (
+                                <span>👤</span>
+                              )}
+                              {entry.username}
                               {isCurrentUser && <span className="ml-2 text-xs">(YOU)</span>}
                             </div>
                             <div className={`text-xs font-mono uppercase px-2 py-0.5 rounded border inline-block ${isTopThree ? 'text-black/60 border-black/40' : getRarityColor(entry.gameId)}`}>
