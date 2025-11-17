@@ -64,7 +64,7 @@ async def get_my_profile(current_user: dict = Depends(get_current_user)):
         # Get user profile (username)
         profile = supabase.table('user_profiles')\
             .select('*')\
-            .eq('user_id', user_id)\
+            .eq('id', user_id)\
             .execute()
 
         # Get arcade profile (XP, level)
@@ -111,17 +111,17 @@ async def update_username(
 
         # Check if username is already taken
         existing = supabase.table('user_profiles')\
-            .select('user_id')\
+            .select('id')\
             .eq('username', new_username)\
             .execute()
 
-        if existing.data and existing.data[0]['user_id'] != user_id:
+        if existing.data and existing.data[0]['id'] != user_id:
             raise HTTPException(status_code=409, detail="Username already taken")
 
         # Update username in user_profiles
         result = supabase.table('user_profiles')\
             .update({'username': new_username})\
-            .eq('user_id', user_id)\
+            .eq('id', user_id)\
             .execute()
 
         print(f"[Profile] Username updated successfully: {result.data}")
@@ -188,7 +188,7 @@ async def get_user_profile(user_id: str):
         # Get user profile
         profile = supabase.table('user_profiles')\
             .select('username')\
-            .eq('user_id', user_id)\
+            .eq('id', user_id)\
             .execute()
 
         # Get equipped badge

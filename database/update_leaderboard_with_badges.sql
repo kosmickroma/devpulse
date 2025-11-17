@@ -19,7 +19,7 @@ SELECT
   b.rarity as badge_rarity
 FROM
   game_high_scores ghs
-  INNER JOIN user_profiles up ON ghs.user_id = up.user_id
+  INNER JOIN user_profiles up ON ghs.user_id = up.id
   -- LEFT JOIN to get equipped badge (if any)
   LEFT JOIN user_badges ub ON ghs.user_id = ub.user_id AND ub.is_equipped = true
   LEFT JOIN badges b ON ub.badge_id = b.id
