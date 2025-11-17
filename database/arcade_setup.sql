@@ -3,6 +3,63 @@
 -- Run this script in Supabase SQL Editor to set up the arcade system
 -- ============================================================================
 
+-- 0. Create user_profiles table (if it doesn't exist)
+-- This stores public user data like username
+CREATE TABLE IF NOT EXISTS user_profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT UNIQUE NOT NULL,
+  email TEXT,
+  avatar_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Index for username lookups
+CREATE INDEX IF NOT EXISTS idx_user_profiles_username
+ON user_profiles(username);
+
+-- RLS policies for user_profiles
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can read profiles (for leaderboards, etc.)
+CREATE POLICY "Anyone can read user profiles"
+ON user_profiles FOR SELECT
+TO authenticated, anon
+USING (true);
+
+-- Users can insert their own profile
+CREATE POLICY "Users can insert own profile"
+ON user_profiles FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = id);
+
+-- Users can update their own profile
+CREATE POLICY "Users can update own profile"
+ON user_profiles FOR UPDATE
+TO authenticated
+USING (auth.uid() = id);
+
+-- Create a trigger to auto-create profile on user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.user_profiles (id, username, email)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'username', SPLIT_PART(NEW.email, '@', 1)),
+    NEW.email
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to create profile automatically
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+
 -- 1. Create game_high_scores table
 -- Stores each user's high score for each game
 CREATE TABLE IF NOT EXISTS game_high_scores (
@@ -194,9 +251,34 @@ CREATE TRIGGER update_user_arcade_profile_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_user_profiles_updated_at ON user_profiles;
+CREATE TRIGGER update_user_profiles_updated_at
+  BEFORE UPDATE ON user_profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
 
 -- ============================================================================
 -- SETUP COMPLETE!
+-- ============================================================================
+
+-- IMPORTANT: Create profiles for existing users
+-- If you already have users in auth.users, run this to create their profiles:
+INSERT INTO user_profiles (id, username, email)
+SELECT
+  id,
+  COALESCE(raw_user_meta_data->>'username', SPLIT_PART(email, '@', 1)) as username,
+  email
+FROM auth.users
+WHERE NOT EXISTS (
+  SELECT 1 FROM user_profiles WHERE user_profiles.id = auth.users.id
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Note: If you get duplicate username errors, you'll need to manually fix them
+-- Run this to check for duplicates:
+-- SELECT username, COUNT(*) FROM user_profiles GROUP BY username HAVING COUNT(*) > 1;
+
 -- ============================================================================
 -- You can now use the arcade features:
 -- - Submit scores via /api/arcade/submit-score
