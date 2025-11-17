@@ -119,13 +119,13 @@ export default function OperatorProfileModal({ isOpen, onClose }: OperatorProfil
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 overflow-y-auto">
+      <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 pt-8 pb-8 overflow-y-auto">
         <div
-          className="bg-dark-bg border-4 border-neon-magenta rounded-lg shadow-[0_0_60px_rgba(255,0,255,0.4)] w-full max-w-4xl my-8 animate-in zoom-in-95 fade-in duration-300"
+          className="bg-dark-bg border-4 border-neon-magenta rounded-lg shadow-[0_0_60px_rgba(255,0,255,0.4)] w-full max-w-4xl max-h-full overflow-y-auto animate-in zoom-in-95 fade-in duration-300"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="p-6 border-b-2 border-neon-magenta/30 flex items-center justify-between sticky top-0 bg-dark-bg z-10">
+          <div className="p-6 border-b-2 border-neon-magenta/30 flex items-center justify-between sticky top-0 bg-dark-bg z-20">
             <div>
               <h2 className="text-3xl font-mono font-bold text-neon-magenta drop-shadow-[0_0_10px_rgba(255,0,255,0.8)]">
                 👤 OPERATOR PROFILE
@@ -218,29 +218,31 @@ export default function OperatorProfileModal({ isOpen, onClose }: OperatorProfil
 
                     return (
                       <div
-                        className={`flex items-center gap-4 p-4 border-2 ${isHolographic ? 'border-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 p-[2px]' : `border-${color}`} rounded bg-black/50`}
+                        className={`relative border-2 ${isHolographic ? 'border-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 p-[2px]' : `border-${color} bg-black/50`} rounded`}
                         style={isHolographic ? {
                           boxShadow: '0 0 30px rgba(255, 0, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)'
                         } : undefined}
                       >
-                        {isHolographic && <div className="absolute inset-[2px] bg-black/50 rounded z-0" />}
-                        <div className="relative z-10">
-                          {profile.equipped_badge.badges.icon.startsWith('/') ? (
-                            <img
-                              src={profile.equipped_badge.badges.icon}
-                              alt={profile.equipped_badge.badges.name}
-                              className="w-20 h-20"
-                            />
-                          ) : (
-                            <div className="text-6xl">{profile.equipped_badge.badges.icon}</div>
-                          )}
-                        </div>
-                        <div className="relative z-10">
-                          <div className={`text-2xl font-mono font-bold ${isHolographic ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500' : `text-${color}`}`}>
-                            {profile.equipped_badge.badges.name}
+                        {isHolographic && <div className="absolute inset-[2px] bg-black/50 backdrop-blur-sm rounded z-0" />}
+                        <div className={`flex items-center gap-4 relative z-10 ${isHolographic ? 'p-4' : 'p-4'}`}>
+                          <div className="flex-shrink-0">
+                            {profile.equipped_badge.badges.icon.startsWith('/') ? (
+                              <img
+                                src={profile.equipped_badge.badges.icon}
+                                alt={profile.equipped_badge.badges.name}
+                                className="w-20 h-20"
+                              />
+                            ) : (
+                              <div className="text-6xl">{profile.equipped_badge.badges.icon}</div>
+                            )}
                           </div>
-                          <div className={`text-xs font-mono uppercase ${isHolographic ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500' : `text-${color}/70`}`}>
-                            {profile.equipped_badge.badges.rarity}
+                          <div className="flex-1">
+                            <div className={`text-2xl font-mono font-bold ${isHolographic ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500' : `text-${color}`}`}>
+                              {profile.equipped_badge.badges.name}
+                            </div>
+                            <div className={`text-xs font-mono uppercase ${isHolographic ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500' : `text-${color}/70`}`}>
+                              {profile.equipped_badge.badges.rarity}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -271,13 +273,13 @@ export default function OperatorProfileModal({ isOpen, onClose }: OperatorProfil
                       return (
                         <div
                           key={userBadge.id}
-                          className={`border-2 ${isHolographic ? 'border-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 p-[2px]' : `border-${color}/30`} rounded-lg ${isHolographic ? '' : 'p-4'} bg-black/50 transition-all ${isHolographic ? '' : `hover:border-${color} hover:shadow-[0_0_20px_rgba(255,0,255,0.3)]`}`}
+                          className={`relative border-2 ${isHolographic ? 'border-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 p-[2px]' : `border-${color}/30 bg-black/50`} rounded-lg ${isHolographic ? '' : 'p-4'} transition-all ${isHolographic ? '' : `hover:border-${color} hover:shadow-[0_0_20px_rgba(255,0,255,0.3)]`}`}
                           style={isHolographic ? {
                             boxShadow: '0 0 30px rgba(255, 0, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.3)'
                           } : undefined}
                         >
-                          {isHolographic && <div className="absolute inset-[2px] bg-black/50 rounded-lg z-0" />}
-                          <div className={`flex items-start gap-3 ${isHolographic ? 'p-4 relative z-10' : ''}`}>
+                          {isHolographic && <div className="absolute inset-[2px] bg-black/50 backdrop-blur-sm rounded-lg z-0" />}
+                          <div className={`flex items-start gap-3 relative z-10 ${isHolographic ? 'p-4' : ''}`}>
                             <div className="flex-shrink-0">
                               {badge.icon.startsWith('/') ? (
                                 <img
