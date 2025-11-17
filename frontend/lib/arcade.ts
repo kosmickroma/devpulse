@@ -240,9 +240,10 @@ export async function checkNewBadges(): Promise<Badge[]> {
   try {
     const { data: { session } } = await supabase.auth.getSession()
     const token = session?.access_token
+    const userId = session?.user?.id
 
-    if (!token) {
-      console.log('[Badge Check] No auth token')
+    if (!token || !userId) {
+      console.log('[Badge Check] No auth token or user ID')
       return []
     }
 
@@ -266,10 +267,11 @@ export async function checkNewBadges(): Promise<Badge[]> {
       return []
     }
 
-    // Get list of badge IDs we've already shown
-    const seenBadgesJson = localStorage.getItem('seen-badges')
+    // Use user-specific localStorage key to prevent cross-user pollution
+    const userSeenKey = `seen-badges-${userId}`
+    const seenBadgesJson = localStorage.getItem(userSeenKey)
     const seenBadgeIds: Set<string> = new Set(seenBadgesJson ? JSON.parse(seenBadgesJson) : [])
-    console.log('[Badge Check] Previously seen badges:', Array.from(seenBadgeIds))
+    console.log('[Badge Check] Previously seen badges for this user:', Array.from(seenBadgeIds))
 
     // Find new badges (not in seen list)
     const newBadges = allBadges
@@ -280,7 +282,13 @@ export async function checkNewBadges(): Promise<Badge[]> {
       console.log('[Badge Check] Found NEW badges to show:', newBadges)
       // Mark these as seen
       allBadges.forEach(ub => seenBadgeIds.add(ub.badge_id))
-      localStorage.setItem('seen-badges', JSON.stringify(Array.from(seenBadgeIds)))
+      localStorage.setItem(userSeenKey, JSON.stringify(Array.from(seenBadgeIds)))
+
+      // Clean up old non-user-scoped key (migration)
+      if (localStorage.getItem('seen-badges')) {
+        localStorage.removeItem('seen-badges')
+        console.log('[Badge Check] Cleaned up old seen-badges key')
+      }
     }
 
     return newBadges
