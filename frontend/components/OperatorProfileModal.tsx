@@ -119,9 +119,9 @@ export default function OperatorProfileModal({ isOpen, onClose }: OperatorProfil
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 overflow-y-auto">
         <div
-          className="bg-dark-bg border-4 border-neon-magenta rounded-lg shadow-[0_0_60px_rgba(255,0,255,0.4)] w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 fade-in duration-300"
+          className="bg-dark-bg border-4 border-neon-magenta rounded-lg shadow-[0_0_60px_rgba(255,0,255,0.4)] w-full max-w-4xl my-8 animate-in zoom-in-95 fade-in duration-300"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
