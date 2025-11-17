@@ -62,8 +62,9 @@ async def get_random_question(
         # Debug logging
         print(f"DEBUG: RPC response - data: {progress.data}")
 
-        user_level = progress.data[0]['level'] if progress.data else 1
-        user_tier = progress.data[0]['current_tier'] if progress.data else 1
+        # Handle RPC response - it returns a dict, not a list
+        user_level = progress.data['level'] if progress.data else 1
+        user_tier = progress.data['current_tier'] if progress.data else 1
 
         print(f"DEBUG: User level={user_level}, tier={user_tier}")
 
