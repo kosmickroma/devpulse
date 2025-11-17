@@ -160,7 +160,7 @@ async def check_username_availability(username: str):
 
         # Check if taken
         existing = supabase.table('user_profiles')\
-            .select('user_id')\
+            .select('id')\
             .eq('username', username)\
             .execute()
 
