@@ -53,9 +53,11 @@ async def submit_score(submission: ScoreSubmission, current_user: dict = Depends
 
     try:
         user_id = current_user['id']
+        print(f"[Score Submit] User {user_id} submitting {submission.game_id}: {submission.score}")
 
         # Check if this is a new high score
         existing = supabase.table('game_high_scores').select('score').eq('user_id', user_id).eq('game_id', submission.game_id).execute()
+        print(f"[Score Submit] Existing record: {existing.data}")
 
         is_new_high_score = False
         xp_to_award = 0
@@ -64,10 +66,12 @@ async def submit_score(submission: ScoreSubmission, current_user: dict = Depends
             # First time playing this game
             is_new_high_score = True
             xp_to_award = GAME_XP_REWARDS.get(submission.game_id, 50)  # Default 50 XP
+            print(f"[Score Submit] First time playing! XP: {xp_to_award}")
         elif existing.data[0]['score'] < submission.score:
             # Beat previous high score
             is_new_high_score = True
             xp_to_award = 25  # Bonus XP for beating personal best
+            print(f"[Score Submit] Beat high score! Old: {existing.data[0]['score']}, New: {submission.score}")
 
         # Insert or update high score
         score_data = {
@@ -77,7 +81,9 @@ async def submit_score(submission: ScoreSubmission, current_user: dict = Depends
             'metadata': submission.metadata or {}
         }
 
-        result = supabase.table('game_high_scores').upsert(score_data).execute()
+        print(f"[Score Submit] Upserting score: {score_data}")
+        result = supabase.table('game_high_scores').upsert(score_data, on_conflict='user_id,game_id').execute()
+        print(f"[Score Submit] Upsert result: {result.data}")
 
         # Award XP if earned
         if xp_to_award > 0:
