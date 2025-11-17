@@ -233,7 +233,7 @@ export interface UserBadge {
 }
 
 /**
- * Check for newly unlocked badges (last 60 seconds)
+ * Check for newly unlocked badges by comparing with seen badges in localStorage
  * Returns badges that should trigger the unlock popup
  */
 export async function checkNewBadges(): Promise<Badge[]> {
@@ -242,23 +242,50 @@ export async function checkNewBadges(): Promise<Badge[]> {
     const token = session?.access_token
 
     if (!token) {
+      console.log('[Badge Check] No auth token')
       return []
     }
 
-    const response = await fetch(`${API_URL}/api/arcade/badges/new`, {
+    // Get all user badges
+    const response = await fetch(`${API_URL}/api/arcade/badges/user`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     })
 
     if (!response.ok) {
+      console.error('[Badge Check] API error:', response.status)
       throw new Error(`HTTP ${response.status}`)
     }
 
     const data = await response.json()
-    return data.new_badges?.map((ub: UserBadge) => ub.badges) || []
+    const allBadges: UserBadge[] = data.badges || []
+    console.log('[Badge Check] All user badges:', allBadges)
+
+    if (allBadges.length === 0) {
+      return []
+    }
+
+    // Get list of badge IDs we've already shown
+    const seenBadgesJson = localStorage.getItem('seen-badges')
+    const seenBadgeIds: Set<string> = new Set(seenBadgesJson ? JSON.parse(seenBadgesJson) : [])
+    console.log('[Badge Check] Previously seen badges:', Array.from(seenBadgeIds))
+
+    // Find new badges (not in seen list)
+    const newBadges = allBadges
+      .filter(ub => !seenBadgeIds.has(ub.badge_id))
+      .map(ub => ub.badges)
+
+    if (newBadges.length > 0) {
+      console.log('[Badge Check] Found NEW badges to show:', newBadges)
+      // Mark these as seen
+      allBadges.forEach(ub => seenBadgeIds.add(ub.badge_id))
+      localStorage.setItem('seen-badges', JSON.stringify(Array.from(seenBadgeIds)))
+    }
+
+    return newBadges
   } catch (error) {
-    console.error('Failed to check new badges:', error)
+    console.error('[Badge Check] Failed to check new badges:', error)
     return []
   }
 }

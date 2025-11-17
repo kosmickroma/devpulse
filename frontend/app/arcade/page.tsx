@@ -74,8 +74,11 @@ export default function ArcadePage() {
 
   // Check for new badges (called after games and on interval)
   const checkForNewBadges = async () => {
+    console.log('[Badge Check] Checking for new badges...')
     const badges = await checkNewBadges()
+    console.log('[Badge Check] Found badges:', badges)
     if (badges.length > 0) {
+      console.log('[Badge Check] 🎖️ UNLOCKING BADGE:', badges[0])
       // Show the first new badge (they unlock one at a time typically)
       setUnlockedBadge(badges[0])
     }
