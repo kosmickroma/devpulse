@@ -81,7 +81,7 @@ export default function GameOverlay({
       {/* Game Container */}
       <div className={`
         relative z-10
-        ${isMaximized ? 'w-full h-[95vh]' : 'w-fit h-fit max-h-[95vh]'}
+        ${isMaximized ? 'w-full h-[95vh]' : game === 'codequest' ? 'w-[90vw] max-w-5xl h-[85vh]' : 'w-fit h-fit max-h-[95vh]'}
         flex flex-col
         transition-all duration-300
         neon-border
@@ -139,7 +139,7 @@ export default function GameOverlay({
         </div>
 
         {/* Game Content */}
-        <div className="flex-1 flex items-center justify-center bg-dark-bg overflow-hidden">
+        <div className={`flex-1 flex bg-dark-bg overflow-hidden ${game === 'codequest' ? 'w-full' : 'items-center justify-center'}`}>
           <GameNotificationContext.Provider value={{
             showNotification: showNotificationInternal,
             notificationMessage: notificationMessage
