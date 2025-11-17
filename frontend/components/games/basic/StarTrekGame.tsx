@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { submitScore } from '@/lib/arcade'
 
 export default function StarTrekGame() {
   const [energy, setEnergy] = useState<number>(3000)
@@ -226,6 +227,19 @@ export default function StarTrekGame() {
     addOutput('CAPTAIN KIRK WOULD BE PROUD.')
     addOutput('')
     addOutput('Press ESC to exit.')
+
+    // Submit score: 1000 base + energy + torpedoes*50 + sectors*10
+    const score = 1000 + energy + (torpedoes * 50) + (sector * 10)
+    submitScore({
+      gameId: 'startrek',
+      score,
+      metadata: {
+        energy: energy,
+        torpedoes: torpedoes,
+        sectors: sector,
+        won: true
+      }
+    }).catch(err => console.error('Failed to submit score:', err))
   }
 
   const loseGame = () => {

@@ -1,0 +1,223 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { GAME_INFO } from '@/lib/arcade'
+
+interface LeaderboardData {
+  gameId: string
+  score: number
+  rank?: number
+}
+
+export default function ArcadeLeaderboard({ onClose }: { onClose: () => void }) {
+  const [selectedGame, setSelectedGame] = useState<string>('all')
+  const [localScores, setLocalScores] = useState<LeaderboardData[]>([])
+
+  const allGames = [
+    { id: 'snake', name: 'SNAKE', emoji: '🐍', color: 'cyan' },
+    { id: 'spaceinvaders', name: 'SPACE INVADERS', emoji: '👾', color: 'purple' },
+    { id: 'minesweeper', name: 'MINESWEEPER', emoji: '💣', color: 'yellow' },
+    { id: 'guess', name: 'GUESS', emoji: '🎲', color: 'green' },
+    { id: 'bagels', name: 'BAGELS', emoji: '🥯', color: 'green' },
+    { id: 'nim', name: 'NIM', emoji: '🎯', color: 'green' },
+    { id: 'amazing', name: 'AMAZING', emoji: '🌀', color: 'green' },
+    { id: 'stock', name: 'STOCK', emoji: '📈', color: 'green' },
+    { id: 'oregon', name: 'OREGON', emoji: '🐂', color: 'green' },
+    { id: 'startrek', name: 'STAR TREK', emoji: '🚀', color: 'green' },
+  ]
+
+  useEffect(() => {
+    loadLocalScores()
+  }, [])
+
+  const loadLocalScores = () => {
+    const scores: LeaderboardData[] = allGames.map(game => ({
+      gameId: game.id,
+      score: parseInt(localStorage.getItem(`${game.id}-highscore`) || '0')
+    })).filter(s => s.score > 0).sort((a, b) => b.score - a.score)
+
+    setLocalScores(scores)
+  }
+
+  const getGameInfo = (gameId: string) => {
+    return allGames.find(g => g.id === gameId) || allGames[0]
+  }
+
+  const displayedScores = selectedGame === 'all'
+    ? localScores
+    : localScores.filter(s => s.gameId === selectedGame)
+
+  const getRarityColor = (gameId: string) => {
+    const rarity = GAME_INFO[gameId]?.rarity || 'common'
+    switch (rarity) {
+      case 'common': return 'text-gray-400 border-gray-600'
+      case 'uncommon': return 'text-green-400 border-green-600'
+      case 'rare': return 'text-blue-400 border-blue-600'
+      case 'epic': return 'text-purple-400 border-purple-600'
+      default: return 'text-gray-400 border-gray-600'
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+      <div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={onClose} />
+
+      <div className="relative z-10 w-full max-w-6xl max-h-[90vh] flex flex-col bg-gradient-to-br from-gray-900 via-black to-gray-900 border-4 border-cyan-500 rounded-lg overflow-hidden shadow-[0_0_60px_rgba(6,182,212,0.6)]">
+
+        {/* Animated Border Glow */}
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 opacity-30 animate-pulse pointer-events-none" style={{ padding: '4px', zIndex: -1 }} />
+
+        {/* Header */}
+        <div className="relative bg-gradient-to-r from-cyan-900/50 to-purple-900/50 p-6 border-b-4 border-cyan-500/50">
+          <div className="absolute inset-0 bg-[linear-gradient(0deg,transparent_0%,rgba(6,182,212,0.1)_50%,transparent_100%)] animate-scanline pointer-events-none" />
+
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-4xl font-bold font-mono text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-2 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
+                ⚡ LEADERBOARD ⚡
+              </h2>
+              <p className="text-cyan-300/70 font-mono text-sm">Your Personal High Scores - Local Storage</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-800 border-2 border-red-400 text-white font-mono font-bold hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-[0_0_20px_rgba(239,68,68,0.5)] hover:shadow-[0_0_30px_rgba(239,68,68,0.8)]"
+            >
+              ESC
+            </button>
+          </div>
+
+          {/* Game Filter Tabs */}
+          <div className="mt-6 flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-cyan-500 scrollbar-track-gray-800">
+            <button
+              onClick={() => setSelectedGame('all')}
+              className={`px-4 py-2 font-mono text-sm font-bold border-2 transition-all whitespace-nowrap ${
+                selectedGame === 'all'
+                  ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-black border-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.6)]'
+                  : 'bg-gray-800/50 text-cyan-400 border-cyan-700 hover:border-cyan-500'
+              }`}
+            >
+              🎮 ALL GAMES
+            </button>
+            {allGames.map(game => (
+              <button
+                key={game.id}
+                onClick={() => setSelectedGame(game.id)}
+                className={`px-4 py-2 font-mono text-sm font-bold border-2 transition-all whitespace-nowrap ${
+                  selectedGame === game.id
+                    ? `bg-gradient-to-r from-${game.color}-500 to-${game.color}-700 text-black border-${game.color}-300 shadow-[0_0_20px_rgba(6,182,212,0.6)]`
+                    : 'bg-gray-800/50 text-gray-400 border-gray-700 hover:border-gray-500'
+                }`}
+              >
+                {game.emoji} {game.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Leaderboard Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {displayedScores.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center py-20">
+              <div className="text-8xl mb-6 animate-pulse">🎮</div>
+              <h3 className="text-3xl font-bold text-cyan-400 mb-4 font-mono">NO SCORES YET</h3>
+              <p className="text-gray-400 font-mono">
+                {selectedGame === 'all'
+                  ? 'Start playing games to build your leaderboard!'
+                  : 'Play this game to set your first high score!'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {displayedScores.map((entry, index) => {
+                const game = getGameInfo(entry.gameId)
+                const rankColors = [
+                  'from-yellow-500 to-yellow-700 border-yellow-300 shadow-[0_0_30px_rgba(234,179,8,0.6)]', // 1st
+                  'from-gray-300 to-gray-500 border-gray-200 shadow-[0_0_30px_rgba(156,163,175,0.6)]', // 2nd
+                  'from-orange-600 to-orange-800 border-orange-400 shadow-[0_0_30px_rgba(234,88,12,0.6)]', // 3rd
+                ]
+                const isTopThree = index < 3
+
+                return (
+                  <div
+                    key={`${entry.gameId}-${index}`}
+                    className={`relative flex items-center gap-4 p-4 rounded-lg border-2 transition-all duration-300 ${
+                      isTopThree
+                        ? `bg-gradient-to-r ${rankColors[index]} animate-pulse-slow`
+                        : 'bg-gray-800/50 border-cyan-700/50 hover:border-cyan-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]'
+                    }`}
+                  >
+                    {/* Rank */}
+                    <div className={`flex-shrink-0 w-16 h-16 flex items-center justify-center font-mono text-2xl font-bold rounded ${
+                      isTopThree ? 'text-black' : 'text-cyan-400 bg-gray-900/50 border-2 border-cyan-700'
+                    }`}>
+                      #{index + 1}
+                    </div>
+
+                    {/* Game Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="text-3xl">{game.emoji}</span>
+                        <div>
+                          <h3 className={`font-mono font-bold text-lg ${isTopThree ? 'text-black' : 'text-cyan-400'}`}>
+                            {game.name}
+                          </h3>
+                          <div className={`text-xs font-mono uppercase px-2 py-0.5 rounded border inline-block ${getRarityColor(entry.gameId)}`}>
+                            {GAME_INFO[entry.gameId]?.rarity || 'common'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Score */}
+                    <div className="flex-shrink-0 text-right">
+                      <div className={`text-xs font-mono mb-1 ${isTopThree ? 'text-black/70' : 'text-cyan-500/60'}`}>
+                        SCORE
+                      </div>
+                      <div className={`text-4xl font-mono font-bold ${isTopThree ? 'text-black' : 'text-yellow-400'}`}>
+                        {entry.score.toLocaleString()}
+                      </div>
+                    </div>
+
+                    {/* Trophy Icons for Top 3 */}
+                    {isTopThree && (
+                      <div className="absolute -top-2 -right-2 text-4xl animate-bounce-slow">
+                        {index === 0 && '🏆'}
+                        {index === 1 && '🥈'}
+                        {index === 2 && '🥉'}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Footer Stats */}
+        <div className="bg-gray-900/90 p-4 border-t-2 border-cyan-500/50">
+          <div className="flex justify-around text-center">
+            <div>
+              <div className="text-2xl font-bold text-cyan-400 font-mono">{localScores.length}</div>
+              <div className="text-xs text-gray-400 font-mono">GAMES PLAYED</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-purple-400 font-mono">
+                {localScores.reduce((sum, s) => sum + s.score, 0).toLocaleString()}
+              </div>
+              <div className="text-xs text-gray-400 font-mono">TOTAL SCORE</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-pink-400 font-mono">
+                {localScores.length > 0 ? Math.round(localScores.reduce((sum, s) => sum + s.score, 0) / localScores.length).toLocaleString() : 0}
+              </div>
+              <div className="text-xs text-gray-400 font-mono">AVG SCORE</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Scanlines Effect */}
+      <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent bg-[length:100%_4px] animate-scanline" />
+    </div>
+  )
+}

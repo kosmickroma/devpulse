@@ -9,6 +9,7 @@ import OregonGame from '@/components/games/basic/OregonGame'
 import StarTrekGame from '@/components/games/basic/StarTrekGame'
 import BagelsGame from '@/components/games/basic/BagelsGame'
 import NimGame from '@/components/games/basic/NimGame'
+import ArcadeLeaderboard from '@/components/ArcadeLeaderboard'
 
 interface BasicProgram {
   id: string
@@ -26,6 +27,7 @@ interface BasicProgram {
 export default function VaultPage() {
   const router = useRouter()
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [terminalInput, setTerminalInput] = useState('')
   const [terminalHistory, setTerminalHistory] = useState<string[]>([])
   const [commandHistory, setCommandHistory] = useState<string[]>([])
@@ -33,8 +35,31 @@ export default function VaultPage() {
   const [selectedProgram, setSelectedProgram] = useState<BasicProgram | null>(null)
   const [showCodeCompare, setShowCodeCompare] = useState(false)
   const [runningGame, setRunningGame] = useState<string | null>(null)
+  const [highScores, setHighScores] = useState<Record<string, number>>({})
   const terminalRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Load high scores from localStorage
+  useEffect(() => {
+    const scores: Record<string, number> = {}
+    const gameIds = ['guess', 'bagels', 'nim', 'amazing', 'stock', 'oregon', 'startrek']
+    gameIds.forEach(id => {
+      scores[id] = parseInt(localStorage.getItem(`${id}-highscore`) || '0')
+    })
+    setHighScores(scores)
+  }, [])
+
+  // Reload high scores when returning from a game
+  useEffect(() => {
+    if (!runningGame) {
+      const scores: Record<string, number> = {}
+      const gameIds = ['guess', 'bagels', 'nim', 'amazing', 'stock', 'oregon', 'startrek']
+      gameIds.forEach(id => {
+        scores[id] = parseInt(localStorage.getItem(`${id}-highscore`) || '0')
+      })
+      setHighScores(scores)
+    }
+  }, [runningGame])
 
   const programs: BasicProgram[] = [
     {
@@ -397,6 +422,12 @@ Commands:
             </div>
             <div className="flex items-center gap-4">
               <button
+                onClick={() => setShowLeaderboard(true)}
+                className="px-4 py-2 bg-yellow-900/30 border-2 border-yellow-500 text-yellow-400 hover:bg-yellow-900/50 transition-all duration-300 font-mono font-bold shadow-[0_0_15px_rgba(234,179,8,0.3)] hover:shadow-[0_0_25px_rgba(234,179,8,0.6)]"
+              >
+                🏆 SCORES
+              </button>
+              <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
                 className="px-4 py-2 bg-green-900/30 border border-green-500 text-green-400 hover:bg-green-900/50 transition-colors font-mono"
               >
@@ -511,6 +542,16 @@ Commands:
                   {program.difficulty}
                 </span>
               </div>
+
+              {/* High Score Display */}
+              {program.status === 'restored' && highScores[program.id] > 0 && (
+                <div className="mb-3 p-2 bg-green-950/30 border border-green-700/30 rounded">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-green-600/70 font-mono">HIGH SCORE</span>
+                    <span className="text-lg text-green-400 font-mono font-bold">{highScores[program.id]}</span>
+                  </div>
+                </div>
+              )}
 
               {program.status === 'restored' && (
                 <div className="flex gap-2">
@@ -632,6 +673,11 @@ Commands:
             </div>
           </div>
         </div>
+      )}
+
+      {/* Leaderboard */}
+      {showLeaderboard && (
+        <ArcadeLeaderboard onClose={() => setShowLeaderboard(false)} />
       )}
 
       {/* CRT flicker effect */}

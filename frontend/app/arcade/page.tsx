@@ -7,6 +7,7 @@ import SpaceInvaders from '@/components/games/SpaceInvaders'
 import Minesweeper from '@/components/games/Minesweeper'
 import BrickBreaker from '@/components/games/BrickBreaker'
 import GameOverlay from '@/components/GameOverlay'
+import ArcadeLeaderboard from '@/components/ArcadeLeaderboard'
 
 type GameType = 'snake' | 'spaceinvaders' | 'minesweeper' | 'brickbreaker' | null
 
@@ -23,6 +24,7 @@ export default function ArcadePage() {
   const router = useRouter()
   const [activeGame, setActiveGame] = useState<GameType>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [terminalInput, setTerminalInput] = useState('')
   const [terminalHistory, setTerminalHistory] = useState<string[]>([])
   const [commandHistory, setCommandHistory] = useState<string[]>([])
@@ -71,6 +73,16 @@ export default function ArcadePage() {
       highScore: parseInt(localStorage.getItem(`${game.id}-highscore`) || '0')
     })))
   }, [])
+
+  // Reload high scores when returning from a game
+  useEffect(() => {
+    if (!activeGame) {
+      setGames(prevGames => prevGames.map(game => ({
+        ...game,
+        highScore: parseInt(localStorage.getItem(`${game.id}-highscore`) || '0')
+      })))
+    }
+  }, [activeGame])
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -207,6 +219,12 @@ Available commands:
           </h1>
           <div className="flex items-center gap-4">
             <button
+              onClick={() => setShowLeaderboard(true)}
+              className="px-4 py-2 bg-yellow-600/20 border-2 border-yellow-500 text-yellow-400 hover:bg-yellow-600/40 transition-all duration-300 font-bold shadow-[0_0_15px_rgba(234,179,8,0.3)] hover:shadow-[0_0_25px_rgba(234,179,8,0.6)]"
+            >
+              🏆 LEADERBOARD
+            </button>
+            <button
               onClick={() => setIsFullscreen(!isFullscreen)}
               className="px-4 py-2 bg-purple-600/20 border border-purple-500 text-purple-400 hover:bg-purple-600/40 transition-colors"
             >
@@ -334,6 +352,11 @@ Available commands:
             </div>
           </div>
         </div>
+      )}
+
+      {/* Leaderboard */}
+      {showLeaderboard && (
+        <ArcadeLeaderboard onClose={() => setShowLeaderboard(false)} />
       )}
 
       {/* Scanlines effect */}
