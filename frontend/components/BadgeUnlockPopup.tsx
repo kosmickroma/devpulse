@@ -63,7 +63,7 @@ export default function BadgeUnlockPopup({ badge, onClose }: BadgeUnlockPopupPro
       {/* Badge Unlock Notification - Cyberpunk Flashing Neon Sign */}
       <div
         className={`
-          fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2
+          fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
           z-[10000]
           p-8
           border-4 ${borderColorClass}
