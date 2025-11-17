@@ -173,11 +173,23 @@ export default function Sidebar({
                 <div className="mt-3 space-y-2">
                   <button
                     onClick={() => {
+                      // TODO: Open Operator Profile modal
+                      console.log('Open Operator Profile')
+                      onClose()
+                    }}
+                    className="w-full text-left px-3 py-2 rounded font-mono text-sm bg-dark-bg/50 text-gray-300 border-2 border-gray-700 hover:border-neon-magenta hover:text-neon-magenta transition-all"
+                  >
+                    <span className="mr-2">👤</span>
+                    Operator Profile
+                  </button>
+                  <button
+                    onClick={() => {
                       router.push('/settings')
                       onClose()
                     }}
                     className="w-full text-left px-3 py-2 rounded font-mono text-sm bg-dark-bg/50 text-gray-300 border-2 border-gray-700 hover:border-neon-cyan hover:text-neon-cyan transition-all"
                   >
+                    <span className="mr-2">⚙️</span>
                     Preferences
                   </button>
                 </div>

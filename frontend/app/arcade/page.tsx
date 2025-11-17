@@ -7,6 +7,7 @@ import Minesweeper from '@/components/games/Minesweeper'
 import GameOverlay from '@/components/GameOverlay'
 import ArcadeLeaderboard from '@/components/ArcadeLeaderboard'
 import BadgeUnlockPopup from '@/components/BadgeUnlockPopup'
+import Sidebar from '@/components/Sidebar'
 import { checkNewBadges, type Badge } from '@/lib/arcade'
 
 type GameType = 'snake' | 'minesweeper' | null
@@ -25,6 +26,7 @@ export default function ArcadePage() {
   const [activeGame, setActiveGame] = useState<GameType>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [terminalInput, setTerminalInput] = useState('')
   const [terminalHistory, setTerminalHistory] = useState<string[]>([])
   const [commandHistory, setCommandHistory] = useState<string[]>([])
@@ -214,13 +216,26 @@ Available commands:
       <div className="relative z-10 container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-5xl md:text-6xl font-bold font-mono text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-pulse drop-shadow-[0_0_30px_rgba(6,182,212,0.8)]">
-              ⚡ DEVPULSE ARCADE
-            </h1>
-            <p className="text-cyan-400/70 font-mono text-sm mt-2 tracking-widest">
-              &gt; INSERT_COIN // PRESS_START // GET_READY
-            </p>
+          <div className="flex items-center gap-4">
+            {/* Menu Button */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-3 bg-cyan-600/20 border-2 border-cyan-500 text-cyan-400 hover:bg-cyan-600/40 transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.6)]"
+              title="Open Menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
+            <div>
+              <h1 className="text-5xl md:text-6xl font-bold font-mono text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-pulse drop-shadow-[0_0_30px_rgba(6,182,212,0.8)]">
+                ⚡ DEVPULSE ARCADE
+              </h1>
+              <p className="text-cyan-400/70 font-mono text-sm mt-2 tracking-widest">
+                &gt; INSERT_COIN // PRESS_START // GET_READY
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <button
@@ -366,6 +381,12 @@ Available commands:
       {showLeaderboard && (
         <ArcadeLeaderboard onClose={() => setShowLeaderboard(false)} />
       )}
+
+      {/* Sidebar */}
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
       {/* Badge Unlock Popup */}
       <BadgeUnlockPopup
