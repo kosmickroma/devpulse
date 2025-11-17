@@ -218,19 +218,19 @@ Available commands:
       <div className="relative z-10 container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            {/* Menu Button - DevPulse Icon */}
+          <div className="flex items-center">
+            {/* Menu Button - DevPulse Icon - Centered in left space */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="hover:opacity-80 transition-opacity"
+              className="hover:opacity-80 transition-opacity mr-8"
               title="Open Menu"
             >
               <img
                 src="/devpulse_icon.svg"
                 alt="Menu"
-                className="w-10 h-10"
+                className="w-16 h-16"
                 style={{
-                  filter: 'drop-shadow(0 0 10px rgba(255, 0, 255, 0.6))',
+                  filter: 'drop-shadow(0 0 15px rgba(255, 0, 255, 0.8))',
                 }}
               />
             </button>
