@@ -125,6 +125,45 @@ export default function CodeQuest({ onGameOver }: GameProps) {
     }
   }
 
+  // Shuffle answer options to randomize correct answer position
+  const shuffleOptions = (question: Question): Question => {
+    // Get the correct answer value
+    const correctValue = question.options[question.correct as keyof typeof question.options]
+
+    // Get all option values as array
+    const values = [
+      question.options.A,
+      question.options.B,
+      question.options.C,
+      question.options.D
+    ]
+
+    // Fisher-Yates shuffle
+    for (let i = values.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [values[i], values[j]] = [values[j], values[i]]
+    }
+
+    // Rebuild options object with shuffled values
+    const shuffledOptions = {
+      A: values[0],
+      B: values[1],
+      C: values[2],
+      D: values[3]
+    }
+
+    // Find new correct key after shuffle
+    const newCorrectKey = Object.entries(shuffledOptions).find(
+      ([_, value]) => value === correctValue
+    )?.[0] as 'A' | 'B' | 'C' | 'D' || 'A'
+
+    return {
+      ...question,
+      options: shuffledOptions,
+      correct: newCorrectKey
+    }
+  }
+
   // Start level selection
   const openLevelSelect = () => {
     setGameMode('levelSelect')
@@ -227,7 +266,10 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
       const data = await response.json()
 
-      setQuestion(data)
+      // Shuffle options to randomize correct answer position
+      const shuffledQuestion = shuffleOptions(data)
+
+      setQuestion(shuffledQuestion)
       setSelectedAnswer(null)
       setAnswerStartTime(Date.now())
       setQuestionNumber(prev => prev + 1)
@@ -724,18 +766,19 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
   // === RENDER GAME OVER ===
   if (gameMode === 'gameOver') {
-    const accuracy = questionNumber > 0 ? Math.round((score / questionNumber) * 100) : 0
+    // Use answeredQuestionIds length for accurate count
+    const questionsAnswered = answeredQuestionIds.length
+    const accuracy = questionsAnswered > 0 ? Math.round((score / questionsAnswered) * 100) : 0
     const passed = accuracy >= 80
 
     return (
-      <div className="h-full flex items-center justify-center p-6">
-        <div className="text-center space-y-6">
+      <div className="h-full w-full flex items-center justify-center p-6">
+        <div className="text-center space-y-6 max-w-2xl">
           <h1 className={`text-5xl font-mono font-bold ${passed ? 'text-green-400' : 'text-red-400'} drop-shadow-[0_0_20px_rgba(255,255,255,0.8)]`}>
             {passed ? 'LEVEL COMPLETE!' : 'LEVEL FAILED'}
           </h1>
           <div className="space-y-4 text-2xl font-mono">
             <div className="text-cyan-400">TIER {currentTier} - LEVEL {currentLevel}</div>
-            <div className="text-green-400">Score: {score} / {questionNumber}</div>
             <div className="text-purple-400">Total XP Earned: {totalXP}</div>
             <div className="text-yellow-400">Best Combo: {bestCombo}x</div>
             <div className={`${accuracy >= 80 ? 'text-green-400' : 'text-red-400'} text-3xl font-bold`}>
