@@ -55,6 +55,53 @@ class SessionStart(BaseModel):
 
 
 # ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def shuffle_question_options(question: dict) -> dict:
+    """
+    Shuffle question options while tracking the correct answer.
+    This ensures correct answers are randomized (not always 'A').
+    """
+    # Get the correct answer key (A, B, C, or D)
+    correct_key = question['correct']
+
+    # Get the correct answer value
+    options = question['options']
+    correct_value = options[correct_key]
+
+    # Create array of all option values
+    values = [options['A'], options['B'], options['C'], options['D']]
+
+    # Fisher-Yates shuffle
+    for i in range(len(values) - 1, 0, -1):
+        j = random.randint(0, i)
+        values[i], values[j] = values[j], values[i]
+
+    # Rebuild options dict with shuffled values
+    shuffled_options = {
+        'A': values[0],
+        'B': values[1],
+        'C': values[2],
+        'D': values[3]
+    }
+
+    # Find which key now has the correct value
+    new_correct_key = None
+    for key, value in shuffled_options.items():
+        if value == correct_value:
+            new_correct_key = key
+            break
+
+    # Return updated question
+    return {
+        **question,
+        'options': shuffled_options,
+        'correct': new_correct_key
+    }
+
+
+# ============================================================================
 # ENDPOINTS
 # ============================================================================
 
@@ -103,6 +150,9 @@ async def get_question_by_level(
                 raise HTTPException(status_code=404, detail=f"No questions found for Tier {tier}, Level {level}")
 
             question = random.choice(result.data)
+
+        # Shuffle options to randomize correct answer position
+        question = shuffle_question_options(question)
 
         # Remove correct answer from response
         response_question = {

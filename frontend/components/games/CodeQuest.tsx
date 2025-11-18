@@ -125,45 +125,6 @@ export default function CodeQuest({ onGameOver }: GameProps) {
     }
   }
 
-  // Shuffle answer options to randomize correct answer position
-  const shuffleOptions = (question: Question): Question => {
-    // Get the correct answer value
-    const correctValue = question.options[question.correct as keyof typeof question.options]
-
-    // Get all option values as array
-    const values = [
-      question.options.A,
-      question.options.B,
-      question.options.C,
-      question.options.D
-    ]
-
-    // Fisher-Yates shuffle
-    for (let i = values.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [values[i], values[j]] = [values[j], values[i]]
-    }
-
-    // Rebuild options object with shuffled values
-    const shuffledOptions = {
-      A: values[0],
-      B: values[1],
-      C: values[2],
-      D: values[3]
-    }
-
-    // Find new correct key after shuffle
-    const newCorrectKey = Object.entries(shuffledOptions).find(
-      ([_, value]) => value === correctValue
-    )?.[0] as 'A' | 'B' | 'C' | 'D' || 'A'
-
-    return {
-      ...question,
-      options: shuffledOptions,
-      correct: newCorrectKey
-    }
-  }
-
   // Start level selection
   const openLevelSelect = () => {
     setGameMode('levelSelect')
@@ -266,10 +227,8 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
       const data = await response.json()
 
-      // Shuffle options to randomize correct answer position
-      const shuffledQuestion = shuffleOptions(data)
-
-      setQuestion(shuffledQuestion)
+      // Options are already shuffled by the backend
+      setQuestion(data)
       setSelectedAnswer(null)
       setAnswerStartTime(Date.now())
       setQuestionNumber(prev => prev + 1)
