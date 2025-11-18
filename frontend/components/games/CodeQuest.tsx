@@ -101,7 +101,12 @@ export default function CodeQuest({ onGameOver }: GameProps) {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      const response = await fetch(`${API_URL}/api/arcade/codequest/question/random`, {
+      // Use session_id to get unique questions
+      const url = sessionId
+        ? `${API_URL}/api/arcade/codequest/question/random?session_id=${sessionId}`
+        : `${API_URL}/api/arcade/codequest/question/random`
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -111,17 +116,15 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
       const data = await response.json()
 
-      // Increase time limit for easier questions
-      const adjustedTimeLimit = data.difficulty <= 2 ? data.time_limit + 10 : data.time_limit
-
       setQuestion(data)
-      setTimeLeft(adjustedTimeLimit)
       setSelectedAnswer(null)
       setAnswerStartTime(Date.now())
       setQuestionNumber(prev => prev + 1)
 
-      // Start timer
-      startTimer(adjustedTimeLimit)
+      // Timer disabled for now - can add time attack mode later
+      // const adjustedTimeLimit = data.difficulty <= 2 ? data.time_limit + 10 : data.time_limit
+      // setTimeLeft(adjustedTimeLimit)
+      // startTimer(adjustedTimeLimit)
     } catch (error) {
       console.error('Error loading question:', error)
     }
@@ -333,9 +336,9 @@ export default function CodeQuest({ onGameOver }: GameProps) {
           </p>
           <div className="space-y-2 text-sm font-mono text-gray-400">
             <p>✓ 3 lives - lose one for each wrong answer</p>
-            <p>✓ Combo streaks multiply your XP</p>
+            <p>✓ Combo streaks multiply your XP (up to 5x!)</p>
             <p>✓ Speed bonus for quick answers</p>
-            <p>✓ Use keyboard: 1-4 or A-D</p>
+            <p>✓ Use keyboard: 1-4 or A-D to answer</p>
           </div>
           <button
             onClick={startGame}
@@ -351,7 +354,6 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
   if (gameState === 'playing' && question) {
     const comboText = getComboDisplay()
-    const timerColor = timeLeft < 5 ? 'text-red-500' : 'text-cyan-400'
 
     return (
       <div className="h-full w-full flex justify-center items-start overflow-y-auto">
@@ -376,9 +378,6 @@ export default function CodeQuest({ onGameOver }: GameProps) {
                 {comboText}
               </div>
             )}
-            <div className={`text-2xl font-mono font-bold ${timerColor}`}>
-              ⏱️ {timeLeft}s
-            </div>
           </div>
         </div>
 
