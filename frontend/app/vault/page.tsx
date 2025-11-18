@@ -10,6 +10,9 @@ import OregonGame from '@/components/games/basic/OregonGame'
 import StarTrekGame from '@/components/games/basic/StarTrekGame'
 import BagelsGame from '@/components/games/basic/BagelsGame'
 import NimGame from '@/components/games/basic/NimGame'
+import Lunar from '@/components/games/basic/Lunar'
+import Hammurabi from '@/components/games/basic/Hammurabi'
+import Blackjack from '@/components/games/basic/Blackjack'
 import ArcadeLeaderboard from '@/components/ArcadeLeaderboard'
 
 interface BasicProgram {
@@ -44,7 +47,7 @@ export default function VaultPage() {
   // Load high scores from localStorage
   useEffect(() => {
     const scores: Record<string, number> = {}
-    const gameIds = ['guess', 'bagels', 'nim', 'amazing', 'stock', 'oregon', 'startrek']
+    const gameIds = ['guess', 'bagels', 'nim', 'amazing', 'stock', 'oregon', 'startrek', 'lunar', 'hammurabi', 'blackjack']
     gameIds.forEach(id => {
       scores[id] = parseInt(localStorage.getItem(`${id}-highscore`) || '0')
     })
@@ -55,7 +58,7 @@ export default function VaultPage() {
   useEffect(() => {
     if (!runningGame) {
       const scores: Record<string, number> = {}
-      const gameIds = ['guess', 'bagels', 'nim', 'amazing', 'stock', 'oregon', 'startrek']
+      const gameIds = ['guess', 'bagels', 'nim', 'amazing', 'stock', 'oregon', 'startrek', 'lunar', 'hammurabi', 'blackjack']
       gameIds.forEach(id => {
         scores[id] = parseInt(localStorage.getItem(`${id}-highscore`) || '0')
       })
@@ -252,6 +255,79 @@ export default function VaultPage() {
 140 IF K<=0 THEN PRINT "VICTORY!":END
 150 IF E<=0 THEN PRINT "DESTROYED!":END
 160 GOTO 30`
+    },
+    {
+      id: 'lunar',
+      number: 52,
+      title: 'LUNAR',
+      fullTitle: 'Lunar Lander',
+      description: 'Pilot the Apollo lunar module to a safe landing. Control your descent with retro rockets. Real physics simulation.',
+      year: '1969',
+      status: 'restored',
+      difficulty: 'beginner',
+      category: 'Simulation',
+      basicCode: `10 PRINT "LUNAR LANDER"
+20 A=100:V=1:F=8000
+30 PRINT "ALT:";A;" VEL:";V;" FUEL:";F
+40 INPUT "BURN RATE";B
+50 V=V+0.01-B*0.001
+60 A=A-V
+70 F=F-B
+80 IF A<=0 THEN 100
+90 GOTO 30
+100 IF V>5 THEN PRINT "CRASH":END
+110 PRINT "SAFE LANDING":END`
+    },
+    {
+      id: 'hammurabi',
+      number: 39,
+      title: 'HAMURABI',
+      fullTitle: 'Hammurabi',
+      description: 'Govern ancient Babylon for 10 years. Manage land, grain, and population. Balance resources to keep your people alive.',
+      year: '1968',
+      status: 'restored',
+      difficulty: 'intermediate',
+      category: 'Strategy',
+      basicCode: `10 PRINT "HAMURABI"
+20 P=95:A=1000:B=2800
+30 PRINT "YEAR";Y
+40 PRINT "POPULATION";P
+50 INPUT "BUY ACRES";X
+60 INPUT "FEED PEOPLE";F
+70 INPUT "PLANT ACRES";S
+80 H=INT(RND(1)*5)+1
+90 B=B+S*H
+100 D=P-F/20
+110 IF D>P*0.45 THEN PRINT "IMPEACHED":END
+120 P=P-D:Y=Y+1
+130 IF Y>=10 THEN PRINT "COMPLETE":END
+140 GOTO 30`
+    },
+    {
+      id: 'blackjack',
+      number: 18,
+      title: 'BLACKJACK',
+      fullTitle: 'Blackjack (21)',
+      description: 'Classic casino card game. Get as close to 21 as possible without going over. Beat the dealer to win.',
+      year: '1970',
+      status: 'restored',
+      difficulty: 'beginner',
+      category: 'Card Game',
+      basicCode: `10 PRINT "BLACKJACK"
+20 M=500
+30 INPUT "BET";B
+40 M=M-B
+50 P=INT(RND(1)*10)+2
+60 D=INT(RND(1)*10)+2
+70 PRINT "YOUR HAND:";P
+80 INPUT "HIT OR STAND";A$
+90 IF A$="H" THEN P=P+INT(RND(1)*10)+1
+100 IF P>21 THEN PRINT "BUST":M=M-B:GOTO 30
+110 IF A$="S" THEN 120 ELSE GOTO 80
+120 IF D<17 THEN D=D+INT(RND(1)*10)+1:GOTO 120
+130 IF D>21 OR P>D THEN M=M+B*2:PRINT "WIN"
+140 IF D>P THEN PRINT "LOSE"
+150 GOTO 30`
     }
   ]
 
@@ -695,6 +771,9 @@ Commands:
               {runningGame === 'stock' && <StockGame />}
               {runningGame === 'oregon' && <OregonGame />}
               {runningGame === 'startrek' && <StarTrekGame />}
+              {runningGame === 'lunar' && <Lunar />}
+              {runningGame === 'hammurabi' && <Hammurabi />}
+              {runningGame === 'blackjack' && <Blackjack />}
             </div>
           </div>
         </div>
