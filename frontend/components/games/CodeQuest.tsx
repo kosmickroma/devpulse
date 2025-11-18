@@ -193,6 +193,13 @@ export default function CodeQuest({ onGameOver }: GameProps) {
   // Load question from API
   const loadQuestion = async (tier: number, level: number) => {
     try {
+      // Check if we've already answered 20 questions
+      if (answeredQuestionIds.length >= 20) {
+        // Level complete!
+        completeLevel()
+        return
+      }
+
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
@@ -352,6 +359,8 @@ export default function CodeQuest({ onGameOver }: GameProps) {
   // Next question
   const nextQuestion = () => {
     if (lives > 0) {
+      // Clear old question first to prevent flash
+      setQuestion(null)
       setGameMode('playing')
       loadQuestion(currentTier, currentLevel)
     }
@@ -360,6 +369,9 @@ export default function CodeQuest({ onGameOver }: GameProps) {
   // Complete level
   const completeLevel = async () => {
     if (!sessionId) return
+
+    // Clear question to prevent flash
+    setQuestion(null)
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -399,6 +411,8 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
   // End game (ran out of lives)
   const endGame = () => {
+    // Clear question to prevent flash
+    setQuestion(null)
     setGameMode('gameOver')
   }
 
@@ -738,7 +752,7 @@ export default function CodeQuest({ onGameOver }: GameProps) {
               You need 80% accuracy to unlock the next level. Try again!
             </div>
           )}
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-4 justify-center flex-wrap">
             <button
               onClick={() => startLevel(currentTier, currentLevel)}
               className="px-6 py-3 bg-cyan-500 text-black font-bold font-mono hover:bg-cyan-400 transition-colors"
@@ -753,6 +767,16 @@ export default function CodeQuest({ onGameOver }: GameProps) {
               className="px-6 py-3 bg-purple-500 text-black font-bold font-mono hover:bg-purple-400 transition-colors"
             >
               📋 LEVEL SELECT
+            </button>
+            <button
+              onClick={() => {
+                loadLevelProgress()
+                loadUserProgress()
+                setGameMode('menu')
+              }}
+              className="px-6 py-3 bg-gray-700 text-white font-bold font-mono hover:bg-gray-600 transition-colors"
+            >
+              🏠 BACK TO MENU
             </button>
           </div>
         </div>
