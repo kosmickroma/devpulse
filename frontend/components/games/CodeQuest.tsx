@@ -417,8 +417,8 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
   if (gameState === 'feedback') {
     return (
-      <div className="h-full flex items-center justify-center p-6">
-        <div className="text-center space-y-6 max-w-2xl">
+      <div className="h-full w-full flex items-center justify-center p-6">
+        <div className="text-center space-y-6 max-w-2xl w-full">
           {isCorrect ? (
             <>
               <div className="text-8xl">✓</div>
