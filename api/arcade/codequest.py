@@ -529,8 +529,16 @@ async def get_progress(current_user: dict = Depends(get_current_user)):
             .limit(10)\
             .execute()
 
+        # Extract progress data
+        prog_data = progress.data if progress.data else {}
+
+        # Return flattened format for frontend compatibility
         return {
-            'progress': progress.data if progress.data else None,
+            'total_xp': prog_data.get('total_xp', 0),
+            'level': prog_data.get('level', 1),
+            'current_streak': prog_data.get('current_streak', 0),
+            'best_streak': prog_data.get('best_streak', 0),
+            'best_combo': prog_data.get('best_combo', 0),
             'topic_mastery': topics.data,
             'recent_sessions': sessions.data
         }
