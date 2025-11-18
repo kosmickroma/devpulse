@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { submitScore } from '@/lib/arcade'
+import { useTerminalSounds } from '@/hooks/useTerminalSounds'
 
 export default function GuessGame() {
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'won' | 'askAgain'>('intro')
@@ -11,6 +12,7 @@ export default function GuessGame() {
   const [currentInput, setCurrentInput] = useState<string>('')
   const [output, setOutput] = useState<string[]>([])
   const terminalRef = useRef<HTMLDivElement>(null)
+  const { playSound, enableAudio } = useTerminalSounds()
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -24,6 +26,9 @@ export default function GuessGame() {
   }, [output])
 
   useEffect(() => {
+    // Enable audio on mount
+    enableAudio()
+
     addOutput('GUESS - NUMBER GUESSING GAME')
     addOutput('CREATIVE COMPUTING, MORRISTOWN, NEW JERSEY')
     addOutput('')
@@ -61,17 +66,21 @@ export default function GuessGame() {
   const handleInput = (value: string) => {
     if (gameState === 'intro') return
 
+    playSound('typing') // Play typing sound on input
+
     if (gameState === 'askAgain') {
       const answer = value.trim().toUpperCase()
       addOutput(`> ${value}`)
 
       if (answer === 'YES' || answer === 'Y') {
+        playSound('beep')
         addOutput('')
         addOutput('GREAT! LET\'S PLAY AGAIN!')
         addOutput('')
         setOutput(prev => [...prev, ''])
         startNewGame()
       } else {
+        playSound('beep')
         addOutput('')
         addOutput('THANKS FOR PLAYING!')
         addOutput(`GAME STATISTICS:`)
@@ -85,6 +94,7 @@ export default function GuessGame() {
     const guess = parseInt(value.trim())
 
     if (isNaN(guess)) {
+      playSound('error')
       addOutput(`> ${value}`)
       addOutput('PLEASE ENTER A NUMBER.')
       return
@@ -95,6 +105,7 @@ export default function GuessGame() {
     setGuessCount(newCount)
 
     if (guess === targetNumber) {
+      playSound('success')
       addOutput('')
       addOutput('*** CONGRATULATIONS! YOU GOT IT! ***')
       addOutput(`You guessed it in ${newCount} ${newCount === 1 ? 'try' : 'tries'}.`)
@@ -114,8 +125,10 @@ export default function GuessGame() {
       addOutput('WOULD YOU LIKE TO PLAY AGAIN? (YES/NO)')
       setGameState('askAgain')
     } else if (guess < targetNumber) {
+      playSound('beep')
       addOutput('TOO LOW. TRY AGAIN.')
     } else {
+      playSound('beep')
       addOutput('TOO HIGH. TRY AGAIN.')
     }
   }
