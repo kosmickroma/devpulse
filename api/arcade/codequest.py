@@ -75,7 +75,8 @@ async def get_random_question(
         if difficulty:
             query = query.eq('difficulty', difficulty)
         else:
-            # Adaptive difficulty: 70% at level, 15% harder, 10% easier, 5% random
+            # Adaptive difficulty: Use range instead of exact match for better question availability
+            # Target difficulty based on user level but with flexibility
             rand = random.random()
             if rand < 0.70:
                 target_difficulty = user_level
@@ -86,7 +87,8 @@ async def get_random_question(
             else:
                 target_difficulty = random.randint(1, 10)
 
-            query = query.eq('difficulty', target_difficulty)
+            # Use range query to find questions within ±2 levels for better availability
+            query = query.gte('difficulty', max(1, target_difficulty - 2)).lte('difficulty', min(10, target_difficulty + 2))
 
         # Filter by topic if specified
         if topic:
