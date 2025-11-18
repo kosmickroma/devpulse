@@ -311,7 +311,7 @@ export default function CodeQuest({ onGameOver }: GameProps) {
   // Render
   if (gameState === 'idle') {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
+      <div className="flex flex-col items-center justify-center h-full w-full">
         <div className="text-center space-y-6">
           <h1 className="text-5xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500">
             ⚡ PYTHON CODE QUEST
@@ -342,7 +342,8 @@ export default function CodeQuest({ onGameOver }: GameProps) {
     const timerColor = timeLeft < 5 ? 'text-red-500' : 'text-cyan-400'
 
     return (
-      <div className="h-full flex flex-col p-6 max-w-4xl mx-auto w-full">
+      <div className="h-full w-full flex justify-center items-start overflow-y-auto">
+        <div className="flex flex-col p-6 max-w-4xl w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -408,6 +409,7 @@ export default function CodeQuest({ onGameOver }: GameProps) {
           <div className="text-green-400">Score: {score} correct</div>
           <div className="text-purple-400">Total XP: {totalXP}</div>
           <div className="text-yellow-400">Best Combo: {bestCombo}x</div>
+        </div>
         </div>
       </div>
     )

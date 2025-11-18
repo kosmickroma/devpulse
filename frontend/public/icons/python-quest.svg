@@ -1,84 +1,115 @@
 <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Outer glow -->
   <defs>
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+    <!-- Outer pink glow -->
+    <filter id="pinkGlow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
 
-    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#5b21b6;stop-opacity:1" />
-    </linearGradient>
+    <!-- Inner subtle glow -->
+    <filter id="innerGlow">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
 
-    <linearGradient id="pinkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#f472b6;stop-opacity:1" />
-    </linearGradient>
-
-    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#1f2937;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#111827;stop-opacity:1" />
+    <!-- Glossy gradient for background -->
+    <radialGradient id="bgGradient" cx="50%" cy="30%">
+      <stop offset="0%" style="stop-color:#e5e5e5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b0b0b0;stop-opacity:1" />
     </radialGradient>
+
+    <!-- Purple snake gradient -->
+    <linearGradient id="purpleSnake" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c5fdc;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#5b3fb8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4a2f99;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Pink snake gradient -->
+    <linearGradient id="pinkSnake" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff69b4;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ec4899;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#db2777;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Border gradient -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff69b4;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ec4899;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    </linearGradient>
   </defs>
 
-  <!-- Pink glow ring -->
-  <circle cx="60" cy="60" r="55" fill="none" stroke="#ec4899" stroke-width="2" opacity="0.3" filter="url(#glow)"/>
+  <!-- Outer pink glow effect -->
+  <circle cx="60" cy="60" r="58" fill="none" stroke="#ff69b4" stroke-width="4" opacity="0.3" filter="url(#pinkGlow)"/>
 
-  <!-- Outer border ring -->
-  <circle cx="60" cy="60" r="52" fill="none" stroke="url(#pinkGrad)" stroke-width="3"/>
+  <!-- Main border ring with gradient -->
+  <circle cx="60" cy="60" r="54" fill="none" stroke="url(#borderGrad)" stroke-width="4"/>
 
-  <!-- Background circle -->
-  <circle cx="60" cy="60" r="48" fill="url(#bgGrad)"/>
+  <!-- Inner border ring (lighter) -->
+  <circle cx="60" cy="60" r="51" fill="none" stroke="#ff69b4" stroke-width="1.5" opacity="0.6"/>
 
-  <!-- Python logo - Top snake (purple) -->
-  <path d="M 45 35
-           Q 45 28, 52 28
-           L 62 28
-           Q 69 28, 69 35
-           L 69 48
-           Q 69 52, 65 52
-           L 52 52
-           Q 48 52, 48 48
-           L 48 38
-           Q 48 35, 45 35 Z"
-        fill="url(#purpleGrad)"
-        stroke="#8b5cf6"
-        stroke-width="1"/>
+  <!-- Background circle with glossy effect -->
+  <circle cx="60" cy="60" r="49" fill="url(#bgGradient)"/>
 
-  <!-- Top snake eye -->
-  <circle cx="53" cy="34" r="2" fill="#e0e7ff"/>
+  <!-- Subtle inner shadow -->
+  <circle cx="60" cy="60" r="49" fill="none" stroke="#000" stroke-width="1" opacity="0.1"/>
 
-  <!-- Top snake pixel detail -->
-  <rect x="58" y="34" width="3" height="3" fill="#7c3aed" opacity="0.6"/>
+  <!-- Top Python snake (purple) - larger, more rounded -->
+  <path d="M 38 36
+           C 38 28, 45 26, 52 26
+           L 64 26
+           C 71 26, 72 28, 72 36
+           L 72 52
+           C 72 56, 70 58, 66 58
+           L 50 58
+           C 46 58, 44 56, 44 52
+           L 44 40
+           C 44 36, 40 36, 38 36 Z"
+        fill="url(#purpleSnake)"
+        stroke="#3d2877"
+        stroke-width="1.5"/>
 
-  <!-- Python logo - Bottom snake (pink) -->
-  <path d="M 75 85
-           Q 75 92, 68 92
-           L 58 92
-           Q 51 92, 51 85
-           L 51 72
-           Q 51 68, 55 68
-           L 68 68
-           Q 72 68, 72 72
-           L 72 82
-           Q 72 85, 75 85 Z"
-        fill="url(#pinkGrad)"
-        stroke="#ec4899"
-        stroke-width="1"/>
+  <!-- Top snake highlight (3D effect) -->
+  <ellipse cx="56" cy="34" rx="8" ry="4" fill="#9f7aea" opacity="0.4"/>
 
-  <!-- Bottom snake eye -->
-  <circle cx="67" cy="86" r="2" fill="#fce7f3"/>
+  <!-- Top snake eye (white dot) -->
+  <circle cx="52" cy="34" r="2.5" fill="#ffffff"/>
+  <circle cx="52" cy="34" r="1" fill="#1a1a1a"/>
 
-  <!-- Bottom snake pixel detail -->
-  <rect x="59" y="83" width="3" height="3" fill="#f472b6" opacity="0.6"/>
+  <!-- Top snake detail (geometric cutout) -->
+  <rect x="58" y="35" width="4" height="4" fill="#5b3fb8" opacity="0.6"/>
+  <rect x="58" y="40" width="3" height="3" fill="#9f7aea" opacity="0.3"/>
 
-  <!-- Circuit accent lines (neon style) -->
-  <line x1="35" y1="45" x2="42" y2="45" stroke="#a855f7" stroke-width="1.5" opacity="0.4"/>
-  <line x1="78" y1="75" x2="85" y2="75" stroke="#ec4899" stroke-width="1.5" opacity="0.4"/>
-  <circle cx="32" cy="45" r="1.5" fill="#a855f7" opacity="0.6"/>
-  <circle cx="88" cy="75" r="1.5" fill="#ec4899" opacity="0.6"/>
+  <!-- Bottom Python snake (pink) - interlocking -->
+  <path d="M 82 84
+           C 82 92, 75 94, 68 94
+           L 56 94
+           C 49 94, 48 92, 48 84
+           L 48 68
+           C 48 64, 50 62, 54 62
+           L 70 62
+           C 74 62, 76 64, 76 68
+           L 76 80
+           C 76 84, 80 84, 82 84 Z"
+        fill="url(#pinkSnake)"
+        stroke="#c41e60"
+        stroke-width="1.5"/>
+
+  <!-- Bottom snake highlight (3D effect) -->
+  <ellipse cx="64" cy="86" rx="8" ry="4" fill="#ff9bd8" opacity="0.4"/>
+
+  <!-- Bottom snake eye (white dot) -->
+  <circle cx="68" cy="86" r="2.5" fill="#ffffff"/>
+  <circle cx="68" cy="86" r="1" fill="#1a1a1a"/>
+
+  <!-- Bottom snake detail (geometric cutout) -->
+  <rect x="58" y="81" width="4" height="4" fill="#ff69b4" opacity="0.6"/>
+  <rect x="59" y="76" width="3" height="3" fill="#ffc6e8" opacity="0.3"/>
+
+  <!-- Glossy shine overlay on entire badge -->
+  <ellipse cx="60" cy="35" rx="35" ry="20" fill="white" opacity="0.15"/>
+  <ellipse cx="60" cy="32" rx="25" ry="12" fill="white" opacity="0.1"/>
 </svg>
