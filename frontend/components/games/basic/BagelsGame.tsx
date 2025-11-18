@@ -14,7 +14,12 @@ export default function BagelsGame() {
 
   useEffect(() => {
     if (terminalRef.current) {
-      terminalRef.current.scrollTop = terminalRef.current.scrollHeight
+      // Use setTimeout to ensure DOM has updated
+      setTimeout(() => {
+        if (terminalRef.current) {
+          terminalRef.current.scrollTop = terminalRef.current.scrollHeight
+        }
+      }, 0)
     }
   }, [output])
 
