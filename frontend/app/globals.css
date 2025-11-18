@@ -355,3 +355,48 @@ body {
     background-position: 0 100%;
   }
 }
+
+/* Neon Sign Flicker - Fallout Style */
+@keyframes neonFlicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+    text-shadow:
+      0 0 10px rgba(234,179,8,0.9),
+      0 0 20px rgba(234,179,8,0.7),
+      0 0 30px rgba(234,179,8,0.5);
+  }
+  20%, 24%, 55% {
+    opacity: 0.4;
+    text-shadow:
+      0 0 5px rgba(234,179,8,0.3),
+      0 0 10px rgba(234,179,8,0.2);
+  }
+  22% {
+    opacity: 0.2;
+    text-shadow: none;
+  }
+}
+
+@keyframes neonBoxFlicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    box-shadow:
+      0 0 20px rgba(234,179,8,0.4),
+      0 0 40px rgba(234,179,8,0.3),
+      inset 0 0 20px rgba(234,179,8,0.1);
+  }
+  20%, 24%, 55% {
+    box-shadow:
+      0 0 10px rgba(234,179,8,0.2),
+      0 0 20px rgba(234,179,8,0.15),
+      inset 0 0 10px rgba(234,179,8,0.05);
+  }
+  22% {
+    box-shadow:
+      0 0 5px rgba(234,179,8,0.1),
+      inset 0 0 5px rgba(234,179,8,0.02);
+  }
+}
+
+.neon-flicker {
+  animation: neonFlicker 7s ease-in-out infinite, neonBoxFlicker 7s ease-in-out infinite;
+}

@@ -260,14 +260,14 @@ Available commands:
           <div className="flex items-center gap-4">
             <button
               onClick={() => setShowLeaderboard(true)}
-              className="px-8 py-3 bg-gradient-to-r from-yellow-900/40 to-yellow-800/40 border-3 border-yellow-500 text-yellow-400 hover:bg-yellow-900/60 transition-all duration-300 font-mono font-bold text-lg uppercase tracking-widest animate-pulse relative overflow-hidden"
+              className="px-8 py-3 bg-gradient-to-r from-yellow-900/40 to-yellow-800/40 border-3 border-yellow-500 text-yellow-400 hover:bg-yellow-900/60 transition-all duration-300 font-mono font-bold text-lg uppercase tracking-widest neon-flicker relative overflow-hidden"
               style={{
                 textShadow: '0 0 10px rgba(234,179,8,0.9), 0 0 20px rgba(234,179,8,0.7), 0 0 30px rgba(234,179,8,0.5)',
                 boxShadow: '0 0 20px rgba(234,179,8,0.4), 0 0 40px rgba(234,179,8,0.3), inset 0 0 20px rgba(234,179,8,0.1)',
               }}
             >
               <span className="relative z-10">🏆 LEADERBOARD</span>
-              <div className="absolute inset-0 bg-yellow-500/10 animate-pulse" />
+              <div className="absolute inset-0 bg-yellow-500/10" />
             </button>
           </div>
         </div>
