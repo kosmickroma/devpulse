@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import XPProgressBar from './XPProgressBar'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -69,12 +70,39 @@ export default function CodeQuest({ onGameOver }: GameProps) {
   const [levelProgress, setLevelProgress] = useState<LevelProgress[]>([])
   const [isReplay, setIsReplay] = useState(false)
 
+  // User XP and level
+  const [userXP, setUserXP] = useState(0)
+  const [userLevel, setUserLevel] = useState(1)
+
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Load level progress on mount
+  // Load level progress and user XP on mount
   useEffect(() => {
     loadLevelProgress()
+    loadUserProgress()
   }, [])
+
+  const loadUserProgress = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/arcade/codequest/progress`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) throw new Error('Failed to load user progress')
+
+      const data = await response.json()
+      setUserXP(data.total_xp || 0)
+      setUserLevel(data.level || 1)
+    } catch (error) {
+      console.error('Error loading user progress:', error)
+    }
+  }
 
   const loadLevelProgress = async () => {
     try {
@@ -357,8 +385,9 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
       const result = await response.json()
 
-      // Reload progress
+      // Reload progress and user XP
       await loadLevelProgress()
+      await loadUserProgress()
 
       // Show completion screen
       setGameMode('gameOver')
@@ -421,11 +450,24 @@ export default function CodeQuest({ onGameOver }: GameProps) {
   // === RENDER MENU ===
   if (gameMode === 'menu') {
     return (
-      <div className="flex flex-col items-center justify-center h-full w-full">
-        <div className="text-center space-y-6">
+      <div className="flex flex-col items-center justify-center h-full w-full p-6">
+        <div className="text-center space-y-6 max-w-3xl w-full">
           <h1 className="text-5xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500">
             ⚡ PYTHON CODE QUEST
           </h1>
+
+          {/* XP Progress Bar */}
+          <div className="flex justify-center my-6">
+            <XPProgressBar
+              currentXP={userXP}
+              currentLevel={userLevel}
+              onLevelUp={(newLevel) => {
+                console.log('Level up!', newLevel)
+                loadUserProgress()
+              }}
+            />
+          </div>
+
           <p className="text-cyan-400 font-mono text-lg">
             Master Python through progressive challenges!
           </p>
@@ -456,7 +498,19 @@ export default function CodeQuest({ onGameOver }: GameProps) {
             <h2 className="text-4xl font-mono font-bold text-cyan-400 mb-2">
               TIER {currentTier}: BEGINNER PYTHON
             </h2>
-            <p className="text-gray-400 font-mono">Select a level to begin</p>
+            <p className="text-gray-400 font-mono mb-4">Select a level to begin</p>
+
+            {/* XP Progress Bar */}
+            <div className="flex justify-center mb-4">
+              <XPProgressBar
+                currentXP={userXP}
+                currentLevel={userLevel}
+                onLevelUp={(newLevel) => {
+                  console.log('Level up!', newLevel)
+                  loadUserProgress()
+                }}
+              />
+            </div>
           </div>
 
           {/* Level Grid */}
