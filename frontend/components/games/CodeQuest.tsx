@@ -101,12 +101,7 @@ export default function CodeQuest({ onGameOver }: GameProps) {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      // Use session_id to get unique questions
-      const url = sessionId
-        ? `${API_URL}/api/arcade/codequest/question/random?session_id=${sessionId}`
-        : `${API_URL}/api/arcade/codequest/question/random`
-
-      const response = await fetch(url, {
+      const response = await fetch(`${API_URL}/api/arcade/codequest/question/random`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
