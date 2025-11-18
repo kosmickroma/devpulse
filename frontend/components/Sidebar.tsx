@@ -37,6 +37,7 @@ export default function Sidebar({
     { path: '/workspace', label: 'Command Center', icon: '⚡' },
     { path: '/jobs', label: 'Jobs', icon: '💼' },
     { path: '/arcade', label: 'Arcade', icon: '🎮' },
+    { path: '/vault', label: 'Vault', icon: '📼' },
     { path: '#', label: 'API', icon: '🔌' },
   ]
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Sidebar from '@/components/Sidebar'
 import GuessGame from '@/components/games/basic/GuessGame'
 import AmazingGame from '@/components/games/basic/AmazingGame'
 import StockGame from '@/components/games/basic/StockGame'
@@ -26,7 +27,7 @@ interface BasicProgram {
 
 export default function VaultPage() {
   const router = useRouter()
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [terminalInput, setTerminalInput] = useState('')
   const [terminalHistory, setTerminalHistory] = useState<string[]>([])
@@ -36,6 +37,7 @@ export default function VaultPage() {
   const [showCodeCompare, setShowCodeCompare] = useState(false)
   const [runningGame, setRunningGame] = useState<string | null>(null)
   const [highScores, setHighScores] = useState<Record<string, number>>({})
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -413,44 +415,49 @@ Commands:
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <div>
-              <h1 className="text-5xl md:text-6xl font-bold text-green-400 font-mono tracking-wider mb-1"
-                style={{ textShadow: '0 0 20px rgba(34,197,94,0.8), 0 0 40px rgba(34,197,94,0.5)' }}>
-                📼 THE VAULT
-              </h1>
-              <p className="text-sm text-green-500 font-mono tracking-widest mt-2">
-                &gt; DEVPULSE_ARCHIVES // BASIC_COMPUTER_GAMES_1978 // STATUS:_RESTORED
-              </p>
-              <div className="flex gap-2 mt-2">
-                <span className="text-xs px-2 py-1 bg-green-500/20 border border-green-500 text-green-400 font-mono animate-pulse">⚡ LIVE</span>
-                <span className="text-xs px-2 py-1 bg-yellow-500/20 border border-yellow-500 text-yellow-400 font-mono">🔐 AUTHENTICATED</span>
-                <span className="text-xs px-2 py-1 bg-cyan-500/20 border border-cyan-500 text-cyan-400 font-mono">📡 CONNECTED</span>
+            <div className="flex items-center">
+              {/* Menu Button - DevPulse Icon */}
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="hover:opacity-80 transition-opacity mr-8"
+                title="Open Menu"
+              >
+                <img
+                  src="/devpulse_icon.svg"
+                  alt="Menu"
+                  className="w-16 h-16"
+                  style={{
+                    filter: 'drop-shadow(0 0 15px rgba(34, 197, 94, 0.8))',
+                  }}
+                />
+              </button>
+
+              <div>
+                <h1 className="text-5xl md:text-6xl font-bold text-green-400 font-mono tracking-wider mb-1"
+                  style={{ textShadow: '0 0 20px rgba(34,197,94,0.8), 0 0 40px rgba(34,197,94,0.5)' }}>
+                  THE VAULT
+                </h1>
+                <p className="text-sm text-green-500 font-mono tracking-widest mt-2">
+                  &gt; DEVPULSE_ARCHIVES // BASIC_COMPUTER_GAMES_1978 // STATUS:_RESTORED
+                </p>
+                <div className="flex gap-2 mt-2">
+                  <span className="text-xs px-2 py-1 bg-green-500/20 border border-green-500 text-green-400 font-mono animate-pulse">⚡ LIVE</span>
+                  <span className="text-xs px-2 py-1 bg-yellow-500/20 border border-yellow-500 text-yellow-400 font-mono">🔐 AUTHENTICATED</span>
+                  <span className="text-xs px-2 py-1 bg-cyan-500/20 border border-cyan-500 text-cyan-400 font-mono">📡 CONNECTED</span>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowLeaderboard(true)}
-                className="px-4 py-2 bg-yellow-900/30 border-2 border-yellow-500 text-yellow-400 hover:bg-yellow-900/50 transition-all duration-300 font-mono font-bold shadow-[0_0_15px_rgba(234,179,8,0.3)] hover:shadow-[0_0_25px_rgba(234,179,8,0.6)]"
+                className="px-8 py-3 bg-gradient-to-r from-yellow-900/40 to-yellow-800/40 border-3 border-yellow-500 text-yellow-400 hover:bg-yellow-900/60 transition-all duration-300 font-mono font-bold text-lg uppercase tracking-widest animate-pulse relative overflow-hidden"
+                style={{
+                  textShadow: '0 0 10px rgba(234,179,8,0.9), 0 0 20px rgba(234,179,8,0.7), 0 0 30px rgba(234,179,8,0.5)',
+                  boxShadow: '0 0 20px rgba(234,179,8,0.4), 0 0 40px rgba(234,179,8,0.3), inset 0 0 20px rgba(234,179,8,0.1)',
+                }}
               >
-                🏆 SCORES
-              </button>
-              <button
-                onClick={() => setIsFullscreen(!isFullscreen)}
-                className="px-4 py-2 bg-green-900/30 border border-green-500 text-green-400 hover:bg-green-900/50 transition-colors font-mono"
-              >
-                {isFullscreen ? '⛶ EXIT' : '⛶ FULL'}
-              </button>
-              <button
-                onClick={() => router.push('/arcade')}
-                className="px-4 py-2 bg-purple-900/30 border border-purple-500 text-purple-400 hover:bg-purple-900/50 transition-colors font-mono"
-              >
-                🎮 ARCADE
-              </button>
-              <button
-                onClick={() => router.push('/')}
-                className="px-4 py-2 bg-cyan-900/30 border border-cyan-500 text-cyan-400 hover:bg-cyan-900/50 transition-colors font-mono"
-              >
-                🏠 HOME
+                <span className="relative z-10">🏆 LEADERBOARD</span>
+                <div className="absolute inset-0 bg-yellow-500/10 animate-pulse" />
               </button>
             </div>
           </div>
