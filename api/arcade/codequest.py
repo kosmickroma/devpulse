@@ -1,6 +1,6 @@
 """
-Python Code Quest API endpoints.
-Handles questions, answers, progress tracking, and streak management.
+Python Code Quest API endpoints - V2 Professional Quest System
+Handles tier/level progression, Quest mode, Time Attack mode
 """
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -25,30 +25,49 @@ else:
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+# ============================================================================
+# MODELS
+# ============================================================================
+
 class AnswerSubmission(BaseModel):
     question_id: str
     user_answer: str  # A, B, C, or D
     time_taken: float  # seconds
     session_id: Optional[str] = None
+    attempt_number: int = 1
+    tier: int
+    level: int
 
 
-class SessionComplete(BaseModel):
+class LevelComplete(BaseModel):
     session_id: str
+    tier: int
+    level: int
     questions_answered: int
     questions_correct: int
     best_combo: int
-    avg_speed: float
 
 
-@router.get('/question/random')
-async def get_random_question(
-    difficulty: Optional[int] = None,
-    topic: Optional[str] = None,
+class SessionStart(BaseModel):
+    tier: int
+    level: int
+    mode: str = 'quest'  # 'quest' or 'timeattack'
+
+
+# ============================================================================
+# ENDPOINTS
+# ============================================================================
+
+@router.get('/question/by-level')
+async def get_question_by_level(
+    tier: int,
+    level: int,
+    exclude_ids: Optional[str] = None,  # Comma-separated IDs
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Get a random question based on user's level and preferences.
-    Uses adaptive difficulty selection.
+    Get a random question from a specific tier and level.
+    Excludes already-answered questions in current session.
     """
     if supabase is None:
         raise HTTPException(status_code=503, detail="Code Quest not configured")
@@ -56,71 +75,48 @@ async def get_random_question(
     try:
         user_id = current_user['id']
 
-        # Get or create user progress
-        progress = supabase.rpc('get_or_create_cq_progress', {'p_user_id': user_id}).execute()
+        # Build query for this specific tier/level
+        query = supabase.table('code_quest_questions')\
+            .select('*')\
+            .eq('tier', tier)\
+            .eq('level', level)
 
-        # Debug logging
-        print(f"DEBUG: RPC response - data: {progress.data}")
+        # Exclude already answered questions
+        if exclude_ids:
+            excluded_list = exclude_ids.split(',')
+            # Supabase postgrest doesn't have NOT IN, so we fetch all and filter
+            result = query.execute()
 
-        # Handle RPC response - it returns a dict, not a list
-        user_level = progress.data['level'] if progress.data else 1
-        user_tier = progress.data['current_tier'] if progress.data else 1
+            if not result.data:
+                raise HTTPException(status_code=404, detail=f"No questions found for Tier {tier}, Level {level}")
 
-        print(f"DEBUG: User level={user_level}, tier={user_tier}")
+            # Filter out excluded IDs
+            available = [q for q in result.data if q['id'] not in excluded_list]
 
-        # Build query
-        query = supabase.table('code_quest_questions').select('*')
+            if not available:
+                raise HTTPException(status_code=404, detail="No more questions available in this level")
 
-        # Filter by difficulty if specified, otherwise use adaptive selection
-        if difficulty:
-            query = query.eq('difficulty', difficulty)
+            question = random.choice(available)
         else:
-            # Adaptive difficulty: Use range instead of exact match for better question availability
-            # Target difficulty based on user level but with flexibility
-            rand = random.random()
-            if rand < 0.70:
-                target_difficulty = user_level
-            elif rand < 0.85:
-                target_difficulty = min(user_level + 1, 10)
-            elif rand < 0.95:
-                target_difficulty = max(user_level - 1, 1)
-            else:
-                target_difficulty = random.randint(1, 10)
+            result = query.execute()
+            if not result.data:
+                raise HTTPException(status_code=404, detail=f"No questions found for Tier {tier}, Level {level}")
 
-            # Use range query to find questions within ±2 levels for better availability
-            query = query.gte('difficulty', max(1, target_difficulty - 2)).lte('difficulty', min(10, target_difficulty + 2))
+            question = random.choice(result.data)
 
-        # Filter by topic if specified
-        if topic:
-            query = query.contains('topics', [topic])
-
-        # Filter by tier (don't show questions way above user's level)
-        query = query.lte('tier', user_tier + 1)
-
-        # Execute query
-        result = query.execute()
-
-        print(f"DEBUG: Query found {len(result.data) if result.data else 0} questions")
-        print(f"DEBUG: Filters - difficulty={target_difficulty if not difficulty else difficulty}, tier<={user_tier + 1}")
-
-        if not result.data:
-            raise HTTPException(status_code=404, detail=f"No questions found matching criteria (difficulty={target_difficulty if not difficulty else difficulty}, tier<={user_tier + 1})")
-
-        # Select random question from results
-        question = random.choice(result.data)
-
-        # Remove correct answer from response (security)
+        # Remove correct answer from response
         response_question = {
             'id': question['id'],
             'type': question['type'],
             'difficulty': question['difficulty'],
             'tier': question['tier'],
+            'level': question['level'],
             'topics': question['topics'],
             'code': question.get('code'),
             'question': question['question'],
             'options': question['options'],
             'hint': question.get('hint'),
-            'time_limit': question['time_limit']
+            'time_limit': question.get('time_limit', 20)
         }
 
         return response_question
@@ -128,7 +124,75 @@ async def get_random_question(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error fetching random question: {str(e)}")
+        print(f"Error fetching question by level: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post('/session/start')
+async def start_session(
+    session_data: SessionStart,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Start a new Quest or Time Attack session for a specific level.
+    """
+    if supabase is None:
+        raise HTTPException(status_code=503, detail="Code Quest not configured")
+
+    try:
+        user_id = current_user['id']
+
+        # Initialize user access if needed
+        supabase.rpc('initialize_cq_access', {'p_user_id': user_id}).execute()
+
+        # Check if level is unlocked
+        if session_data.mode == 'quest':
+            progress = supabase.table('code_quest_level_progress')\
+                .select('unlocked')\
+                .eq('user_id', user_id)\
+                .eq('tier', session_data.tier)\
+                .eq('level', session_data.level)\
+                .execute()
+
+            if not progress.data or not progress.data[0]['unlocked']:
+                raise HTTPException(status_code=403, detail="Level not unlocked")
+
+        # For time attack, check tier unlock
+        elif session_data.mode == 'timeattack':
+            tier_unlock = supabase.table('code_quest_tier_unlocks')\
+                .select('time_attack_unlocked')\
+                .eq('user_id', user_id)\
+                .eq('tier', session_data.tier)\
+                .execute()
+
+            if not tier_unlock.data or not tier_unlock.data[0]['time_attack_unlocked']:
+                raise HTTPException(status_code=403, detail="Time Attack not unlocked for this tier")
+
+        # Update streak
+        supabase.rpc('update_cq_streak', {'p_user_id': user_id}).execute()
+
+        # Create session
+        session = supabase.table('code_quest_sessions').insert({
+            'user_id': user_id,
+            'tier': session_data.tier,
+            'level': session_data.level,
+            'mode': session_data.mode,
+            'questions_answered': 0,
+            'questions_correct': 0,
+            'xp_earned': 0
+        }).execute()
+
+        return {
+            'session_id': session.data[0]['id'],
+            'tier': session_data.tier,
+            'level': session_data.level,
+            'mode': session_data.mode
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error starting session: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -138,8 +202,7 @@ async def submit_answer(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Submit an answer and receive instant feedback with XP calculation.
-    Handles combo multipliers, speed bonuses, and streak tracking.
+    Submit an answer with attempt tracking and replay detection.
     """
     if supabase is None:
         raise HTTPException(status_code=503, detail="Code Quest not configured")
@@ -159,30 +222,43 @@ async def submit_answer(
         q = question.data[0]
         is_correct = submission.user_answer.upper() == q['correct'].upper()
 
+        # Check if this level is already completed (replay)
+        level_progress = supabase.table('code_quest_level_progress')\
+            .select('completed')\
+            .eq('user_id', user_id)\
+            .eq('tier', submission.tier)\
+            .eq('level', submission.level)\
+            .execute()
+
+        is_replay = level_progress.data and level_progress.data[0]['completed']
+
         # Calculate XP
         base_xp = q['xp_base']
-        speed_multiplier = 1.0
 
+        # Apply replay penalty (50% XP)
+        if is_replay:
+            base_xp = int(base_xp * 0.5)
+
+        speed_multiplier = 1.0
         # Speed bonus
         if submission.time_taken < 3:
-            speed_multiplier = 1.5  # +50% for lightning fast
+            speed_multiplier = 1.5
         elif submission.time_taken < 5:
-            speed_multiplier = 1.25  # +25% for fast
+            speed_multiplier = 1.25
 
-        # Calculate final XP (combo multiplier will be applied on frontend based on streak)
+        # Final XP (combo multiplier applied on frontend)
         xp_earned = int(base_xp * speed_multiplier) if is_correct else 0
 
-        # Award XP (this also updates global DevPulse XP!)
+        # Award XP
+        xp_result = None
         if xp_earned > 0:
             xp_result = supabase.rpc('award_cq_xp', {
                 'p_user_id': user_id,
                 'p_xp': xp_earned,
                 'p_session_id': submission.session_id
             }).execute()
-        else:
-            xp_result = None
 
-        # Update topic mastery for all topics in question
+        # Update topic mastery
         for topic in q['topics']:
             supabase.rpc('update_topic_mastery', {
                 'p_user_id': user_id,
@@ -190,7 +266,7 @@ async def submit_answer(
                 'p_correct': is_correct
             }).execute()
 
-        # Record answer
+        # Record answer with attempt tracking
         supabase.table('code_quest_user_answers').insert({
             'user_id': user_id,
             'session_id': submission.session_id,
@@ -198,17 +274,12 @@ async def submit_answer(
             'user_answer': submission.user_answer,
             'correct': is_correct,
             'time_taken': submission.time_taken,
-            'xp_earned': xp_earned
+            'xp_earned': xp_earned,
+            'attempt_number': submission.attempt_number,
+            'tier': submission.tier,
+            'level': submission.level,
+            'is_replay': is_replay
         }).execute()
-
-        # Update progress counters
-        supabase.table('code_quest_progress')\
-            .update({
-                'total_questions_answered': supabase.table('code_quest_progress').select('total_questions_answered').eq('user_id', user_id).execute().data[0]['total_questions_answered'] + 1 if supabase.table('code_quest_progress').select('total_questions_answered').eq('user_id', user_id).execute().data else 1,
-                'total_correct': supabase.table('code_quest_progress').select('total_correct').eq('user_id', user_id).execute().data[0]['total_correct'] + (1 if is_correct else 0) if supabase.table('code_quest_progress').select('total_correct').eq('user_id', user_id).execute().data else (1 if is_correct else 0)
-            })\
-            .eq('user_id', user_id)\
-            .execute()
 
         return {
             'correct': is_correct,
@@ -217,8 +288,11 @@ async def submit_answer(
             'speed_multiplier': speed_multiplier,
             'correct_answer': q['correct'],
             'explanation': q['explanation'],
+            'is_replay': is_replay,
             'leveled_up': xp_result.data['leveled_up'] if xp_result and xp_result.data else False,
-            'new_level': xp_result.data['new_level'] if xp_result and xp_result.data else None
+            'new_level': xp_result.data['new_level'] if xp_result and xp_result.data else None,
+            'total_xp': xp_result.data['total_xp'] if xp_result and xp_result.data else None,
+            'xp_to_next_level': xp_result.data.get('xp_to_next_level') if xp_result and xp_result.data else None
         }
 
     except HTTPException:
@@ -228,16 +302,156 @@ async def submit_answer(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get('/progress')
-async def get_progress(current_user: dict = Depends(get_current_user)):
-    """Get user's Code Quest progress including XP, level, streak, and topic mastery."""
+@router.post('/level/complete')
+async def complete_level(
+    completion: LevelComplete,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Complete a level and check for unlocks (80% accuracy requirement).
+    """
     if supabase is None:
         raise HTTPException(status_code=503, detail="Code Quest not configured")
 
     try:
         user_id = current_user['id']
 
-        # Get or create progress
+        # Calculate accuracy
+        accuracy = (completion.questions_correct / completion.questions_answered * 100) if completion.questions_answered > 0 else 0
+
+        # Update or create level progress
+        existing = supabase.table('code_quest_level_progress')\
+            .select('*')\
+            .eq('user_id', user_id)\
+            .eq('tier', completion.tier)\
+            .eq('level', completion.level)\
+            .execute()
+
+        if existing.data:
+            # Update existing progress
+            current_best = existing.data[0].get('best_session_accuracy', 0)
+            supabase.table('code_quest_level_progress')\
+                .update({
+                    'questions_answered': existing.data[0]['questions_answered'] + completion.questions_answered,
+                    'questions_correct': existing.data[0]['questions_correct'] + completion.questions_correct,
+                    'accuracy': accuracy,
+                    'completed': True,
+                    'best_session_accuracy': max(current_best, accuracy),
+                    'first_completed_at': existing.data[0].get('first_completed_at') or datetime.now().isoformat(),
+                    'last_played_at': datetime.now().isoformat()
+                })\
+                .eq('user_id', user_id)\
+                .eq('tier', completion.tier)\
+                .eq('level', completion.level)\
+                .execute()
+        else:
+            # Create new progress record
+            supabase.table('code_quest_level_progress').insert({
+                'user_id': user_id,
+                'tier': completion.tier,
+                'level': completion.level,
+                'questions_answered': completion.questions_answered,
+                'questions_correct': completion.questions_correct,
+                'accuracy': accuracy,
+                'completed': True,
+                'unlocked': True,
+                'best_session_accuracy': accuracy,
+                'first_completed_at': datetime.now().isoformat()
+            }).execute()
+
+        # Update best combo in global progress
+        current_progress = supabase.table('code_quest_progress')\
+            .select('best_combo')\
+            .eq('user_id', user_id)\
+            .execute()
+
+        if current_progress.data:
+            current_best_combo = current_progress.data[0]['best_combo']
+            if completion.best_combo > current_best_combo:
+                supabase.table('code_quest_progress')\
+                    .update({'best_combo': completion.best_combo})\
+                    .eq('user_id', user_id)\
+                    .execute()
+
+        # Update session
+        supabase.table('code_quest_sessions')\
+            .update({
+                'questions_answered': completion.questions_answered,
+                'questions_correct': completion.questions_correct,
+                'best_combo': completion.best_combo,
+                'completed_at': datetime.now().isoformat()
+            })\
+            .eq('id', completion.session_id)\
+            .execute()
+
+        # Check for unlocks (80% threshold)
+        unlock_result = supabase.rpc('check_level_unlock', {
+            'p_user_id': user_id,
+            'p_tier': completion.tier,
+            'p_level': completion.level,
+            'p_accuracy': accuracy
+        }).execute()
+
+        return {
+            'success': True,
+            'accuracy': round(accuracy, 2),
+            'passed': accuracy >= 80.0,
+            'unlocks': unlock_result.data if unlock_result.data else {}
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error completing level: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/progress/levels')
+async def get_level_progress(current_user: dict = Depends(get_current_user)):
+    """Get user's level progress for all tiers/levels."""
+    if supabase is None:
+        raise HTTPException(status_code=503, detail="Code Quest not configured")
+
+    try:
+        user_id = current_user['id']
+
+        # Get level progress
+        levels = supabase.rpc('get_user_level_progress', {
+            'p_user_id': user_id
+        }).execute()
+
+        # Get tier unlocks
+        tiers = supabase.rpc('get_user_tier_unlocks', {
+            'p_user_id': user_id
+        }).execute()
+
+        # Get overall progress
+        overall = supabase.table('code_quest_progress')\
+            .select('*')\
+            .eq('user_id', user_id)\
+            .execute()
+
+        return {
+            'levels': levels.data if levels.data else [],
+            'tiers': tiers.data if tiers.data else [],
+            'overall': overall.data[0] if overall.data else None
+        }
+
+    except Exception as e:
+        print(f"Error fetching progress: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/progress')
+async def get_progress(current_user: dict = Depends(get_current_user)):
+    """Get user's overall Code Quest progress (legacy endpoint)."""
+    if supabase is None:
+        raise HTTPException(status_code=503, detail="Code Quest not configured")
+
+    try:
+        user_id = current_user['id']
+
+        # Initialize if needed
         progress = supabase.rpc('get_or_create_cq_progress', {'p_user_id': user_id}).execute()
 
         # Get topic mastery
@@ -255,7 +469,7 @@ async def get_progress(current_user: dict = Depends(get_current_user)):
             .execute()
 
         return {
-            'progress': progress.data[0] if progress.data else None,
+            'progress': progress.data if progress.data else None,
             'topic_mastery': topics.data,
             'recent_sessions': sessions.data
         }
@@ -265,123 +479,18 @@ async def get_progress(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post('/session/start')
-async def start_session(current_user: dict = Depends(get_current_user)):
-    """Start a new Code Quest session and update streak."""
-    if supabase is None:
-        raise HTTPException(status_code=503, detail="Code Quest not configured")
-
-    try:
-        user_id = current_user['id']
-
-        # Update streak
-        supabase.rpc('update_cq_streak', {'p_user_id': user_id}).execute()
-
-        # Create session record
-        session = supabase.table('code_quest_sessions').insert({
-            'user_id': user_id,
-            'questions_answered': 0,
-            'questions_correct': 0,
-            'xp_earned': 0
-        }).execute()
-
-        # Get updated progress with new streak
-        progress = supabase.table('code_quest_progress')\
-            .select('*')\
-            .eq('user_id', user_id)\
-            .execute()
-
-        return {
-            'session_id': session.data[0]['id'],
-            'current_streak': progress.data[0]['current_streak'] if progress.data else 1,
-            'longest_streak': progress.data[0]['longest_streak'] if progress.data else 1
-        }
-
-    except Exception as e:
-        print(f"Error starting session: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post('/session/complete')
-async def complete_session(
-    completion: SessionComplete,
-    current_user: dict = Depends(get_current_user)
-):
-    """Mark session as complete and check for badge unlocks."""
-    if supabase is None:
-        raise HTTPException(status_code=503, detail="Code Quest not configured")
-
-    try:
-        user_id = current_user['id']
-
-        # Update session
-        perfect = completion.questions_correct == completion.questions_answered and completion.questions_answered > 0
-
-        supabase.table('code_quest_sessions')\
-            .update({
-                'questions_answered': completion.questions_answered,
-                'questions_correct': completion.questions_correct,
-                'best_combo': completion.best_combo,
-                'avg_speed': completion.avg_speed,
-                'perfect_session': perfect,
-                'completed_at': datetime.now().isoformat()
-            })\
-            .eq('id', completion.session_id)\
-            .execute()
-
-        # Update user's best combo
-        supabase.table('code_quest_progress')\
-            .update({
-                'best_combo': supabase.table('code_quest_progress').select('best_combo').eq('user_id', user_id).execute().data[0]['best_combo'] if supabase.table('code_quest_progress').select('best_combo').eq('user_id', user_id).execute().data and supabase.table('code_quest_progress').select('best_combo').eq('user_id', user_id).execute().data[0]['best_combo'] > completion.best_combo else completion.best_combo
-            })\
-            .eq('user_id', user_id)\
-            .execute()
-
-        # Check for badge unlocks
-        badges_to_unlock = []
-
-        # Get current progress
-        progress = supabase.table('code_quest_progress').select('*').eq('user_id', user_id).execute()
-        if progress.data:
-            p = progress.data[0]
-
-            # Python Prodigy - Level 10
-            if p['level'] >= 10:
-                badges_to_unlock.append('python_prodigy')
-
-            # Streak Legend - 100 day streak
-            if p['current_streak'] >= 100:
-                badges_to_unlock.append('streak_legend')
-
-        # Grant badges
-        for badge_id in badges_to_unlock:
-            try:
-                supabase.rpc('grant_badge', {
-                    'p_user_id': user_id,
-                    'p_badge_id': badge_id,
-                    'p_metadata': {'granted_from': 'code_quest'}
-                }).execute()
-            except:
-                pass  # Badge already granted
-
-        return {
-            'success': True,
-            'perfect_session': perfect,
-            'badges_unlocked': badges_to_unlock
-        }
-
-    except Exception as e:
-        print(f"Error completing session: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @router.get('/leaderboard')
-async def get_leaderboard(limit: int = 50):
-    """Get Code Quest leaderboard (integrated with main arcade leaderboard)."""
+async def get_leaderboard(
+    mode: str = 'quest',  # 'quest' or 'timeattack'
+    tier: Optional[int] = None,
+    limit: int = 50
+):
+    """Get Code Quest leaderboard."""
     if supabase is None:
         raise HTTPException(status_code=503, detail="Code Quest not configured")
 
     try:
+        # Use main leaderboard for now
         result = supabase.from_('code_quest_leaderboard')\
             .select('*')\
             .limit(limit)\
@@ -389,6 +498,7 @@ async def get_leaderboard(limit: int = 50):
 
         return {
             'game_id': 'codequest',
+            'mode': mode,
             'leaderboard': result.data
         }
 
@@ -417,13 +527,18 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
             .limit(100)\
             .execute()
 
-        # Calculate accuracy by question type
-        # (Would need to join with questions table for full stats)
+        # Get total sessions
+        sessions_count = len(
+            supabase.table('code_quest_sessions')\
+            .select('id')\
+            .eq('user_id', user_id)\
+            .execute().data
+        )
 
         return {
             'progress': progress.data[0] if progress.data else None,
             'recent_answers': answers.data,
-            'total_sessions': len(supabase.table('code_quest_sessions').select('id').eq('user_id', user_id).execute().data)
+            'total_sessions': sessions_count
         }
 
     except Exception as e:
