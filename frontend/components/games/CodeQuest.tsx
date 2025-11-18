@@ -92,6 +92,11 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
   // Load question from API
   const loadQuestion = async () => {
+    // Prevent loading if not in playing state
+    if (gameState !== 'playing' && gameState !== 'idle') {
+      return
+    }
+
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
@@ -105,14 +110,18 @@ export default function CodeQuest({ onGameOver }: GameProps) {
       if (!response.ok) throw new Error('Failed to load question')
 
       const data = await response.json()
+
+      // Increase time limit for easier questions
+      const adjustedTimeLimit = data.difficulty <= 2 ? data.time_limit + 10 : data.time_limit
+
       setQuestion(data)
-      setTimeLeft(data.time_limit)
+      setTimeLeft(adjustedTimeLimit)
       setSelectedAnswer(null)
       setAnswerStartTime(Date.now())
       setQuestionNumber(prev => prev + 1)
 
       // Start timer
-      startTimer(data.time_limit)
+      startTimer(adjustedTimeLimit)
     } catch (error) {
       console.error('Error loading question:', error)
     }
@@ -236,9 +245,12 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
   // Next question
   const nextQuestion = () => {
-    if (lives > 0) {
+    if (lives > 0 && gameState === 'feedback') {
       setGameState('playing')
-      loadQuestion()
+      // Small delay to ensure state is updated before loading
+      setTimeout(() => {
+        loadQuestion()
+      }, 100)
     }
   }
 
