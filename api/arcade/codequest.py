@@ -62,6 +62,7 @@ def shuffle_question_options(question: dict) -> dict:
     """
     Shuffle question options while tracking the correct answer.
     This ensures correct answers are randomized (not always 'A').
+    Uses question ID as seed for consistent shuffling.
     """
     # Get the correct answer key (A, B, C, or D)
     correct_key = question['correct']
@@ -73,9 +74,14 @@ def shuffle_question_options(question: dict) -> dict:
     # Create array of all option values
     values = [options['A'], options['B'], options['C'], options['D']]
 
-    # Fisher-Yates shuffle
+    # Use question ID as seed for consistent shuffling
+    # This ensures the same question always shuffles the same way
+    question_id_hash = hash(str(question['id']))
+    rng = random.Random(question_id_hash)
+
+    # Fisher-Yates shuffle with seeded random
     for i in range(len(values) - 1, 0, -1):
-        j = random.randint(0, i)
+        j = rng.randint(0, i)
         values[i], values[j] = values[j], values[i]
 
     # Rebuild options dict with shuffled values
@@ -270,6 +276,11 @@ async def submit_answer(
             raise HTTPException(status_code=404, detail="Question not found")
 
         q = question.data[0]
+
+        # Apply the same shuffle that was used when sending the question
+        # This ensures we check against the shuffled version the user saw
+        q = shuffle_question_options(q)
+
         is_correct = submission.user_answer.upper() == q['correct'].upper()
 
         # Check if this level is already completed (replay)
