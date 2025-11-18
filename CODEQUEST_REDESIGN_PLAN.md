@@ -1,10 +1,13 @@
 # 🎮 CODEQUEST PROFESSIONAL REDESIGN - Implementation Plan
 
-**Status:** Questions complete, ready for implementation
+**Status:** Quest Mode Complete! Testing Tier 1
 **Date:** November 17, 2025
-**Commits:**
-- `b85be91` - 100 Tier 1 questions added
-- `8dca45c` - Previous attempt (needs to be reverted/replaced)
+**Last Updated:** November 18, 2025
+
+## Related Plans
+- **CodeQuest Redesign:** This file (quest mode, tier/level system)
+- **Unified Terminal System:** See `UNIFIED_TERMINAL_PLAN.md` (terminal context, cross-page sync)
+- **Vault Games Restoration:** See bottom of this file
 
 ---
 
@@ -474,11 +477,68 @@ interface XPProgressBarProps {
 
 ---
 
+## 📼 VAULT GAMES RESTORATION (COMPLETED Nov 18, 2025)
+
+**Status:** 3 new games restored (10/104 total)
+
+### Restored Games
+
+1. **LUNAR (#52, 1969)** - Lunar lander physics simulation
+   - File: `frontend/components/games/basic/Lunar.tsx`
+   - Control descent with retro rockets
+   - Real physics: gravity, velocity, fuel consumption
+   - Scoring: fuel remaining + landing smoothness
+
+2. **HAMMURABI (#39, 1968)** - Resource management strategy
+   - File: `frontend/components/games/basic/Hammurabi.tsx`
+   - Govern ancient Babylon for 10 years
+   - Manage acres, grain, population
+   - Random events: plague, rats, harvest variation
+   - Scoring: final population + acres per person - death penalty
+
+3. **BLACKJACK (#18, 1970)** - Classic card game
+   - File: `frontend/components/games/basic/Blackjack.tsx`
+   - Full deck management with auto-shuffle
+   - Ace handling (1 or 11), dealer AI
+   - Unicode suits (♠♥♦♣)
+   - Scoring: max bankroll achieved
+
+### Implementation Pattern
+
+All games follow the same vintage formula:
+- Black background, green monospace text
+- Terminal-style line-by-line output
+- Yellow `>` input prompt
+- Green borders with glow effect
+- Original BASIC code documented in comments
+- Score submission (localStorage + backend API)
+- ESC to exit
+
+### Files Modified
+- `frontend/app/vault/page.tsx` - Added 3 games to list, imports, rendering
+- Created 3 new game components in `frontend/components/games/basic/`
+
+### Testing Checklist
+- [ ] LUNAR: Test perfect landing, crash, fuel depletion
+- [ ] HAMMURABI: Test 10-year completion, impeachment, plague events
+- [ ] BLACKJACK: Test blackjack, bust, dealer bust, push, ace handling
+
+**Ready to play!** 📼
+
+---
+
 ## READY FOR TOMORROW! ✅
 
-**Start here:**
+**CodeQuest Next Steps:**
 1. Test tier1_questions.sql in Supabase
 2. Review question difficulty/progression
-3. Continue with Phase 1: Database Schema Updates
+3. Build Time Attack Mode (optional)
+
+**Vault Games Next Steps:**
+- Test the 3 new games
+- Consider restoring more (ACEY DUCEY, CRAPS, CALENDAR, etc.)
+
+**Unified Terminal System:**
+- See `UNIFIED_TERMINAL_PLAN.md` for full implementation plan
 
 **Ping me when ready to code!** 🚀
