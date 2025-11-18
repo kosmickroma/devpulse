@@ -10,6 +10,7 @@ interface Question {
   type: string
   difficulty: number
   tier: number
+  level: number
   topics: string[]
   code?: string
   question: string
@@ -23,21 +24,35 @@ interface Question {
   time_limit: number
 }
 
+interface LevelProgress {
+  tier: number
+  level: number
+  unlocked: boolean
+  completed: boolean
+  accuracy: number
+  questions_answered: number
+  questions_correct: number
+}
+
 interface GameProps {
   onGameOver?: (score: number, xp: number) => void
 }
 
 export default function CodeQuest({ onGameOver }: GameProps) {
-  const [gameState, setGameState] = useState<'idle' | 'playing' | 'feedback' | 'gameOver'>('idle')
+  // Game mode state
+  const [gameMode, setGameMode] = useState<'menu' | 'levelSelect' | 'playing' | 'feedback' | 'gameOver'>('menu')
+  const [currentTier, setCurrentTier] = useState(1)
+  const [currentLevel, setCurrentLevel] = useState(1)
+
+  // Game state
   const [question, setQuestion] = useState<Question | null>(null)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
-  const [lives, setLives] = useState(3)
+  const [lives, setLives] = useState(5)
   const [score, setScore] = useState(0)
   const [totalXP, setTotalXP] = useState(0)
   const [combo, setCombo] = useState(0)
   const [bestCombo, setBestCombo] = useState(0)
   const [questionNumber, setQuestionNumber] = useState(0)
-  const [timeLeft, setTimeLeft] = useState(15)
   const [isCorrect, setIsCorrect] = useState(false)
   const [feedback, setFeedback] = useState('')
   const [correctAnswer, setCorrectAnswer] = useState('')
@@ -46,12 +61,51 @@ export default function CodeQuest({ onGameOver }: GameProps) {
   const [speedBonus, setSpeedBonus] = useState(1.0)
   const [xpEarned, setXpEarned] = useState(0)
 
+  // Retry state
+  const [questionAttempts, setQuestionAttempts] = useState<Record<string, number>>({})
+  const [answeredQuestionIds, setAnsweredQuestionIds] = useState<string[]>([])
+
+  // Progress tracking
+  const [levelProgress, setLevelProgress] = useState<LevelProgress[]>([])
+  const [isReplay, setIsReplay] = useState(false)
+
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Start game
-  const startGame = async () => {
+  // Load level progress on mount
+  useEffect(() => {
+    loadLevelProgress()
+  }, [])
+
+  const loadLevelProgress = async () => {
     try {
-      // Get session token
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/arcade/codequest/progress/levels`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) throw new Error('Failed to load progress')
+
+      const data = await response.json()
+      setLevelProgress(data.levels || [])
+    } catch (error) {
+      console.error('Error loading progress:', error)
+    }
+  }
+
+  // Start level selection
+  const openLevelSelect = () => {
+    setGameMode('levelSelect')
+    setCurrentTier(1)
+  }
+
+  // Start a level
+  const startLevel = async (tier: number, level: number) => {
+    try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
@@ -60,54 +114,81 @@ export default function CodeQuest({ onGameOver }: GameProps) {
         return
       }
 
+      // Check if level is already completed (replay mode)
+      const progress = levelProgress.find(p => p.tier === tier && p.level === level)
+      setIsReplay(progress?.completed || false)
+
       // Start session on backend
       const response = await fetch(`${API_URL}/api/arcade/codequest/session/start`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({
+          tier,
+          level,
+          mode: 'quest'
+        })
       })
 
-      if (!response.ok) throw new Error('Failed to start session')
+      if (!response.ok) {
+        const error = await response.json()
+        alert(error.detail || 'Failed to start level')
+        return
+      }
 
       const data = await response.json()
       setSessionId(data.session_id)
 
       // Reset game state
-      setLives(3)
+      setCurrentTier(tier)
+      setCurrentLevel(level)
+      setLives(5)
       setScore(0)
       setTotalXP(0)
       setCombo(0)
       setBestCombo(0)
       setQuestionNumber(0)
-      setGameState('playing')
+      setQuestionAttempts({})
+      setAnsweredQuestionIds([])
+      setGameMode('playing')
 
       // Load first question
-      loadQuestion()
+      loadQuestion(tier, level)
     } catch (error) {
-      console.error('Error starting game:', error)
-      alert('Failed to start game. Please try again.')
+      console.error('Error starting level:', error)
+      alert('Failed to start level. Please try again.')
     }
   }
 
   // Load question from API
-  const loadQuestion = async () => {
-    // Prevent loading if not in playing state
-    if (gameState !== 'playing' && gameState !== 'idle') {
-      return
-    }
-
+  const loadQuestion = async (tier: number, level: number) => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      const response = await fetch(`${API_URL}/api/arcade/codequest/question/random`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+      // Build exclude list
+      const excludeIds = answeredQuestionIds.join(',')
 
-      if (!response.ok) throw new Error('Failed to load question')
+      const response = await fetch(
+        `${API_URL}/api/arcade/codequest/question/by-level?tier=${tier}&level=${level}&exclude_ids=${excludeIds}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      )
+
+      if (!response.ok) {
+        const error = await response.json()
+        if (error.detail?.includes('No more questions')) {
+          // Level complete!
+          completeLevel()
+          return
+        }
+        throw new Error('Failed to load question')
+      }
 
       const data = await response.json()
 
@@ -115,54 +196,16 @@ export default function CodeQuest({ onGameOver }: GameProps) {
       setSelectedAnswer(null)
       setAnswerStartTime(Date.now())
       setQuestionNumber(prev => prev + 1)
-
-      // Timer disabled for now - can add time attack mode later
-      // const adjustedTimeLimit = data.difficulty <= 2 ? data.time_limit + 10 : data.time_limit
-      // setTimeLeft(adjustedTimeLimit)
-      // startTimer(adjustedTimeLimit)
     } catch (error) {
       console.error('Error loading question:', error)
+      alert('Failed to load question')
     }
-  }
-
-  // Start countdown timer
-  const startTimer = (time: number) => {
-    setTimeLeft(time)
-
-    if (timerRef.current) clearInterval(timerRef.current)
-
-    timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          // Time's up!
-          handleTimeout()
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-  }
-
-  // Stop timer
-  const stopTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
-  }
-
-  // Handle timeout
-  const handleTimeout = () => {
-    stopTimer()
-    // Treat as wrong answer
-    submitAnswer('X') // Invalid answer to trigger wrong logic
   }
 
   // Submit answer
   const submitAnswer = async (answer: string) => {
     if (!question || !sessionId) return
 
-    stopTimer()
     setSelectedAnswer(answer)
 
     try {
@@ -170,6 +213,7 @@ export default function CodeQuest({ onGameOver }: GameProps) {
       const token = session?.access_token
 
       const timeTaken = (Date.now() - answerStartTime) / 1000
+      const attempts = questionAttempts[question.id] || 0
 
       const response = await fetch(`${API_URL}/api/arcade/codequest/answer`, {
         method: 'POST',
@@ -181,7 +225,10 @@ export default function CodeQuest({ onGameOver }: GameProps) {
           question_id: question.id,
           user_answer: answer,
           time_taken: timeTaken,
-          session_id: sessionId
+          session_id: sessionId,
+          attempt_number: attempts + 1,
+          tier: currentTier,
+          level: currentLevel
         })
       })
 
@@ -212,29 +259,62 @@ export default function CodeQuest({ onGameOver }: GameProps) {
           setBestCombo(current => Math.max(current, newCombo))
           return newCombo
         })
+
+        // Mark question as answered
+        setAnsweredQuestionIds(prev => [...prev, question.id])
+
+        setGameMode('feedback')
+
+        // Auto-continue after 2 seconds
+        setTimeout(() => {
+          nextQuestion()
+        }, 2000)
       } else {
         // Wrong answer
-        setCombo(0)
-        const newLives = lives - 1
-        setLives(newLives)
+        const currentAttempts = attempts + 1
+        setQuestionAttempts(prev => ({...prev, [question.id]: currentAttempts}))
 
-        if (newLives <= 0) {
-          // Game over - delay to show feedback first
-          setTimeout(() => {
-            endGame()
-          }, 3000)
+        if (currentAttempts === 1) {
+          // First wrong - can retry
+          setCombo(0)
+          const newLives = lives - 1
+          setLives(newLives)
+
+          if (newLives <= 0) {
+            // Game over
+            setGameMode('feedback')
+            setTimeout(() => {
+              endGame()
+            }, 3000)
+          } else {
+            // Show feedback briefly, then allow retry
+            setGameMode('feedback')
+            setTimeout(() => {
+              setGameMode('playing')
+            }, 2000)
+          }
+        } else {
+          // Second wrong - show answer and move on
+          setCombo(0)
+          const newLives = lives - 1
+          setLives(newLives)
+
+          // Mark as answered (can't retry again)
+          setAnsweredQuestionIds(prev => [...prev, question.id])
+
+          setGameMode('feedback')
+
+          if (newLives <= 0) {
+            setTimeout(() => {
+              endGame()
+            }, 3000)
+          } else {
+            setTimeout(() => {
+              nextQuestion()
+            }, 3000)
+          }
         }
       }
-
-      setGameState('feedback')
-
-      // Auto-continue after 3 seconds (only if game not over)
-      setTimeout(() => {
-        const newLives = result.correct ? lives : lives - 1
-        if (newLives > 0) {
-          nextQuestion()
-        }
-      }, 3000)
 
     } catch (error) {
       console.error('Error submitting answer:', error)
@@ -243,61 +323,60 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
   // Next question
   const nextQuestion = () => {
-    if (lives > 0 && gameState === 'feedback') {
-      setGameState('playing')
-      // Small delay to ensure state is updated before loading
-      setTimeout(() => {
-        loadQuestion()
-      }, 100)
+    if (lives > 0) {
+      setGameMode('playing')
+      loadQuestion(currentTier, currentLevel)
     }
   }
 
-  // End game
-  const endGame = async () => {
-    stopTimer()
-    setGameState('gameOver')
+  // Complete level
+  const completeLevel = async () => {
+    if (!sessionId) return
 
-    if (sessionId) {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        const token = session?.access_token
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
 
-        // Complete session on backend
-        await fetch(`${API_URL}/api/arcade/codequest/session/complete`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            session_id: sessionId,
-            questions_answered: questionNumber,
-            questions_correct: score,
-            best_combo: bestCombo,
-            avg_speed: 0 // Calculate if needed
-          })
+      const response = await fetch(`${API_URL}/api/arcade/codequest/level/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          tier: currentTier,
+          level: currentLevel,
+          questions_answered: questionNumber,
+          questions_correct: score,
+          best_combo: bestCombo
         })
+      })
 
-        if (onGameOver) {
-          onGameOver(score, totalXP)
-        }
-      } catch (error) {
-        console.error('Error completing session:', error)
-      }
+      if (!response.ok) throw new Error('Failed to complete level')
+
+      const result = await response.json()
+
+      // Reload progress
+      await loadLevelProgress()
+
+      // Show completion screen
+      setGameMode('gameOver')
+    } catch (error) {
+      console.error('Error completing level:', error)
+      setGameMode('gameOver')
     }
   }
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopTimer()
-    }
-  }, [])
+  // End game (ran out of lives)
+  const endGame = () => {
+    setGameMode('gameOver')
+  }
 
   // Keyboard controls
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (gameState !== 'playing' || !question) return
+      if (gameMode !== 'playing' || !question) return
 
       const key = e.key.toUpperCase()
       if (['A', 'B', 'C', 'D', '1', '2', '3', '4'].includes(key)) {
@@ -308,7 +387,7 @@ export default function CodeQuest({ onGameOver }: GameProps) {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [gameState, question, combo, lives, answerStartTime, sessionId])
+  }, [gameMode, question, combo, lives, answerStartTime, sessionId, questionAttempts])
 
   // Get combo display
   const getComboDisplay = () => {
@@ -318,8 +397,29 @@ export default function CodeQuest({ onGameOver }: GameProps) {
     return null
   }
 
-  // Render
-  if (gameState === 'idle') {
+  // Check if level is unlocked
+  const isLevelUnlocked = (tier: number, level: number) => {
+    const progress = levelProgress.find(p => p.tier === tier && p.level === level)
+    return progress?.unlocked || (tier === 1 && level === 1)
+  }
+
+  // Get level status icon
+  const getLevelIcon = (tier: number, level: number) => {
+    const progress = levelProgress.find(p => p.tier === tier && p.level === level)
+    if (!progress?.unlocked && !(tier === 1 && level === 1)) return '🔒'
+    if (progress?.completed) return '✓'
+    return '🔓'
+  }
+
+  // Get level accuracy
+  const getLevelAccuracy = (tier: number, level: number) => {
+    const progress = levelProgress.find(p => p.tier === tier && p.level === level)
+    if (!progress || !progress.completed) return '--'
+    return `${Math.round(progress.accuracy)}%`
+  }
+
+  // === RENDER MENU ===
+  if (gameMode === 'menu') {
     return (
       <div className="flex flex-col items-center justify-center h-full w-full">
         <div className="text-center space-y-6">
@@ -327,28 +427,84 @@ export default function CodeQuest({ onGameOver }: GameProps) {
             ⚡ PYTHON CODE QUEST
           </h1>
           <p className="text-cyan-400 font-mono text-lg">
-            Answer Python questions to earn XP and climb the leaderboard!
+            Master Python through progressive challenges!
           </p>
           <div className="space-y-2 text-sm font-mono text-gray-400">
-            <p>✓ 3 lives - lose one for each wrong answer</p>
+            <p>✓ 5 lives per level - lose one for each wrong answer</p>
+            <p>✓ 2 attempts per question before moving on</p>
+            <p>✓ 20 questions per level</p>
+            <p>✓ 80% accuracy unlocks next level</p>
             <p>✓ Combo streaks multiply your XP (up to 5x!)</p>
-            <p>✓ Speed bonus for quick answers</p>
-            <p>✓ Use keyboard: 1-4 or A-D to answer</p>
           </div>
           <button
-            onClick={startGame}
+            onClick={openLevelSelect}
             className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 text-black font-bold font-mono text-xl hover:from-purple-500 hover:to-pink-500 transition-all duration-300 shadow-[0_0_30px_rgba(6,182,212,0.6)] hover:shadow-[0_0_40px_rgba(168,85,247,0.8)] relative overflow-hidden"
           >
             <span className="relative z-10">▶ START QUEST</span>
-            <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
           </button>
         </div>
       </div>
     )
   }
 
-  if (gameState === 'playing' && question) {
+  // === RENDER LEVEL SELECT ===
+  if (gameMode === 'levelSelect') {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-start overflow-y-auto p-6">
+        <div className="max-w-4xl w-full space-y-6">
+          <div className="text-center">
+            <h2 className="text-4xl font-mono font-bold text-cyan-400 mb-2">
+              TIER {currentTier}: BEGINNER PYTHON
+            </h2>
+            <p className="text-gray-400 font-mono">Select a level to begin</p>
+          </div>
+
+          {/* Level Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5].map(level => {
+              const unlocked = isLevelUnlocked(currentTier, level)
+              const icon = getLevelIcon(currentTier, level)
+              const accuracy = getLevelAccuracy(currentTier, level)
+
+              return (
+                <button
+                  key={level}
+                  onClick={() => unlocked ? startLevel(currentTier, level) : null}
+                  disabled={!unlocked}
+                  className={`p-6 border-4 rounded-lg font-mono text-center transition-all duration-300 ${
+                    unlocked
+                      ? 'border-cyan-500 bg-cyan-900/20 hover:bg-cyan-800/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] cursor-pointer'
+                      : 'border-gray-700 bg-gray-900/20 cursor-not-allowed opacity-50'
+                  }`}
+                >
+                  <div className="text-4xl mb-2">{icon}</div>
+                  <div className="text-2xl font-bold text-white mb-1">LEVEL {level}</div>
+                  <div className={`text-lg ${accuracy === '--' ? 'text-gray-500' : 'text-green-400'}`}>
+                    {accuracy}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Back Button */}
+          <div className="text-center">
+            <button
+              onClick={() => setGameMode('menu')}
+              className="px-6 py-3 bg-gray-800 border-2 border-gray-600 text-gray-300 font-mono hover:bg-gray-700 transition-colors"
+            >
+              ← BACK TO MENU
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // === RENDER PLAYING ===
+  if (gameMode === 'playing' && question) {
     const comboText = getComboDisplay()
+    const currentAttempts = questionAttempts[question.id] || 0
 
     return (
       <div className="h-full w-full flex justify-center items-start overflow-y-auto">
@@ -357,10 +513,13 @@ export default function CodeQuest({ onGameOver }: GameProps) {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <div className="font-mono text-cyan-400">
-              Question {questionNumber}
+              TIER {currentTier} - LEVEL {currentLevel}
+            </div>
+            <div className="font-mono text-gray-400">
+              Question {questionNumber}/20
             </div>
             <div className="flex gap-2">
-              {[...Array(3)].map((_, i) => (
+              {[...Array(5)].map((_, i) => (
                 <span key={i} className={`text-2xl ${i < lives ? '' : 'opacity-20'}`}>
                   ❤️
                 </span>
@@ -368,6 +527,11 @@ export default function CodeQuest({ onGameOver }: GameProps) {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {isReplay && (
+              <div className="px-3 py-1 bg-yellow-900/40 border border-yellow-500/50 text-yellow-400 text-sm font-mono">
+                REPLAY (50% XP)
+              </div>
+            )}
             {comboText && (
               <div className="px-4 py-2 bg-gradient-to-r from-red-500 to-yellow-500 text-white font-bold font-mono animate-pulse">
                 {comboText}
@@ -385,6 +549,11 @@ export default function CodeQuest({ onGameOver }: GameProps) {
               </pre>
             )}
             <p className="text-xl font-mono text-white mb-2">{question.question}</p>
+            {currentAttempts > 0 && (
+              <p className="text-sm font-mono text-red-400 mt-2">
+                ⚠️ Second attempt - choose carefully!
+              </p>
+            )}
           </div>
 
           {/* Options */}
@@ -421,7 +590,11 @@ export default function CodeQuest({ onGameOver }: GameProps) {
     )
   }
 
-  if (gameState === 'feedback') {
+  // === RENDER FEEDBACK ===
+  if (gameMode === 'feedback') {
+    const currentAttempts = question ? questionAttempts[question.id] || 0 : 0
+    const canRetry = !isCorrect && currentAttempts === 1 && lives > 0
+
     return (
       <div className="h-full w-full flex items-center justify-center p-6">
         <div className="text-center space-y-6 max-w-2xl w-full">
@@ -439,6 +612,11 @@ export default function CodeQuest({ onGameOver }: GameProps) {
                   Speed Bonus: {Math.round((speedBonus - 1) * 100)}%
                 </div>
               )}
+              {isReplay && (
+                <div className="text-sm font-mono text-yellow-400">
+                  (Replay mode: 50% XP penalty applied)
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -454,6 +632,11 @@ export default function CodeQuest({ onGameOver }: GameProps) {
               <div className="text-xl font-mono text-cyan-400">
                 Correct Answer: {correctAnswer}
               </div>
+              {canRetry && (
+                <div className="text-lg font-mono text-yellow-400">
+                  One more try! Choose carefully...
+                </div>
+              )}
             </>
           )}
 
@@ -461,36 +644,63 @@ export default function CodeQuest({ onGameOver }: GameProps) {
             <p className="text-gray-300 font-mono text-sm leading-relaxed">{feedback}</p>
           </div>
 
-          <button
-            onClick={nextQuestion}
-            className="px-6 py-3 bg-cyan-500 text-black font-bold font-mono hover:bg-cyan-400 transition-colors"
-          >
-            NEXT QUESTION →
-          </button>
+          {lives <= 0 && (
+            <div className="text-2xl font-mono text-red-400">
+              OUT OF LIVES - LEVEL FAILED
+            </div>
+          )}
         </div>
       </div>
     )
   }
 
-  if (gameState === 'gameOver') {
+  // === RENDER GAME OVER ===
+  if (gameMode === 'gameOver') {
+    const accuracy = questionNumber > 0 ? Math.round((score / questionNumber) * 100) : 0
+    const passed = accuracy >= 80
+
     return (
       <div className="h-full flex items-center justify-center p-6">
         <div className="text-center space-y-6">
-          <h1 className="text-5xl font-mono font-bold text-neon-magenta drop-shadow-[0_0_20px_rgba(255,0,255,0.8)]">
-            QUEST COMPLETE
+          <h1 className={`text-5xl font-mono font-bold ${passed ? 'text-green-400' : 'text-red-400'} drop-shadow-[0_0_20px_rgba(255,255,255,0.8)]`}>
+            {passed ? 'LEVEL COMPLETE!' : 'LEVEL FAILED'}
           </h1>
           <div className="space-y-4 text-2xl font-mono">
+            <div className="text-cyan-400">TIER {currentTier} - LEVEL {currentLevel}</div>
             <div className="text-green-400">Score: {score} / {questionNumber}</div>
             <div className="text-purple-400">Total XP Earned: {totalXP}</div>
             <div className="text-yellow-400">Best Combo: {bestCombo}x</div>
-            <div className="text-cyan-400">Accuracy: {Math.round((score / questionNumber) * 100)}%</div>
+            <div className={`${accuracy >= 80 ? 'text-green-400' : 'text-red-400'} text-3xl font-bold`}>
+              Accuracy: {accuracy}%
+            </div>
           </div>
-          <button
-            onClick={startGame}
-            className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 text-black font-bold font-mono text-xl hover:from-purple-500 hover:to-pink-500 transition-all"
-          >
-            ▶ PLAY AGAIN
-          </button>
+          {passed && (
+            <div className="text-lg font-mono text-green-400">
+              ⭐ Next level unlocked! ⭐
+            </div>
+          )}
+          {!passed && (
+            <div className="text-sm font-mono text-gray-400">
+              You need 80% accuracy to unlock the next level. Try again!
+            </div>
+          )}
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => startLevel(currentTier, currentLevel)}
+              className="px-6 py-3 bg-cyan-500 text-black font-bold font-mono hover:bg-cyan-400 transition-colors"
+            >
+              🔄 RETRY LEVEL
+            </button>
+            <button
+              onClick={() => {
+                loadLevelProgress()
+                setGameMode('levelSelect')
+              }}
+              className="px-6 py-3 bg-purple-500 text-black font-bold font-mono hover:bg-purple-400 transition-colors"
+            >
+              📋 LEVEL SELECT
+            </button>
+          </div>
         </div>
       </div>
     )
