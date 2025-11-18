@@ -317,7 +317,7 @@ export default function Hammurabi() {
       addOutput('FRANKLY, HATE YOUR GUTS!!')
     } else if (city.totalDeaths > 33 || acresPerPerson < 10) {
       addOutput('YOUR PERFORMANCE COULD HAVE BEEN SOMEWHAT BETTER, BUT')
-      addOutput('REALLY WASN\'T TOO BAD AT ALL. ' + Math.floor(Math.random() * 0.8 * city.population))
+      addOutput('REALLY WASN&apos;T TOO BAD AT ALL. ' + Math.floor(Math.random() * 0.8 * city.population))
       addOutput('PEOPLE WOULD DEARLY LIKE TO SEE YOU ASSASSINATED BUT WE')
       addOutput('ALL HAVE OUR TRIVIAL PROBLEMS.')
     } else {
