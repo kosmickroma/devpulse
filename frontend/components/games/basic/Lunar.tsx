@@ -220,7 +220,7 @@ export default function Lunar() {
         <h2 className="text-green-400 font-mono text-xl">LUNAR LANDER</h2>
         <p className="text-green-600 text-sm font-mono">Original BASIC Program #52 (1969)</p>
         <p className="text-green-700 text-xs font-mono mt-1">
-          Land the Apollo capsule safely on the moon's surface
+          Land the Apollo capsule safely on the moon&apos;s surface
         </p>
       </div>
 
