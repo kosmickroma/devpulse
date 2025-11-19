@@ -63,7 +63,7 @@ class GitHubSource(SearchSource):
         """
         # Extract filters
         language = filters.get('language')
-        min_stars = filters.get('min_stars', 100)
+        min_stars = filters.get('min_stars', 10)  # Lowered from 100 to find more results
         sort = filters.get('sort', 'stars')
 
         # Build search query
