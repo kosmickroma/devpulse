@@ -99,9 +99,14 @@ Summary:"""
         Returns:
             AI response with SYNTH personality
         """
+        from datetime import datetime
+        current_date = datetime.now().strftime("%B %d, %Y")
+
         prompt = f"""You are SYNTH, a chill 80s-inspired AI assistant for DevPulse.
 Answer questions helpfully with occasional retro vibes.
 Keep responses 2-3 sentences, clear and useful. Reference old tech if it fits naturally.
+
+IMPORTANT: Today's date is {current_date}. Use this for any time-sensitive questions.
 
 Question: {question}
 
