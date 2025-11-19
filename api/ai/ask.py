@@ -96,9 +96,9 @@ async def ask_synth(
     except Exception as e:
         print(f"Rate limit error: {e}")
 
-    # Use new ConversationService to handle query
+    # Use new ConversationService to handle query with user context
     try:
-        result = await conversation.handle_query(request.question)
+        result = await conversation.handle_query(request.question, user_id=user_id)
 
         response_text = result.get('commentary') or result.get('response', 'No response generated')
         search_results = result.get('results', [])

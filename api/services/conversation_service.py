@@ -20,12 +20,15 @@ class ConversationService:
         self.search_service = SynthSearchServiceV2()
         self.gemini = GeminiService()
 
+        # Simple conversation memory: stores last query per user
+        self.conversation_history: Dict[str, str] = {}
+
         # Keywords that indicate source search intent
         self.search_keywords = [
             'find', 'search', 'show', 'get', 'look for', 'discover',
             'trending', 'popular', 'top', 'best', 'latest',
             'github', 'reddit', 'hackernews', 'repo', 'repository',
-            'project', 'code', 'discussion', 'post', 'article'
+            'project', 'code', 'discussion', 'post', 'article', 'scan'
         ]
 
     def detect_query_type(self, query: str) -> str:
@@ -52,25 +55,40 @@ class ConversationService:
             # General question (NBA odds, explain quantum, etc.)
             return 'chat'
 
-    async def handle_query(self, query: str) -> Dict[str, Any]:
+    async def handle_query(self, query: str, user_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Handle any query - route to search or chat as needed.
 
         Args:
             query: User's natural language query
+            user_id: Optional user ID for conversation memory
 
         Returns:
             Unified response with results and commentary
         """
+        # Check for follow-up queries that need context
+        follow_up_keywords = ['dive deeper', 'tell me more', 'explain more', 'continue', 'go on', 'elaborate']
+        is_follow_up = any(kw in query.lower() for kw in follow_up_keywords)
+
+        # If it's a follow-up and we have history, add context
+        if is_follow_up and user_id and user_id in self.conversation_history:
+            last_query = self.conversation_history[user_id]
+            query = f"{query} about {last_query}"
+            print(f"💭 SYNTH adding context: {last_query}")
+
         query_type = self.detect_query_type(query)
         print(f"🤖 SYNTH detected query type: {query_type}")
 
         if query_type == 'search':
-            # Route to source search
-            return await self._handle_search(query)
+            result = await self._handle_search(query)
         else:
-            # Route to general chat
-            return await self._handle_chat(query)
+            result = await self._handle_chat(query)
+
+        # Store query in conversation history
+        if user_id:
+            self.conversation_history[user_id] = query
+
+        return result
 
     async def _handle_search(self, query: str) -> Dict[str, Any]:
         """Handle source search queries."""

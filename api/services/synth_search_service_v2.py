@@ -87,11 +87,11 @@ class SynthSearchServiceV2:
         # Extract keywords
         stop_words = ['find', 'me', 'some', 'show', 'get', 'search', 'for', 'about',
                       'the', 'a', 'an', 'on', 'in', 'from', 'with', 'that', 'this',
-                      'can', 'you', 'what', 'where', 'when', 'why', 'how']
+                      'can', 'you', 'what', 'where', 'when', 'why', 'how', 'scan', 'all', 'sources']
         words = re.findall(r'\b\w+\b', query_lower)
         keywords = [w for w in words if w not in stop_words and len(w) > 2]
 
-        # Remove source and language keywords
+        # Remove source and language keywords from final search terms
         all_source_keywords = [kw for kws in self.source_keywords.values() for kw in kws]
         keywords = [kw for kw in keywords if kw not in all_source_keywords and kw not in self.language_keywords]
 

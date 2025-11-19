@@ -93,20 +93,39 @@ export default function Home() {
       // Create a map of existing items by URL (for deduplication)
       const existingMap = new Map(prevTrends.map(item => [item.url, item]))
 
+      // Track new items to put on top
+      const newUrls = new Set(items.map(item => item.url))
+
       // Add or update items
       items.forEach(item => {
         existingMap.set(item.url, item)
       })
 
-      return Array.from(existingMap.values())
+      // Convert to array and sort: new items first, then existing
+      const allItems = Array.from(existingMap.values())
+      return allItems.sort((a, b) => {
+        const aIsNew = newUrls.has(a.url)
+        const bIsNew = newUrls.has(b.url)
+        if (aIsNew && !bIsNew) return -1
+        if (!aIsNew && bIsNew) return 1
+        return 0
+      })
     })
 
     setFilteredTrends(prevFiltered => {
       const existingMap = new Map(prevFiltered.map(item => [item.url, item]))
+      const newUrls = new Set(items.map(item => item.url))
       items.forEach(item => {
         existingMap.set(item.url, item)
       })
-      return Array.from(existingMap.values())
+      const allItems = Array.from(existingMap.values())
+      return allItems.sort((a, b) => {
+        const aIsNew = newUrls.has(a.url)
+        const bIsNew = newUrls.has(b.url)
+        if (aIsNew && !bIsNew) return -1
+        if (!aIsNew && bIsNew) return 1
+        return 0
+      })
     })
 
     setIsFromCache(false) // Fresh data, not from cache
