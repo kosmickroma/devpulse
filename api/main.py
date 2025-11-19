@@ -15,6 +15,7 @@ import os
 from fastapi import BackgroundTasks
 from datetime import datetime
 from api.spider_runner import SpiderRunner
+from supabase import create_client, Client
 
 # Import SYNTH AI routers
 from api.ai import summarize, ask, search
@@ -48,6 +49,16 @@ app.add_middleware(
 
 # Global spider runner instance
 spider_runner = SpiderRunner()
+
+# Supabase client for backfill metadata
+SUPABASE_URL = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+else:
+    supabase = None
+    print("WARNING: Supabase not configured for backfill metadata")
 
 
 @app.get("/")
@@ -248,40 +259,135 @@ app.include_router(badges.router, prefix='/api/arcade/badges', tags=['badges'])
 app.include_router(profile.router, prefix='/api/arcade/profile', tags=['profile'])
 app.include_router(codequest.router, prefix='/api/arcade/codequest', tags=['code-quest'])
 
-# Add Backfill — every 4 hours cron endpoint
+# Backfill endpoint - runs all spiders and saves metadata to Supabase
 @app.post("/api/backfill")
-async def backfill_trends(background_tasks: BackgroundTasks):
-    print(f"[{datetime.now()}] Scheduled backfill started")
+async def backfill_trends():
+    """
+    Run all spiders to refresh cached trends and save metadata to Supabase.
+    This is called by the GitHub Actions cron job every 4 hours.
+    """
+    start_time = datetime.now()
+    print(f"[{start_time}] Scheduled backfill started")
 
-    # Import inside function to avoid circular imports at startup
-    from spider_runner import run_full_scan
+    # All sources to scan
+    sources = ['github_api', 'hackernews', 'devto', 'reddit_api', 'yahoo_finance', 'coingecko']
+    all_results = []
+    errors = []
 
     try:
-        results = await run_full_scan()  # ← your existing full scan that returns list[str]
+        # Run all spiders and collect results
+        for spider_name in sources:
+            try:
+                print(f"[{datetime.now()}] Running {spider_name}...")
+                async for event in spider_runner.run_spider_async(spider_name):
+                    if event['type'] == 'item':
+                        all_results.append(event['data'])
+                    elif event['type'] == 'error':
+                        errors.append(f"{spider_name}: {event['message']}")
+            except Exception as e:
+                error_msg = f"{spider_name}: {str(e)}"
+                errors.append(error_msg)
+                print(f"[ERROR] {error_msg}")
 
-        # Save to frontend's public folder so Next.js can serve it instantly
-        save_path = "../frontend/public/latest-trends.json"
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        # Save metadata to Supabase
+        if supabase:
+            try:
+                metadata = {
+                    'last_updated': start_time.isoformat(),
+                    'total_trends': len(all_results),
+                    'sources_included': sources,
+                    'status': 'success' if not errors else 'partial',
+                    'error_message': '; '.join(errors) if errors else None
+                }
 
-        with open(save_path, "w", encoding="utf-8") as f:
-            json.dump({
-                "lastUpdated": datetime.now().isoformat(),
-                "trends": results,
-                "total": len(results)
-            }, f, indent=2)
+                result = supabase.table('backfill_metadata').insert(metadata).execute()
+                print(f"[{datetime.now()}] Metadata saved to Supabase")
+            except Exception as e:
+                print(f"[ERROR] Failed to save metadata to Supabase: {e}")
+        else:
+            print("[WARNING] Supabase not configured, skipping metadata save")
 
-        print(f"[{datetime.now()}] Backfill finished — {len(results)} trends saved to latest-trends.json")
-        
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+
+        print(f"[{end_time}] Backfill finished — {len(all_results)} trends collected in {duration:.2f}s")
+
         return {
-            "status": "success",
-            "count": len(results),
-            "updated": datetime.now().isoformat(),
-            "message": "Cache refreshed"
+            "status": "success" if not errors else "partial",
+            "count": len(all_results),
+            "sources": sources,
+            "errors": errors if errors else None,
+            "updated": start_time.isoformat(),
+            "duration_seconds": duration,
+            "message": f"Backfill completed with {len(all_results)} trends"
         }
 
     except Exception as e:
-        print(f"Backfill failed: {e}")
-        return {"status": "error", "message": str(e)}
+        error_msg = str(e)
+        print(f"[ERROR] Backfill failed: {error_msg}")
+
+        # Save error to Supabase
+        if supabase:
+            try:
+                supabase.table('backfill_metadata').insert({
+                    'last_updated': start_time.isoformat(),
+                    'total_trends': 0,
+                    'sources_included': sources,
+                    'status': 'failed',
+                    'error_message': error_msg
+                }).execute()
+            except Exception as db_error:
+                print(f"[ERROR] Failed to save error to Supabase: {db_error}")
+
+        return {"status": "error", "message": error_msg}
+
+
+@app.get("/api/backfill/status")
+async def get_backfill_status():
+    """
+    Get the status and timestamp of the last backfill run.
+    Returns when the sources were last updated and how many trends were found.
+    """
+    if not supabase:
+        return {
+            "error": "Supabase not configured",
+            "last_updated": None,
+            "total_trends": 0
+        }
+
+    try:
+        # Get the most recent backfill metadata
+        result = supabase.table('backfill_metadata') \
+            .select('*') \
+            .order('last_updated', desc=True) \
+            .limit(1) \
+            .execute()
+
+        if result.data and len(result.data) > 0:
+            latest = result.data[0]
+            return {
+                "last_updated": latest['last_updated'],
+                "total_trends": latest['total_trends'],
+                "sources_included": latest['sources_included'],
+                "status": latest['status'],
+                "error_message": latest.get('error_message')
+            }
+        else:
+            return {
+                "last_updated": None,
+                "total_trends": 0,
+                "message": "No backfill runs recorded yet"
+            }
+
+    except Exception as e:
+        print(f"[ERROR] Failed to fetch backfill status: {e}")
+        return {
+            "error": str(e),
+            "last_updated": None,
+            "total_trends": 0
+        }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")

@@ -1,0 +1,17 @@
+name: Backfill Trends Cache
+
+on:
+  schedule:
+    # Run every 4 hours to refresh the trends cache
+    - cron: '0 */4 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger backfill endpoint
+        run: |
+          echo "Triggering trends backfill..."
+          curl -X POST -f https://devpulse-api.onrender.com/api/backfill || echo "Backfill request failed"
+        continue-on-error: true

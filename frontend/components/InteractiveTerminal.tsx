@@ -170,6 +170,25 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
 
   // Auto-scan after boot sequence completes
   const [hasAutoScanned, setHasAutoScanned] = useState(false)
+  const [backfillStatus, setBackfillStatus] = useState<{
+    last_updated: string | null
+    total_trends: number
+  } | null>(null)
+
+  // Fetch backfill status on mount
+  useEffect(() => {
+    const fetchBackfillStatus = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+        const response = await fetch(`${API_URL}/api/backfill/status`)
+        const data = await response.json()
+        setBackfillStatus(data)
+      } catch (error) {
+        console.warn('Failed to fetch backfill status:', error)
+      }
+    }
+    fetchBackfillStatus()
+  }, [])
 
   // Initial boot sequence - only runs after user initializes system
   useEffect(() => {
@@ -186,6 +205,27 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       ? `> Operator: ${operatorBadge} @${operatorName}`
       : `> Operator: @${operatorName}`
 
+    // Format last updated message
+    let lastUpdatedLine = ''
+    if (backfillStatus?.last_updated) {
+      const lastUpdate = new Date(backfillStatus.last_updated)
+      const now = new Date()
+      const diffMs = now.getTime() - lastUpdate.getTime()
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+      const diffMins = Math.floor(diffMs / (1000 * 60))
+
+      if (diffHours > 24) {
+        const diffDays = Math.floor(diffHours / 24)
+        lastUpdatedLine = `> Sources last updated: ${diffDays} day${diffDays > 1 ? 's' : ''} ago (${backfillStatus.total_trends} trends)`
+      } else if (diffHours > 0) {
+        lastUpdatedLine = `> Sources last updated: ${diffHours} hour${diffHours > 1 ? 's' : ''} ago (${backfillStatus.total_trends} trends)`
+      } else if (diffMins > 0) {
+        lastUpdatedLine = `> Sources last updated: ${diffMins} minute${diffMins > 1 ? 's' : ''} ago (${backfillStatus.total_trends} trends)`
+      } else {
+        lastUpdatedLine = `> Sources last updated: just now (${backfillStatus.total_trends} trends)`
+      }
+    }
+
     const bootLines = [
       { id: '1', text: '> DevPulse Terminal v4.0 - SYNTH AI Edition', type: 'output' as const, timestamp: Date.now() },
       { id: '2', text: '> Initializing systems...', type: 'output' as const, timestamp: Date.now() + 300 },
@@ -197,9 +237,10 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
       { id: '8', text: '> [✓] CoinGecko: ONLINE', type: 'success' as const, timestamp: Date.now() + 2100 },
       { id: '9', text: '> [✓] SYNTH AI: READY', type: 'success' as const, timestamp: Date.now() + 2400 },
       { id: '10', text: operatorLine, type: 'success' as const, timestamp: Date.now() + 2700 },
-      { id: '11', text: '> ', type: 'output' as const, timestamp: Date.now() + 3000 },
-      { id: '12', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 3300 },
-      { id: '13', text: '> ', type: 'output' as const, timestamp: Date.now() + 3600 },
+      ...(lastUpdatedLine ? [{ id: '11', text: lastUpdatedLine, type: 'output' as const, timestamp: Date.now() + 3000 }] : []),
+      { id: '12', text: '> ', type: 'output' as const, timestamp: Date.now() + 3300 },
+      { id: '13', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 3600 },
+      { id: '14', text: '> ', type: 'output' as const, timestamp: Date.now() + 3900 },
     ]
 
     bootLines.forEach((line, index) => {
@@ -213,7 +254,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     setTimeout(() => {
       setHasAutoScanned(true)
     }, 2200)
-  }, [isSystemReady, profile])
+  }, [isSystemReady, profile, backfillStatus])
 
   // Play sound helper
   const playSound = (soundType: 'typing' | 'beep' | 'error' | 'success') => {
