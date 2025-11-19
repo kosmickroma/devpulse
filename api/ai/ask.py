@@ -8,32 +8,23 @@ from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from typing import Optional
 
-from api.services.gemini_service import GeminiService
+from api.services.conversation_service import ConversationService
 from api.services.rate_limit_service import RateLimitService
 from api.services.usage_tracker import UsageTracker
-from api.services.github_search_service import GitHubSearchService
-from api.services.reddit_search_service import RedditSearchService
-from api.services.hackernews_search_service import HackerNewsSearchService
 from api.utils.auth import get_user_from_token
 
 router = APIRouter()
 
 # Initialize services
 try:
-    gemini = GeminiService()
+    conversation = ConversationService()
     rate_limiter = RateLimitService()
     tracker = UsageTracker()
-    github_search = GitHubSearchService()
-    reddit_search = RedditSearchService()
-    hn_search = HackerNewsSearchService()
 except Exception as e:
     print(f"⚠️ SYNTH services initialization error: {e}")
-    gemini = None
+    conversation = None
     rate_limiter = None
     tracker = None
-    github_search = None
-    reddit_search = None
-    hn_search = None
 
 
 class AskRequest(BaseModel):
@@ -59,7 +50,7 @@ async def ask_synth(
     Requires authentication. Rate limited to 50/day per user.
     """
     # Check if services are initialized
-    if not gemini or not rate_limiter or not tracker:
+    if not conversation or not rate_limiter or not tracker:
         raise HTTPException(
             status_code=503,
             detail="SYNTH is temporarily offline. Check configuration."
@@ -105,84 +96,12 @@ async def ask_synth(
     except Exception as e:
         print(f"Rate limit error: {e}")
 
-    # Analyze query to see if we need to search
+    # Use new ConversationService to handle query
     try:
-        analysis = gemini.analyze_query_with_functions(request.question)
+        result = await conversation.handle_query(request.question)
 
-        search_results = None
-        response_text = None
-
-        # Check if SYNTH determined search is needed
-        if analysis.get('needs_search'):
-            source = analysis.get('source', 'github')
-            query = analysis.get('query', request.question)
-
-            if source == 'github' and github_search:
-                # GitHub repository search
-                print(f"🔍 SYNTH searching GitHub for: {query}")
-
-                results = github_search.search_repositories(
-                    query=query,
-                    min_stars=50,  # Lower threshold for more results
-                    limit=10
-                )
-
-                if results:
-                    response_text = gemini.generate_response_with_data(
-                        request.question,
-                        results
-                    )
-                    search_results = results
-                    print(f"✅ SYNTH found {len(results)} GitHub repos")
-                else:
-                    response_text = f"I searched GitHub for '{query}' but didn't find any repos matching that. Try a different search term?"
-
-            elif source == 'reddit' and reddit_search:
-                # Reddit posts search
-                print(f"🔍 SYNTH searching Reddit for: {query}")
-
-                results = reddit_search.search_posts(
-                    query=query,
-                    limit=10,
-                    sort='relevance'
-                )
-
-                if results:
-                    response_text = gemini.generate_response_with_data(
-                        request.question,
-                        results
-                    )
-                    search_results = results
-                    print(f"✅ SYNTH found {len(results)} Reddit posts")
-                else:
-                    response_text = f"I searched Reddit for '{query}' but didn't find any posts matching that. Try different keywords?"
-
-            elif source == 'hackernews' and hn_search:
-                # HackerNews stories search
-                print(f"🔍 SYNTH searching HackerNews for: {query}")
-
-                results = hn_search.search_stories(
-                    query=query,
-                    min_points=10,
-                    limit=10
-                )
-
-                if results:
-                    response_text = gemini.generate_response_with_data(
-                        request.question,
-                        results
-                    )
-                    search_results = results
-                    print(f"✅ SYNTH found {len(results)} HackerNews stories")
-                else:
-                    response_text = f"I searched HackerNews for '{query}' but didn't find any stories matching that. Try different keywords?"
-
-            else:
-                # Other sources not implemented yet or service not initialized
-                response_text = f"I can search {source}, but that's not wired up yet. Coming soon!"
-        else:
-            # No search needed, generate direct answer
-            response_text = analysis.get('direct_answer') or gemini.generate_answer(request.question)
+        response_text = result.get('commentary') or result.get('response', 'No response generated')
+        search_results = result.get('results', [])
 
         # Log usage
         try:
@@ -215,7 +134,7 @@ async def explain_concept(
     Requires authentication. Rate limited to 50/day per user.
     """
     # Check if services are initialized
-    if not gemini or not rate_limiter or not tracker:
+    if not conversation or not rate_limiter or not tracker:
         raise HTTPException(
             status_code=503,
             detail="SYNTH is temporarily offline."
@@ -257,7 +176,8 @@ async def explain_concept(
 
     # Generate explanation
     try:
-        response = gemini.explain_concept(request.question)
+        result = await conversation.handle_query(f"Explain: {request.question}")
+        response = result.get('commentary') or result.get('response', 'No explanation generated')
 
         # Log usage
         try:
