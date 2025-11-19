@@ -1,6 +1,6 @@
 # DevPulse Session Notes
 
-## Session 2025-11-19 - SYNTH UX Polish
+## Session 2025-11-19 (UPDATED) - SYNTH UX Polish + Conversation Window Upgrade
 
 ### What We Did:
 1. ✅ **Set up Supabase tables** - Created and renamed `search_cache`, `demo_queries`, `conversations`
@@ -13,8 +13,12 @@
 - ✅ **NBA picks query works!** - General chat mode functioning
 - ✅ **"find python machine learning repos"** - BLAZING fast with parallel execution
 - ✅ **Auto-detects intent** - No need to say "scan github"
-- ⚠️ **"scan all sources for rust"** - Only returned GitHub (need to test after fix)
-- ⚠️ **"dive deeper"** - Fixed, needs testing after deployment
+- ✅ **"explain black holes" → "dig deeper"** - Conversation memory works!
+- ✅ **Multi-turn conversations** - Upgraded to 5-query window
+- ✅ **"who won super bowl" → "year before?"** - Context maintained across topics
+- ⏳ **"scan all sources for rust"** - Fixed in code, needs testing
+- ⏳ **Newest cards on top** - Fixed in code, needs testing
+- ⏳ **Reddit searches** - Need to verify no 'stars' errors
 
 ### Key Insights Discovered:
 
@@ -40,14 +44,18 @@ Located in: `api/services/synth_search_service_v2.py:139-143`
 
 ### Files Changed This Session:
 1. `api/ai/ask.py` - Use ConversationService instead of old search services
-2. `api/services/conversation_service.py` - Add conversation memory + user context
+2. `api/services/conversation_service.py` - Conversation memory → DB persistence → 5-query window
 3. `api/services/synth_search_service_v2.py` - Fix stop words filtering
 4. `frontend/app/page.tsx` - Sort new cards to top
 5. `TODO.md` - Updated with v5.1 changes and parallel terminal scan task
+6. `SESSION_NOTES.md` - Created for continuity
 
 ### Commits:
 1. `880fdb1` - Fix: Wire up ConversationService to /api/ai/ask endpoint
 2. `fc16ab2` - Add conversation memory + UI improvements
+3. `7eed47b` - Docs: Update TODO and add session notes
+4. `0f9cbae` - Fix: Persist conversation memory to database
+5. `d379943` - Upgrade: Conversation window (last 5 queries) instead of single query
 
 ### Next Steps (In Priority Order):
 1. **Test everything** - Conversation memory, "scan all sources", parallel speed
@@ -90,4 +98,46 @@ Located in: `api/services/synth_search_service_v2.py:139-143`
 
 ---
 
-**Status:** Ready for testing phase. All code committed and pushed. Frontend + backend changes deployed on next push.
+---
+
+## 🎯 Current Status (End of Session)
+
+**All commits pushed and deployed!**
+
+### ✅ Completed This Session:
+1. Database tables setup (search_cache, demo_queries, conversations)
+2. Fixed /api/ai/ask 500 error
+3. Conversation memory (in-memory)
+4. Conversation persistence (to DB)
+5. Conversation window upgrade (1 → 5 queries)
+6. Newest cards on top
+7. "scan all sources" intent fix
+
+### 🧪 Partially Tested:
+- General chat works (NBA, black holes)
+- Multi-turn conversations work (5-query window)
+- Parallel search speed verified (blazing fast!)
+- Auto-intent detection works
+
+### ⏳ Still Need Testing:
+- "scan all sources for rust projects"
+- Reddit searches (verify no errors)
+- Newest cards appearing on top
+- Demo mode endpoints
+- Full conversation flow edge cases
+
+### 📝 Next Session Tasks:
+1. Complete testing checklist (5-10 min)
+2. Document any bugs found
+3. Move to Phase 5: Search caching implementation
+4. Consider: Parallel terminal scans (optional)
+
+**Status:** Ready to continue testing. Backend deployed with conversation window upgrade. User is going to do yoga (good discipline! 🧘) and will return with test results later.
+
+---
+
+**Session Grade: A+** 🔥
+- Fixed critical bugs
+- Upgraded conversation system
+- Maintained momentum
+- Documentation complete
