@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 
-from api.services.synth_search_service_v2 import SynthSearchServiceV2 as SynthSearchService
+from api.services.conversation_service import ConversationService
 from api.services.rate_limit_service import RateLimitService
 from api.services.usage_tracker import UsageTracker
 from api.utils.auth import get_user_from_token
@@ -18,12 +18,12 @@ router = APIRouter()
 
 # Initialize services
 try:
-    search_service = SynthSearchService()
+    conversation_service = ConversationService()
     rate_limiter = RateLimitService()
     tracker = UsageTracker()
 except Exception as e:
-    print(f"⚠️ SYNTH search services initialization error: {e}")
-    search_service = None
+    print(f"⚠️ SYNTH services initialization error: {e}")
+    conversation_service = None
     rate_limiter = None
     tracker = None
 
@@ -50,21 +50,30 @@ async def search_content(
     authorization: Optional[str] = Header(None)
 ):
     """
-    AI-powered search across all DevPulse sources.
+    SYNTH - Intelligent conversation and search.
 
-    SYNTH understands natural language queries like:
+    Handles BOTH source searches AND general questions:
+
+    Source Searches:
     - "find cool arcade games on github"
     - "show me python machine learning repos"
-    - "search for react tutorials on dev.to"
+    - "search reddit for cyber security"
     - "what's trending on hacker news about AI"
 
+    General Questions:
+    - "what are the NBA odds tonight?"
+    - "explain quantum computing"
+    - "who won the Super Bowl?"
+    - "what's the weather like?"
+
+    SYNTH intelligently routes your query to the right mode.
     Requires authentication. Rate limited to 50/day per user.
     """
     # Check if services are initialized
-    if not search_service or not rate_limiter or not tracker:
+    if not conversation_service or not rate_limiter or not tracker:
         raise HTTPException(
             status_code=503,
-            detail="Search service temporarily offline. Check configuration."
+            detail="SYNTH service temporarily offline. Check configuration."
         )
 
     # Check authentication
@@ -107,28 +116,29 @@ async def search_content(
     except Exception as e:
         print(f"Rate limit error: {e}")
 
-    # Execute search
+    # Execute query (handles both search and chat)
     try:
-        search_results = await search_service.search(request.query)
+        result = await conversation_service.handle_query(request.query)
 
         # Log usage
         try:
-            tracker.log_usage(user_id, 'search', tokens_used=250)
+            query_type = result.get('type', 'search')
+            tracker.log_usage(user_id, query_type, tokens_used=250)
         except Exception as e:
             print(f"Tracking error: {e}")
 
         return SearchResponse(
-            query=search_results['query'],
-            intent=search_results['intent'],
-            results=search_results['results'],
-            total_found=search_results['total_found'],
-            commentary=search_results['commentary'],
+            query=result['query'],
+            intent=result.get('intent', {}),
+            results=result.get('results', []),
+            total_found=result.get('total_found', 0),
+            commentary=result.get('commentary', result.get('response', '')),
             remaining=max(0, user_limit['remaining'] - 1),
-            errors=search_results.get('errors')
+            errors=result.get('errors')
         )
 
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"SYNTH search error: {str(e)}"
+            detail=f"SYNTH error: {str(e)}"
         )
