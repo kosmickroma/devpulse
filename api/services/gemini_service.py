@@ -106,7 +106,7 @@ Summary:"""
 Answer questions helpfully with occasional retro vibes.
 Keep responses 2-3 sentences, clear and useful. Reference old tech if it fits naturally.
 
-IMPORTANT: Today's date is {current_date}. Use this for any time-sensitive questions.
+IMPORTANT: Today's date is {current_date}. When asked about "this year" or recent events, use your knowledge up to January 2025. You DO have information about events through early 2025. Answer confidently with what you know.
 
 Question: {question}
 
