@@ -63,6 +63,8 @@ Thumbs.db
 # Planning documents (keep locally, don't commit)
 SYNTH_TRANSFORMATION_PLAN.md
 SYNTH_SESSION_PROGRESS.md
+SYNTH_PHASE3_CHECKPOINT.md
 *_PLAN.md
 *_DIAGNOSIS*.md
 *_PROGRESS.md
+*_CHECKPOINT.md
