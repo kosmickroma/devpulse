@@ -11,6 +11,7 @@ import re
 from api.services.source_registry import get_registry, SearchResult
 from api.services.sources import GitHubSource, RedditSource, HackerNewsSource
 from api.services.gemini_service import GeminiService
+from api.services.search_cache_service import SearchCacheService
 
 
 class SynthSearchServiceV2:
@@ -20,6 +21,7 @@ class SynthSearchServiceV2:
         """Initialize search service with source registry."""
         self.gemini = GeminiService()
         self.registry = get_registry()
+        self.cache = SearchCacheService()
 
         # Register all sources
         self._register_sources()
@@ -116,6 +118,15 @@ class SynthSearchServiceV2:
         intent = self.parse_search_intent(query)
         print(f"🔍 SYNTH Intent: {intent}")
 
+        # Check cache first
+        cached = await self.cache.get_cached_results(query, intent)
+        if cached:
+            # Add AI commentary to cached results
+            commentary = self._generate_commentary(query, intent, cached['results'])
+            cached['commentary'] = commentary
+            cached['query'] = query
+            return cached
+
         # Build search tasks for parallel execution
         search_tasks = []
         for source_name in intent['sources']:
@@ -172,13 +183,17 @@ class SynthSearchServiceV2:
         # Generate AI commentary
         commentary = self._generate_commentary(query, intent, result_dicts)
 
+        # Cache results for future queries
+        await self.cache.cache_results(query, intent, result_dicts)
+
         return {
             'query': query,
             'intent': intent,
             'results': result_dicts,
             'total_found': len(result_dicts),
             'commentary': commentary,
-            'errors': errors if errors else None
+            'errors': errors if errors else None,
+            'from_cache': False
         }
 
     def _generate_commentary(self, query: str, intent: Dict[str, Any], results: List[Dict[str, Any]]) -> str:
