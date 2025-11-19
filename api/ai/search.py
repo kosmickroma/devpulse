@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 
-from api.services.synth_search_service import SynthSearchService
+from api.services.synth_search_service_v2 import SynthSearchServiceV2 as SynthSearchService
 from api.services.rate_limit_service import RateLimitService
 from api.services.usage_tracker import UsageTracker
 from api.utils.auth import get_user_from_token
