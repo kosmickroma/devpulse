@@ -10,6 +10,8 @@ Routes queries intelligently:
 from typing import Dict, Any, Optional
 from api.services.synth_search_service_v2 import SynthSearchServiceV2
 from api.services.gemini_service import GeminiService
+from supabase import create_client, Client
+import os
 
 
 class ConversationService:
@@ -20,7 +22,20 @@ class ConversationService:
         self.search_service = SynthSearchServiceV2()
         self.gemini = GeminiService()
 
-        # Simple conversation memory: stores last query per user
+        # Supabase for persistent conversation history
+        try:
+            SUPABASE_URL = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+            SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+            if SUPABASE_URL and SUPABASE_KEY:
+                self.supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+            else:
+                self.supabase = None
+                print("⚠️ Supabase not configured for conversation memory")
+        except Exception as e:
+            print(f"⚠️ Failed to initialize Supabase: {e}")
+            self.supabase = None
+
+        # Fallback in-memory history if DB unavailable
         self.conversation_history: Dict[str, str] = {}
 
         # Keywords that indicate source search intent
@@ -67,14 +82,15 @@ class ConversationService:
             Unified response with results and commentary
         """
         # Check for follow-up queries that need context
-        follow_up_keywords = ['dive deeper', 'tell me more', 'explain more', 'continue', 'go on', 'elaborate']
+        follow_up_keywords = ['dive deeper', 'dig', 'tell me more', 'explain more', 'continue', 'go on', 'elaborate']
         is_follow_up = any(kw in query.lower() for kw in follow_up_keywords)
 
         # If it's a follow-up and we have history, add context
-        if is_follow_up and user_id and user_id in self.conversation_history:
-            last_query = self.conversation_history[user_id]
-            query = f"{query} about {last_query}"
-            print(f"💭 SYNTH adding context: {last_query}")
+        if is_follow_up and user_id:
+            last_query = await self._get_last_query(user_id)
+            if last_query:
+                query = f"{query} about {last_query}"
+                print(f"💭 SYNTH adding context from DB: {last_query}")
 
         query_type = self.detect_query_type(query)
         print(f"🤖 SYNTH detected query type: {query_type}")
@@ -84,11 +100,47 @@ class ConversationService:
         else:
             result = await self._handle_chat(query)
 
-        # Store query in conversation history
+        # Store query in conversation history (DB or memory)
         if user_id:
-            self.conversation_history[user_id] = query
+            await self._save_query(user_id, query)
 
         return result
+
+    async def _get_last_query(self, user_id: str) -> Optional[str]:
+        """Get user's last query from DB or memory."""
+        if self.supabase:
+            try:
+                response = self.supabase.table('conversations')\
+                    .select('query_text')\
+                    .eq('user_id', user_id)\
+                    .order('created_at', desc=True)\
+                    .limit(1)\
+                    .execute()
+
+                if response.data:
+                    return response.data[0]['query_text']
+            except Exception as e:
+                print(f"⚠️ DB query failed, using memory: {e}")
+
+        # Fallback to in-memory
+        return self.conversation_history.get(user_id)
+
+    async def _save_query(self, user_id: str, query: str):
+        """Save query to DB or memory."""
+        # Always save to memory as fallback
+        self.conversation_history[user_id] = query
+
+        # Try to save to DB
+        if self.supabase:
+            try:
+                self.supabase.table('conversations').insert({
+                    'user_id': user_id,
+                    'query_text': query,
+                    'response_text': '',  # We don't store full responses yet
+                    'response_type': 'unknown'
+                }).execute()
+            except Exception as e:
+                print(f"⚠️ DB save failed, memory only: {e}")
 
     async def _handle_search(self, query: str) -> Dict[str, Any]:
         """Handle source search queries."""
