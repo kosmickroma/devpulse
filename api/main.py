@@ -18,7 +18,7 @@ from api.spider_runner import SpiderRunner
 from supabase import create_client, Client
 
 # Import SYNTH AI routers
-from api.ai import summarize, ask, search
+from api.ai import summarize, ask, search, demo
 
 # Import Market data routers
 from api.market import stocks, crypto
@@ -248,6 +248,7 @@ async def check_environment():
 app.include_router(summarize.router, prefix='/api/ai', tags=['synth-ai'])
 app.include_router(ask.router, prefix='/api/ai', tags=['synth-ai'])
 app.include_router(search.router, prefix='/api/ai', tags=['synth-ai'])
+app.include_router(demo.router, prefix='/api/ai/demo', tags=['synth-demo'])
 
 # Include Market data routers
 app.include_router(stocks.router, prefix='/api', tags=['market-data'])
