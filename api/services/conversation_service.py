@@ -144,7 +144,7 @@ class ConversationService:
                     'user_id': user_id,
                     'query_text': query,
                     'response_text': '',  # We don't store full responses yet
-                    'response_type': 'unknown'
+                    'response_type': 'chat'  # Changed from 'unknown' to valid type
                 }).execute()
             except Exception as e:
                 print(f"⚠️ DB save failed, memory only: {e}")

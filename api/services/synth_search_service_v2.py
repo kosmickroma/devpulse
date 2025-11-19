@@ -31,6 +31,7 @@ class SynthSearchServiceV2:
             'github': ['github', 'repo', 'repository', 'code', 'project', 'open source', 'opensource'],
             'reddit': ['reddit', 'discussion', 'community', 'thread', 'post'],
             'hackernews': ['hackernews', 'hn', 'hacker news', 'tech news'],
+            'devto': ['dev.to', 'devto', 'dev to'],  # Note: DevTo source not implemented yet
         }
 
         # Programming language keywords
@@ -223,10 +224,9 @@ Found {len(results)} results from {', '.join(intent['sources'])}.
 Top items: {summary_text}"""
 
         try:
-            commentary = self.gemini.generate_answer(
-                query=f"Provide a brief (1-2 sentences) comment on these search results",
-                context=context
-            )
+            # Combine context + question into single parameter
+            full_question = f"{context}\n\nProvide a brief (1-2 sentences) comment on these search results."
+            commentary = self.gemini.generate_answer(full_question)
             return commentary
         except Exception as e:
             print(f"⚠️ Commentary generation failed: {e}")
