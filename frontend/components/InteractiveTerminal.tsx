@@ -134,6 +134,45 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     }
   }, [isSystemReady])
 
+  // Keyboard shortcut: Ctrl+S (Cmd+S on Mac) to toggle SYNTH mode
+  useEffect(() => {
+    const handleKeyDown = (e: globalThis.KeyboardEvent) => {
+      // Check for Ctrl+S or Cmd+S
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault() // Prevent browser save dialog
+
+        // Toggle SYNTH mode
+        setSynthMode(prev => {
+          const newMode = !prev
+
+          if (newMode) {
+            // Entering SYNTH mode
+            playSound('success')
+            addLine('', 'output')
+            addLine('╔══════════════════════════════════════════════╗', 'success')
+            addLine('║     🤖 SYNTH CONVERSATION MODE ACTIVE        ║', 'success')
+            addLine('╚══════════════════════════════════════════════╝', 'success')
+            addLine('> Just type naturally to chat with SYNTH!', 'output')
+            addLine('> Type "exit" to return to normal terminal', 'output')
+            addLine('> ', 'output')
+          } else {
+            // Exiting SYNTH mode
+            playBeep()
+            addLine('', 'output')
+            addLine('> Exiting SYNTH mode...', 'success')
+            addLine('> Back to normal terminal', 'output')
+            addLine('> ', 'output')
+          }
+
+          return newMode
+        })
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, []) // Empty deps - only setup once
+
   // Spinner animation - rotates through cool retro characters when scanning
   useEffect(() => {
     if (!isScanning) return
