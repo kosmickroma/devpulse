@@ -183,10 +183,9 @@ class ConversationService:
 
             # Generate direct answer with SYNTH personality and context
             if context:
-                response = self.gemini.generate_answer(
-                    query=query,
-                    context=context
-                )
+                # Combine context + query into a single question
+                full_question = f"{context}\n\nCurrent question: {query}"
+                response = self.gemini.generate_answer(full_question)
             else:
                 response = self.gemini.generate_answer(query)
 
