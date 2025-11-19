@@ -38,6 +38,7 @@ class SearchCacheService:
             self.enabled = False
 
         self.cache_ttl = timedelta(hours=24)
+        self.cache_version = "v2"  # Increment to invalidate all caches after code changes
 
     def _hash_query(self, query: str, intent: Dict[str, Any]) -> str:
         """
@@ -58,7 +59,7 @@ class SearchCacheService:
         keywords = sorted(intent.get('keywords', []))
         language = intent.get('language', '')
 
-        cache_key = f"{normalized_query}|{','.join(sources)}|{','.join(keywords)}|{language}"
+        cache_key = f"{self.cache_version}|{normalized_query}|{','.join(sources)}|{','.join(keywords)}|{language}"
 
         return hashlib.md5(cache_key.encode()).hexdigest()
 
