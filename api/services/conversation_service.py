@@ -98,7 +98,7 @@ class ConversationService:
         if query_type == 'search':
             result = await self._handle_search(query)
         else:
-            result = await self._handle_chat(query)
+            result = await self._handle_chat(query, user_id=user_id)
 
         # Store query in conversation history (DB or memory)
         if user_id:
@@ -107,23 +107,30 @@ class ConversationService:
         return result
 
     async def _get_last_query(self, user_id: str) -> Optional[str]:
-        """Get user's last query from DB or memory."""
+        """Get user's last query from DB or memory (for simple follow-ups)."""
+        queries = await self._get_conversation_window(user_id, limit=1)
+        return queries[0] if queries else None
+
+    async def _get_conversation_window(self, user_id: str, limit: int = 5) -> list[str]:
+        """Get user's last N queries for conversation context."""
         if self.supabase:
             try:
                 response = self.supabase.table('conversations')\
                     .select('query_text')\
                     .eq('user_id', user_id)\
                     .order('created_at', desc=True)\
-                    .limit(1)\
+                    .limit(limit)\
                     .execute()
 
                 if response.data:
-                    return response.data[0]['query_text']
+                    # Return in chronological order (oldest first)
+                    return [item['query_text'] for item in reversed(response.data)]
             except Exception as e:
                 print(f"⚠️ DB query failed, using memory: {e}")
 
-        # Fallback to in-memory
-        return self.conversation_history.get(user_id)
+        # Fallback to in-memory (only has 1 query)
+        last_query = self.conversation_history.get(user_id)
+        return [last_query] if last_query else []
 
     async def _save_query(self, user_id: str, query: str):
         """Save query to DB or memory."""
@@ -156,7 +163,7 @@ class ConversationService:
             'errors': search_results.get('errors')
         }
 
-    async def _handle_chat(self, query: str) -> Dict[str, Any]:
+    async def _handle_chat(self, query: str, user_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Handle general chat queries (no source search needed).
 
@@ -166,8 +173,22 @@ class ConversationService:
         - "who won the Super Bowl?"
         """
         try:
-            # Generate direct answer with SYNTH personality
-            response = self.gemini.generate_answer(query)
+            # Get conversation context for better responses
+            context = None
+            if user_id:
+                conversation_window = await self._get_conversation_window(user_id, limit=5)
+                if conversation_window:
+                    context = "Recent conversation:\n" + "\n".join([f"- {q}" for q in conversation_window])
+                    print(f"💭 SYNTH using conversation window: {len(conversation_window)} queries")
+
+            # Generate direct answer with SYNTH personality and context
+            if context:
+                response = self.gemini.generate_answer(
+                    query=query,
+                    context=context
+                )
+            else:
+                response = self.gemini.generate_answer(query)
 
             return {
                 'type': 'chat',
