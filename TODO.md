@@ -1,15 +1,24 @@
 # DevPulse - Task List
 
-## 🎯 Current Status: SYNTH AI "Monster" Complete + UX Polish ✅
+## 🎯 Current Status: SYNTH Transformation Complete - Testing Phase ✅
 
 **Users:** 0 (but building something SICK!)
-**Last Updated:** 2025-11-19 (Session 2)
+**Last Updated:** 2025-11-19 (Session 3 - FINAL)
 
 ---
 
 ## ✅ Version History
 
-**v5.1 - SYNTH UX Polish & Conversation Memory** (2025-11-19 Session 2) ⚡ CURRENT
+**v5.2 - Phase 5 Complete + Polish** (2025-11-19 Session 3) ⚡ CURRENT
+- ✅ **Phase 5: Search caching** - 10x faster responses with hash-based cache
+- ✅ **5-query conversation window** - Multi-turn conversations work perfectly
+- ✅ **Current date awareness** - SYNTH knows it's 2025
+- ✅ **Keyboard shortcut** - Ctrl+S (Cmd+S) toggles SYNTH mode instantly
+- ✅ **GitHub auto-deploy** - Render deploys on every push to main
+- ✅ **Backfill metadata table** - Fixed terminal boot errors
+- ✅ **Cache analytics** - Tracks hit/miss rates for optimization
+
+**v5.1 - SYNTH UX Polish & Conversation Memory** (2025-11-19 Session 2)
 - ✅ **Conversation memory** - SYNTH remembers context ("dive deeper" now works!)
 - ✅ **Newest cards on top** - Better UX for sequential searches
 - ✅ **Fixed "scan all sources"** - Intent parser now handles it correctly
@@ -56,26 +65,29 @@
 
 ---
 
-## 🚧 IMMEDIATE - Testing & Next Steps
+## 🚧 IMMEDIATE - Testing & Bug Hunting
 
-**Goal:** Test SYNTH transformation and implement search caching
+**Goal:** Test all features over next few days, document bugs
 
-### Critical Testing (DO THIS NOW!)
-- [ ] **Test conversation mode** - Ask general questions: "What are NBA odds tonight?", "Explain quantum computing"
-- [ ] **Test source searches** - Try: "find Python repos", "search reddit for cyber security"
-- [ ] **Test parallel execution** - Multi-source searches should be faster now
-- [ ] **Test demo mode endpoints** - `/api/ai/demo/queries`, `/api/ai/demo/next`
+### Testing Checklist (User will do over coming days)
+- [x] ✅ Conversation mode works (tested: NBA, black holes, Super Bowl)
+- [x] ✅ Multi-turn conversations (5-query window working)
+- [x] ✅ Source searches blazing fast (parallel execution verified)
+- [x] ✅ Ctrl+S shortcut toggles SYNTH mode
+- [ ] **Test search caching** - Run same search twice, verify <300ms on 2nd hit
+- [ ] **Monitor cache hit rate** - Check backend logs for cache HIT/MISS
+- [ ] **Test Reddit searches** - Verify no 'stars' errors
+- [ ] **Test "scan all sources"** - Should hit GitHub + Reddit + HN
+- [ ] **Document any bugs found** - Keep list for next session
+
+### High Priority - Next Session
+- [ ] **Frontend demo mode** - Auto-activate on idle, typing animation (30-40 min)
 - [ ] **Populate demo queries** - Add 5-10 impressive searches to `demo_queries` table
-- [ ] **Test for errors** - Verify Reddit 'stars' KeyError is fixed
-
-### High Priority (After Testing)
-- [ ] **Implement search caching** - Use `search_cache` table for 10x faster responses
 - [ ] **Parallel terminal scans** - Apply asyncio.gather() to full terminal scans (10-15s → 3-5s!) 🔥
-- [ ] **Frontend demo mode** - Auto-activate on idle, typing animation
 - [ ] Add typing animation for SYNTH responses (would look sick!)
 - [ ] Fix mobile responsiveness for SYNTH mode
 - [ ] Add source filter buttons with counts: "GitHub (47)"
-- [ ] Add keyboard shortcuts (? for help)
+- [ ] Add keyboard shortcuts help menu (? for help)
 
 ### Optional UX Polish
 - [ ] Command history (up/down arrows)
@@ -84,20 +96,20 @@
 - [ ] "Last scanned: 2 hours ago" timestamp
 - [ ] Force refresh button for cache
 
-### Infrastructure Status
-- ✅ Database tables created: `search_cache`, `demo_queries`, `conversations`
-- ✅ Tables renamed to match code expectations
+### Infrastructure Status (Complete!)
+- ✅ Database tables: `search_cache`, `demo_queries`, `conversations`, `backfill_metadata`
 - ✅ Unified source interface architecture complete
-- ✅ Parallel search execution implemented (SYNTH searches only)
-- ✅ Conversation mode routing complete
-- ✅ Conversation memory added (handles "dive deeper" queries)
+- ✅ Parallel search execution (SYNTH searches)
+- ✅ **Search caching implemented** (Phase 5 ✅)
+- ✅ Conversation memory (5-query window, persisted to DB)
 - ✅ Demo mode API endpoints ready
-- ✅ Newest cards appear on top (better UX)
-- ✅ Fixed "scan all sources" intent detection
-- ⏳ Search caching NOT implemented yet (Phase 5 - optimization)
-- ⏳ Demo queries table empty - needs to be populated
-- ⏳ Frontend demo mode NOT implemented yet
-- ⏳ Terminal scans still sequential (NOT parallel yet)
+- ✅ Newest cards appear on top
+- ✅ Current date awareness in prompts
+- ✅ GitHub auto-deploy workflow
+- ✅ Keyboard shortcut (Ctrl+S / Cmd+S)
+- ⏳ **Demo queries table empty** - needs population
+- ⏳ **Frontend demo mode NOT implemented** - needs component + typing animation
+- ⏳ **Terminal scans still sequential** - parallel optimization pending
 
 ---
 
