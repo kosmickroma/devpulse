@@ -11,7 +11,9 @@ from fastapi.responses import StreamingResponse
 from typing import Optional
 import asyncio
 import json
-
+import os
+from fastapi import BackgroundTasks
+from datetime import datetime
 from api.spider_runner import SpiderRunner
 
 # Import SYNTH AI routers
@@ -246,7 +248,40 @@ app.include_router(badges.router, prefix='/api/arcade/badges', tags=['badges'])
 app.include_router(profile.router, prefix='/api/arcade/profile', tags=['profile'])
 app.include_router(codequest.router, prefix='/api/arcade/codequest', tags=['code-quest'])
 
+# Add Backfill — every 4 hours cron endpoint
+@app.post("/api/backfill")
+async def backfill_trends(background_tasks: BackgroundTasks):
+    print(f"[{datetime.now()}] Scheduled backfill started")
 
+    # Import inside function to avoid circular imports at startup
+    from spider_runner import run_full_scan
+
+    try:
+        results = await run_full_scan()  # ← your existing full scan that returns list[str]
+
+        # Save to frontend's public folder so Next.js can serve it instantly
+        save_path = "../frontend/public/latest-trends.json"
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+        with open(save_path, "w", encoding="utf-8") as f:
+            json.dump({
+                "lastUpdated": datetime.now().isoformat(),
+                "trends": results,
+                "total": len(results)
+            }, f, indent=2)
+
+        print(f"[{datetime.now()}] Backfill finished — {len(results)} trends saved to latest-trends.json")
+        
+        return {
+            "status": "success",
+            "count": len(results),
+            "updated": datetime.now().isoformat(),
+            "message": "Cache refreshed"
+        }
+
+    except Exception as e:
+        print(f"Backfill failed: {e}")
+        return {"status": "error", "message": str(e)}
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
