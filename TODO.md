@@ -9,15 +9,16 @@
 
 ## ✅ Version History
 
-**v5.3 - Pro-Level Smart Search (GitHub)** (2025-11-19 Session 4) ⚡ CURRENT
+**v5.3 - Pro-Level Smart Search (GitHub) ✅ TESTED & VERIFIED** (2025-11-19 Session 4) ⚡ CURRENT
 - ✅ **Fixed stop_words bug** - Command verbs (scan, look, check) now filtered correctly
 - ✅ **Smart keyword prioritization** - Separates subjects from modifiers (avoids restrictive AND queries)
 - ✅ **Relevance scoring algorithm** - TF-IDF-like ranking (name=50pts, description=15pts, etc.)
 - ✅ **Progressive query refinement** - Auto-fallback to stars:>0 if <5 results
 - ✅ **Lowered min_stars threshold** - 10 → 5 for better coverage of quality repos
-- ✅ **GitHub search quality** - "frogger arcade game" finds 100+ repos vs 3 previously
-- ⏳ **User testing in progress** - Verifying improvements work as expected
-- ⏳ **Reddit/HN/Dev.to pending** - Will apply same improvements if GitHub tests pass
+- ✅ **Fixed language detection bug** - Word boundary matching prevents false matches (was breaking all searches!)
+- ✅ **Cache version bump to v3** - Invalidated stale cached results
+- ✅ **USER TESTED & CONFIRMED WORKING** - Frogger games showing correctly! 🎉
+- 📋 **Next: Apply same approach to Reddit, HN, and Dev.to sources**
 
 **v5.2 - Phase 5 Complete + Polish** (2025-11-19 Session 3)
 - ✅ **Phase 5: Search caching** - 10x faster responses with hash-based cache
@@ -79,33 +80,37 @@
 
 **Goal:** Test GitHub smart search improvements, then apply to all sources
 
-### ✅ COMPLETED - Smart Search (GitHub Only) - Session 4 (2025-11-19)
+### ✅ COMPLETED & TESTED - Smart Search (GitHub Only) - Session 4 (2025-11-19)
 - [x] ✅ **Fixed stop_words bug** - Added command verbs (scan, look, check, explore, etc.)
 - [x] ✅ **Smart keyword prioritization** - Separates primary subjects from modifiers
 - [x] ✅ **Relevance scoring algorithm** - TF-IDF-like ranking (name=50pts, description=15pts)
 - [x] ✅ **Progressive query refinement** - Auto-fallback from stars:>5 to stars:>0 if <5 results
 - [x] ✅ **Lowered min_stars** - Changed from 10 → 5 for better coverage
-- [x] ✅ **Committed changes** - Ready to test!
+- [x] ✅ **Fixed language detection bug** - Word boundary matching prevents false R/C/D matches
+- [x] ✅ **Cache version bump to v3** - Invalidated old cached results
+- [x] ✅ **USER TESTING PASSED** - Frogger games now showing correctly! 🎉
 
-**Impact:** "scan github for frogger arcade game" now:
-- Uses "frogger" only (not restrictive "frogger arcade game" AND query)
-- Finds kubowania/Frogger (104★) - previously missed
-- Returns 100+ results instead of 3
-- Ranks by relevance + stars
+**Impact:** "find me some frogger games on github" now:
+- Uses "frogger" only (not restrictive "frogger games" AND query)
+- Finds actual Frogger arcade games (not R packages!)
+- Returns quality game repos with proper relevance ranking
+- Command verbs work perfectly (scan, find, look, search)
 
-### 🧪 TESTING IN PROGRESS (User Testing Now)
-- [ ] **Test GitHub smart search** - Try "scan github for frogger", "search for arcade games", etc.
-- [ ] **Verify command verbs work** - Test: scan, look, check, explore, find
-- [ ] **Check relevance ranking** - Best matches appearing first?
-- [ ] **Test progressive refinement** - Try niche queries, verify auto-fallback
-- [ ] **Document any bugs** - Note what works/doesn't work
+**Critical Bug Found & Fixed During Testing:**
+- Language detection was using substring matching ("frogger" matched "r" → filtered to R language)
+- Fixed with word boundary regex matching
+- This was breaking ALL searches with single-letter language names (r, c, d, go, etc.)
 
-### 🚀 NEXT SESSION - Apply to All Sources (IF GitHub tests pass)
-- [ ] **Reddit smart search** - Apply same improvements to reddit_source.py
-- [ ] **HackerNews smart search** - Apply to hackernews_source.py
-- [ ] **Dev.to integration** - Finally implement dev.to source (was skipped!)
-- [ ] **Fix Reddit subreddit limitation** - Dynamic subreddit selection based on query topic
-- [ ] **Unified relevance scoring** - Apply across all sources for consistency
+### ✅ SUCCESS - Apply This Approach to Other Sources
+
+**CONFIRMED WORKING:** GitHub smart search is production-ready!
+
+**Next session tasks:**
+- [ ] Apply same improvements to Reddit source (reddit_source.py)
+- [ ] Apply same improvements to HackerNews source (hackernews_source.py)
+- [ ] Implement Dev.to source (finally!)
+- [ ] Fix Reddit's hardcoded tech subreddits issue with dynamic selection
+
 
 ### Other Testing Checklist
 - [x] ✅ Conversation mode works (tested: NBA, black holes, Super Bowl)
