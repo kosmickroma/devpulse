@@ -41,6 +41,31 @@ class GitHubSource(SearchSource):
             'sort_options': ['stars', 'forks', 'updated']
         }
 
+    def _build_date_filter(self, time_filter: Optional[str]) -> str:
+        """
+        Build date filter string for GitHub query.
+
+        Args:
+            time_filter: 'day' | 'week' | 'month' | 'year' | None
+
+        Returns:
+            Date filter string like " created:>2025-11-13" or empty string
+        """
+        if not time_filter:
+            return ""
+
+        from datetime import datetime, timedelta
+        today = datetime.now()
+
+        days_map = {'day': 1, 'week': 7, 'month': 30, 'year': 365}
+        days = days_map.get(time_filter)
+
+        if days:
+            date_threshold = (today - timedelta(days=days)).strftime('%Y-%m-%d')
+            return f" created:>{date_threshold}"
+
+        return ""
+
     async def search(
         self,
         query: str,
@@ -74,24 +99,10 @@ class GitHubSource(SearchSource):
         search_query = f"{query} stars:>{min_stars}"
         if language:
             search_query += f" language:{language}"
+        search_query += self._build_date_filter(time_filter)
 
-        # Add date filtering if specified
-        if time_filter:
-            from datetime import datetime, timedelta
-            today = datetime.now()
-
-            if time_filter == 'day':
-                date_threshold = (today - timedelta(days=1)).strftime('%Y-%m-%d')
-                search_query += f" created:>{date_threshold}"
-            elif time_filter == 'week':
-                date_threshold = (today - timedelta(days=7)).strftime('%Y-%m-%d')
-                search_query += f" created:>{date_threshold}"
-            elif time_filter == 'month':
-                date_threshold = (today - timedelta(days=30)).strftime('%Y-%m-%d')
-                search_query += f" created:>{date_threshold}"
-            elif time_filter == 'year':
-                date_threshold = (today - timedelta(days=365)).strftime('%Y-%m-%d')
-                search_query += f" created:>{date_threshold}"
+        # Debug logging
+        print(f"🔍 GitHub API query: '{search_query}'")
 
         # Make API request (async wrapper for requests)
         loop = asyncio.get_event_loop()
@@ -109,6 +120,9 @@ class GitHubSource(SearchSource):
             fallback_query = f"{query} stars:>0"
             if language:
                 fallback_query += f" language:{language}"
+            fallback_query += self._build_date_filter(time_filter)  # CRITICAL: Preserve date filter!
+
+            print(f"🔍 GitHub FALLBACK query: '{fallback_query}'")
 
             fallback_results = await loop.run_in_executor(
                 None,
