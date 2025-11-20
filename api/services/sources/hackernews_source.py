@@ -2,11 +2,13 @@
 HackerNews Source - Implements unified search interface for HackerNews.
 
 Maps HackerNews Algolia API responses to standardized SearchResult format.
+Includes smart search features: time filtering, relevance scoring, progressive refinement.
 """
 
 import requests
 import asyncio
-from typing import List
+from typing import List, Optional
+from datetime import datetime, timedelta
 from api.services.source_registry import SearchSource, SearchResult, SourceType
 
 

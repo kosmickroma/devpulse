@@ -105,62 +105,117 @@
 
 **CONFIRMED WORKING:** GitHub smart search is production-ready!
 
-### 🚀 CURRENT SESSION - Session 5 (2025-11-20)
+### 🚀 CURRENT SESSION - Session 5 (2025-11-20) - MAJOR PROGRESS!
 
-**Goal:** Fix conversation detection + add time/sort filtering + extend to all sources
+**Goal:** Fix conversation detection + add time/sort filtering + fix critical bugs
 
-**Priority 1: Core Intelligence Improvements** (1-2 hours)
-- [ ] **Fix conversation vs search detection** - Boolean logic approach
-  - Problem: "good job on that scan" triggers search (wrong!)
-  - Solution: Check if has_search_command first, then has_conversation
-  - File: `api/services/conversation_service.py` lines 49-71
+## ✅ COMPLETED - Core Intelligence & Critical Bug Fixes
 
-- [ ] **Add time-based filtering** - Parse "today", "this week", "newest"
-  - User wants: "5 repos posted today", "articles from this week", "newest posts"
-  - Detect: today, week, month, newest, latest, recent
-  - File: `api/services/synth_search_service_v2.py` lines 117-166
+### **Priority 1: Core Intelligence** ✅ DONE
+- [x] ✅ **Fixed conversation vs search detection** - Boolean logic with priority
+  - File: `api/services/conversation_service.py`
+  - Explicit commands → search, source mentions → search, pure conversation → chat
+  - "good job on that scan" now correctly goes to chat mode!
 
-- [ ] **Add sort detection** - Parse "most stars", "most upvotes", "newest"
-  - Detect: most stars, most upvotes, newest, most popular, trending
-  - Map to: GitHub (stars/forks/updated), Reddit (top/new/hot), HN (points/date)
-  - File: `api/services/synth_search_service_v2.py` lines 117-166
+- [x] ✅ **Added comprehensive time-based filtering**
+  - File: `api/services/synth_search_service_v2.py`
+  - Detects: today, week, month, year, "past 3 days", "last 5 months", etc.
+  - Uses regex to extract patterns like "from 2 years ago"
+  - Maps intelligently: 3 days → week filter, 45 days → month filter
 
-- [ ] **Add limit detection** - Parse "5 repos", "top 10", "3 articles"
-  - Extract numbers: "5 repos" → limit=5, "top 10" → limit=10
-  - File: `api/services/synth_search_service_v2.py` lines 117-166
+- [x] ✅ **Added sort detection**
+  - Detects: most stars, most upvotes, newest, trending, popular
+  - Maps to source-specific: GitHub (stars/updated), Reddit (top/new/hot)
 
-**Priority 2: Apply Smart Search to Other Sources** (4-6 hours)
+- [x] ✅ **Added limit detection**
+  - Patterns: "5 repos", "top 10", "3 articles"
+  - Extracts numbers and applies limit correctly
+
+- [x] ✅ **Expanded stop_words filtering**
+  - Added conversational words: thank, thanks, please, anyway, now, ok, well
+  - Prevents "thank you now search for X" → searching for "thank now"
+
+- [x] ✅ **Filter time/sort keywords from search**
+  - Time words (week, month, newest) removed from search terms
+  - They're filters, not search content!
+
+### **CRITICAL BUGS FIXED** 🐛
+
+- [x] ✅ **CRITICAL: Progressive refinement dropping date filter**
+  - File: `api/services/sources/github_source.py`
+  - Bug: Fallback query rebuilt without date filter → returned old repos
+  - Fix: Created `_build_date_filter()` helper, used in BOTH queries
+  - Added debug logging: shows exact API query strings
+
+- [x] ✅ **CRITICAL: Cache key not including time filters**
+  - File: `api/services/search_cache_service.py`
+  - Bug: "repos from this week" on Nov 20 and Nov 27 had SAME cache key
+  - Fix: Include actual date threshold in cache key (created:>2025-11-13)
+  - Also added: sort_by and limit to cache key
+  - Cache version bumped v3→v8 throughout session
+
+### **IMPORTANT: GitHub is the Test Subject** ⚠️
+
+**YES - we've been focusing on GitHub as the test case!**
+
+**What's FULLY working (GitHub only):**
+- ✅ Conversation detection (applies to all sources)
+- ✅ Time filtering with actual date queries (GitHub only)
+- ✅ Sort detection (GitHub only)
+- ✅ Limit detection (applies to all sources)
+- ✅ Smart keyword prioritization (GitHub only)
+- ✅ Relevance scoring (GitHub only)
+- ✅ Progressive refinement (GitHub only)
+- ✅ Cache with proper date keys (all sources benefit)
+
+**What's PARTIALLY working (Reddit/HN):**
+- ⚠️ Reddit has time_filter parameter but NO smart search yet
+- ⚠️ HackerNews has NO time filtering implemented yet
+- ⚠️ Both missing: relevance scoring, smart keywords, progressive refinement
+- ⚠️ Reddit still hardcoded to tech-only subreddits
+
+**What doesn't exist:**
+- ❌ Dev.to source not implemented
+
+### **Next Session: Extend to All Sources** 📋
+
+**Priority 2: Apply GitHub's Smart Search to Reddit, HN, Dev.to** (4-6 hours remaining)
 - [ ] **Reddit improvements**
   - Add relevance scoring (upvotes + keyword matching)
   - Dynamic subreddit selection based on query topic
-  - Progressive refinement
-  - Wire up time_filter and sort from intent
+  - Progressive refinement (try broader subreddits if <5 results)
+  - Already has time_filter and sort - just needs smart features
 
 - [ ] **HackerNews improvements**
+  - Add actual time filtering (created_at post-processing)
   - Add relevance scoring (points + keyword matching)
   - Lower min_points (10 → 5)
   - Progressive refinement
-  - Wire up time and sort filters
+  - Sort by date/points
 
 - [ ] **Dev.to source creation**
-  - Create new source file using GitHub as template
+  - Create `/api/services/sources/devto_source.py` from scratch
+  - Use GitHub as template - copy all smart features
   - Dev.to API: https://developers.forem.com/api/v1
-  - Full smart search from day one
-  - Register in synth_search_service_v2.py
+  - Register in synth_search_service_v2.py line 59
 
-**Files Being Modified:**
-- `api/services/conversation_service.py` - Conversation detection
-- `api/services/synth_search_service_v2.py` - Intent parsing (time/sort/limit)
-- `api/services/sources/reddit_source.py` - Smart search improvements
-- `api/services/sources/hackernews_source.py` - Smart search improvements
-- `api/services/sources/devto_source.py` - NEW FILE
+**Files Modified This Session:**
+- `api/services/conversation_service.py` - Conversation detection ✅
+- `api/services/synth_search_service_v2.py` - Intent parsing (time/sort/limit) ✅
+- `api/services/sources/github_source.py` - Date filtering fix ✅
+- `api/services/search_cache_service.py` - Cache key fix ✅
 
-**Testing Requirements:**
-- [ ] "good job on that scan" → chat (no cards)
-- [ ] "thank you now search for frogger" → search
-- [ ] "5 repos posted today" → limit=5, time=today
-- [ ] "most starred python projects this week" → sort=stars, time=week
-- [ ] "newest articles on hackernews" → sort=new
+**Files Still Need Work:**
+- `api/services/sources/reddit_source.py` - Smart search pending
+- `api/services/sources/hackernews_source.py` - Smart search pending
+- `api/services/sources/devto_source.py` - Doesn't exist yet
+
+### **Testing Status - USER TESTING NOW** 🧪
+- [ ] "5 python repos from this week" → Should show repos from Nov 13-20
+- [ ] "javascript projects from past 3 days" → Should show last 3 days
+- [ ] "thank you now search for frogger" → Should search only "frogger"
+- [ ] "good job on that scan" → Should NOT trigger search
+- [ ] Cache expiration working correctly
 
 
 ### Other Testing Checklist

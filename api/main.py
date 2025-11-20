@@ -92,12 +92,8 @@ async def scan_stream(
     """
 
     async def event_generator():
-        """Generate SSE events as spider runs."""
-
-        # Use sources parameter, fallback to platform for backwards compatibility
         source_param = sources or platform or "all"
 
-        # Map source names to spider names
         source_to_spider = {
             'github': 'github_api',
             'hackernews': 'hackernews',
@@ -107,43 +103,53 @@ async def scan_stream(
             'crypto': 'coingecko'
         }
 
-        # Determine which spiders to run
         if source_param == "all":
-            spiders = ["github_api", "hackernews", "devto", "reddit_api", "yahoo_finance", "coingecko"]
+            spiders = list(source_to_spider.values())
         else:
-            # Handle comma-separated list
             source_list = [s.strip() for s in source_param.split(',')]
             spiders = [source_to_spider.get(s, s) for s in source_list]
 
-        # Send initial status
-        yield f"data: {json.dumps({'type': 'status', 'message': f'Initializing scan for {len(spiders)} platform(s)...'})}\n\n"
-        await asyncio.sleep(0.5)
+        yield f"data: {json.dumps({'type': 'status', 'message': f'Launching {len(spiders)} sources in parallel...'})})\n\n"
+        await asyncio.sleep(0.3)
 
-        total_items = 0
-
-        # Run each spider
-        for spider_name in spiders:
-            # Send spider start event
-            yield f"data: {json.dumps({'type': 'spider_start', 'spider': spider_name})}\n\n"
-            await asyncio.sleep(0.3)
-
-            # Run spider and stream results
-            async for event in spider_runner.run_spider_async(
+        # LAUNCH ALL SPIDERS AT THE SAME TIME
+        generators = [
+            spider_runner.run_spider_async(
                 spider_name=spider_name,
                 language=language if spider_name == "github_api" else None,
                 time_range=time_range
-            ):
-                # Only count actual items, not status events
-                if event.get('type') == 'item':
-                    total_items += 1
-                yield f"data: {json.dumps(event)}\n\n"
-                await asyncio.sleep(0.05)  # Small delay for visual effect
+            )
+            for spider_name in spiders
+        ]
 
-            # Send spider complete event
-            yield f"data: {json.dumps({'type': 'spider_complete', 'spider': spider_name})}\n\n"
-            await asyncio.sleep(0.3)
+        queue = asyncio.Queue()
+        total_items = 0
 
-        # Send final completion event
+        async def relay(spider_name, gen):
+            try:
+                async for event in gen:
+                    if event.get('type') == 'item':
+                        total_items += 1
+                        event['data']['source_tag'] = spider_name.replace('_api', '').replace('yahoo_finance', 'stocks').replace('hackernews', 'hn')
+                    await queue.put(event)
+            except Exception as e:
+                await queue.put({'type': 'error', 'spider': spider_name, 'message': str(e)})
+            finally:
+                await queue.put(None)
+
+        # Start all relayers
+        for spider_name, gen in zip(spiders, generators):
+            asyncio.create_task(relay(spider_name, gen))
+
+        completed = 0
+        while completed < len(spiders):
+            event = await queue.get()
+            if event is None:
+                completed += 1
+                continue
+            yield f"data: {json.dumps(event)}\n\n"
+            await asyncio.sleep(0.03)  # your perfect retro typing speed
+
         yield f"data: {json.dumps({'type': 'scan_complete', 'total_items': total_items})}\n\n"
 
     return StreamingResponse(
