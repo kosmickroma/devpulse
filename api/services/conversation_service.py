@@ -38,37 +38,71 @@ class ConversationService:
         # Fallback in-memory history if DB unavailable
         self.conversation_history: Dict[str, str] = {}
 
-        # Keywords that indicate source search intent
-        self.search_keywords = [
-            'find', 'search', 'show', 'get', 'look for', 'discover',
-            'trending', 'popular', 'top', 'best', 'latest',
-            'github', 'reddit', 'hackernews', 'repo', 'repository',
-            'project', 'code', 'discussion', 'post', 'article', 'scan'
+        # Explicit search commands (highest priority)
+        self.explicit_search_commands = [
+            'search for', 'find me', 'show me', 'get me', 'look for',
+            'scan github', 'scan reddit', 'scan hackernews', 'scan all',
+            'give me', 'show', 'discover', 'fetch'
+        ]
+
+        # Source mentions (high priority for search)
+        self.source_mentions = [
+            'on github', 'on reddit', 'on hackernews', 'from github',
+            'from reddit', 'from hackernews', 'github repo', 'reddit thread',
+            'hn post'
+        ]
+
+        # Conversational phrases (override ambiguous keywords)
+        self.conversational_phrases = [
+            'thank you', 'thanks', 'good job', 'nice work', 'nice job',
+            'awesome', 'cool', 'great', 'excellent', 'perfect',
+            'hey synth', 'hello', 'hi synth', 'hi there',
+            'how are you', 'what\'s up', 'whats up'
         ]
 
     def detect_query_type(self, query: str) -> str:
         """
         Detect if query is a source search or general question.
 
+        Uses Boolean logic with priority:
+        1. Explicit search commands → search (highest priority)
+        2. Source mentions → search
+        3. Pure conversational phrases → chat (only if no search commands)
+        4. Ambiguous → search (safer default)
+
         Args:
             query: User's query
 
         Returns:
-            'search' | 'chat' | 'mixed'
+            'search' | 'chat'
         """
         query_lower = query.lower()
 
-        # Check for search keywords
-        has_search_keywords = any(kw in query_lower for kw in self.search_keywords)
+        # PRIORITY 1: Explicit search commands - always trigger search
+        has_explicit_search = any(cmd in query_lower for cmd in self.explicit_search_commands)
 
-        # Source-specific detection
-        mentions_sources = any(src in query_lower for src in ['github', 'reddit', 'hackernews', 'repo', 'code'])
+        # PRIORITY 2: Source mentions - high confidence for search
+        has_source_mention = any(src in query_lower for src in self.source_mentions)
 
-        if mentions_sources or has_search_keywords:
-            return 'search'
+        # PRIORITY 3: Conversational phrases
+        has_conversational_phrase = any(phrase in query_lower for phrase in self.conversational_phrases)
+
+        # Boolean logic decision
+        if has_explicit_search:
+            return 'search'  # "thank you now search for X" → search
+        elif has_source_mention:
+            return 'search'  # "what's on github today" → search
+        elif has_conversational_phrase and not has_explicit_search:
+            return 'chat'    # "good job on that scan" → chat
         else:
-            # General question (NBA odds, explain quantum, etc.)
-            return 'chat'
+            # Ambiguous cases - check for search-related nouns/adjectives
+            search_indicators = ['repo', 'repository', 'project', 'code', 'trending', 'popular', 'latest']
+            has_search_indicators = any(indicator in query_lower for indicator in search_indicators)
+
+            if has_search_indicators:
+                return 'search'
+            else:
+                return 'chat'  # Default to chat for truly ambiguous queries
 
     async def handle_query(self, query: str, user_id: Optional[str] = None) -> Dict[str, Any]:
         """
