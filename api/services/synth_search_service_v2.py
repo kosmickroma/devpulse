@@ -136,10 +136,11 @@ class SynthSearchServiceV2:
         if not detected_sources:
             detected_sources = self.registry.get_source_names()
 
-        # Detect programming language
+        # Detect programming language (word boundary matching to avoid false positives)
         detected_language = None
+        query_words = set(re.findall(r'\b\w+\b', query_lower))
         for lang in self.language_keywords:
-            if lang in query_lower:
+            if lang in query_words:
                 detected_language = lang.capitalize()
                 break
 
