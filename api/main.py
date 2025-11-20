@@ -109,7 +109,7 @@ async def scan_stream(
             source_list = [s.strip() for s in source_param.split(',')]
             spiders = [source_to_spider.get(s, s) for s in source_list]
 
-        yield f"data: {json.dumps({'type': 'status', 'message': f'Launching {len(spiders)} sources in parallel...'})})\n\n"
+        yield f"data: {json.dumps({'type': 'status', 'message': f'Launching {len(spiders)} sources in parallel...'})}\n\n"
         await asyncio.sleep(0.3)
 
         # LAUNCH ALL SPIDERS AT THE SAME TIME
