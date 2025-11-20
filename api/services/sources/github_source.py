@@ -68,11 +68,30 @@ class GitHubSource(SearchSource):
         language = filters.get('language')
         min_stars = filters.get('min_stars', 5)  # Lowered to 5 for better coverage
         sort = filters.get('sort', 'stars')
+        time_filter = filters.get('time_filter')  # 'day', 'week', 'month', 'year'
 
         # Build search query
         search_query = f"{query} stars:>{min_stars}"
         if language:
             search_query += f" language:{language}"
+
+        # Add date filtering if specified
+        if time_filter:
+            from datetime import datetime, timedelta
+            today = datetime.now()
+
+            if time_filter == 'day':
+                date_threshold = (today - timedelta(days=1)).strftime('%Y-%m-%d')
+                search_query += f" created:>{date_threshold}"
+            elif time_filter == 'week':
+                date_threshold = (today - timedelta(days=7)).strftime('%Y-%m-%d')
+                search_query += f" created:>{date_threshold}"
+            elif time_filter == 'month':
+                date_threshold = (today - timedelta(days=30)).strftime('%Y-%m-%d')
+                search_query += f" created:>{date_threshold}"
+            elif time_filter == 'year':
+                date_threshold = (today - timedelta(days=365)).strftime('%Y-%m-%d')
+                search_query += f" created:>{date_threshold}"
 
         # Make API request (async wrapper for requests)
         loop = asyncio.get_event_loop()

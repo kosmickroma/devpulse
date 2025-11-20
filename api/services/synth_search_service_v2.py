@@ -236,7 +236,10 @@ class SynthSearchServiceV2:
                       'can', 'you', 'what', 'where', 'when', 'why', 'how', 'all', 'sources',
                       # Command verbs
                       'scan', 'look', 'check', 'explore', 'browse', 'discover', 'lookup',
-                      'pull', 'fetch', 'grab', 'give', 'list', 'view', 'tell']
+                      'pull', 'fetch', 'grab', 'give', 'list', 'view', 'tell',
+                      # Conversational/filler words
+                      'thank', 'thanks', 'please', 'anyway', 'now', 'ok', 'well',
+                      'just', 'really', 'very', 'much', 'more', 'most']
         words = re.findall(r'\b\w+\b', query_lower)
         keywords = [w for w in words if w not in stop_words and len(w) > 2]
 
@@ -306,9 +309,7 @@ class SynthSearchServiceV2:
                 if source_name == 'reddit':
                     filters['time_filter'] = intent['time_filter']  # Reddit: day, week, month, year, all
                 elif source_name == 'github':
-                    # GitHub doesn't have direct time filter, but we can use sort=updated
-                    if intent.get('time_filter') in ['day', 'week']:
-                        filters['sort'] = 'updated'  # Newest repos
+                    filters['time_filter'] = intent['time_filter']  # GitHub: will use created:>DATE in query
                 # HackerNews uses created_at in post-processing
 
             # Sort preference (source-specific mapping)
