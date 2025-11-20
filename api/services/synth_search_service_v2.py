@@ -58,6 +58,62 @@ class SynthSearchServiceV2:
         except Exception as e:
             print(f"⚠️ Failed to register HackerNews: {e}")
 
+    def _optimize_query_for_source(self, keywords: List[str], source_name: str, original_query: str) -> str:
+        """
+        Smart query optimization for each source.
+
+        Uses intelligent keyword prioritization to avoid overly restrictive queries.
+        Implements progressive refinement strategy used by professional search engines.
+
+        Args:
+            keywords: Extracted keywords from user query
+            source_name: Target source (github, reddit, hackernews)
+            original_query: Original user query for fallback
+
+        Returns:
+            Optimized search query string
+        """
+        if not keywords:
+            return original_query
+
+        # For GitHub: Use smart keyword selection to avoid overly restrictive AND queries
+        if source_name == 'github':
+            # Strategy: Identify primary subject vs descriptive modifiers
+            # e.g., "frogger arcade game" -> primary="frogger", modifiers=["arcade", "game"]
+
+            # Common descriptive words that should be deprioritized
+            descriptive_words = {
+                'game', 'app', 'tool', 'library', 'framework', 'project',
+                'code', 'script', 'program', 'software', 'api', 'web', 'mobile',
+                'tutorial', 'example', 'demo', 'sample', 'clone', 'implementation',
+                'open', 'source', 'free', 'simple', 'basic', 'advanced',
+                'arcade', 'retro', 'classic', 'modern', 'new', 'old'
+            }
+
+            # Separate primary keywords from descriptive modifiers
+            primary_keywords = [kw for kw in keywords if kw not in descriptive_words]
+            modifiers = [kw for kw in keywords if kw in descriptive_words]
+
+            # Strategy 1: If we have clear primary keywords, use those
+            if primary_keywords:
+                # Use first 2 primary keywords to keep query focused but not too restrictive
+                return " ".join(primary_keywords[:2])
+
+            # Strategy 2: If only modifiers, use the most specific one (usually first)
+            if modifiers:
+                return modifiers[0]
+
+            # Strategy 3: Fallback to first keyword
+            return keywords[0]
+
+        # For Reddit/HN: Use broader queries since communities are pre-filtered
+        elif source_name in ['reddit', 'hackernews']:
+            # Use all keywords for better context matching
+            return " ".join(keywords)
+
+        # Default: use all keywords
+        return " ".join(keywords)
+
     def parse_search_intent(self, query: str) -> Dict[str, Any]:
         """
         Parse user query to determine search intent.
@@ -90,7 +146,10 @@ class SynthSearchServiceV2:
         # Extract keywords
         stop_words = ['find', 'me', 'some', 'show', 'get', 'search', 'for', 'about',
                       'the', 'a', 'an', 'on', 'in', 'from', 'with', 'that', 'this',
-                      'can', 'you', 'what', 'where', 'when', 'why', 'how', 'scan', 'all', 'sources']
+                      'can', 'you', 'what', 'where', 'when', 'why', 'how', 'all', 'sources',
+                      # Command verbs
+                      'scan', 'look', 'check', 'explore', 'browse', 'discover', 'lookup',
+                      'pull', 'fetch', 'grab', 'give', 'list', 'view', 'tell']
         words = re.findall(r'\b\w+\b', query_lower)
         keywords = [w for w in words if w not in stop_words and len(w) > 2]
 
@@ -141,8 +200,14 @@ class SynthSearchServiceV2:
             if source_name == 'github' and intent.get('language'):
                 filters['language'] = intent['language']
 
-            # Build search query
-            search_query = " ".join(intent['keywords']) if intent['keywords'] else query
+            # Build optimized search query using smart keyword prioritization
+            search_query = self._optimize_query_for_source(
+                intent['keywords'],
+                source_name,
+                query
+            )
+
+            print(f"🔍 {source_name} query: '{search_query}'")
 
             # Add to parallel tasks
             task = source.search(query=search_query, limit=15, **filters)
