@@ -250,8 +250,17 @@ class SynthSearchServiceV2:
         # Detect time-based filtering
         time_filter = self._detect_time_filter(query_lower)
 
+        # Remove time-related keywords from search terms (they're filters, not search terms)
+        time_keywords = ['today', 'week', 'month', 'year', 'day', 'newest', 'latest', 'recent',
+                        'yesterday', 'last', 'this', 'past', 'hours', 'days', 'weeks', 'months', 'years']
+        keywords = [kw for kw in keywords if kw not in time_keywords]
+
         # Detect sort preference
         sort_by = self._detect_sort_preference(query_lower)
+
+        # Remove sort-related keywords from search terms (they're filters, not search terms)
+        sort_keywords = ['starred', 'popular', 'trending', 'upvoted', 'rated', 'top', 'first']
+        keywords = [kw for kw in keywords if kw not in sort_keywords]
 
         # Detect result limit
         limit = self._detect_limit(query_lower)

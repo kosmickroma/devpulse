@@ -38,7 +38,7 @@ class SearchCacheService:
             self.enabled = False
 
         self.cache_ttl = timedelta(hours=24)
-        self.cache_version = "v4"  # Increment to invalidate all caches after code changes
+        self.cache_version = "v5"  # Increment to invalidate all caches after code changes
 
     def _hash_query(self, query: str, intent: Dict[str, Any]) -> str:
         """
