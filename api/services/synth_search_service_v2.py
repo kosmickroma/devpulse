@@ -122,20 +122,54 @@ class SynthSearchServiceV2:
             query: Lowercase query string
 
         Returns:
-            'today' | 'week' | 'month' | 'year' | None
+            'day' | 'week' | 'month' | 'year' | None
         """
-        # Time period keywords
-        if any(word in query for word in ['today', 'last 24 hours', '24h']):
+        import re
+
+        # Check for "X days/weeks/months/years ago" or "past/last X days/weeks/months/years"
+        # Pattern: "past 3 days", "last 5 months", "from 2 years ago"
+        pattern = r'(?:past|last|from)\s+(\d+)\s+(day|week|month|year)s?'
+        match = re.search(pattern, query)
+        if match:
+            num = int(match.group(1))
+            unit = match.group(2)
+
+            if unit == 'day':
+                if num <= 1:
+                    return 'day'
+                elif num <= 7:
+                    return 'week'
+                elif num <= 30:
+                    return 'month'
+                else:
+                    return 'year'
+            elif unit == 'week':
+                if num <= 1:
+                    return 'week'
+                elif num <= 4:
+                    return 'month'
+                else:
+                    return 'year'
+            elif unit == 'month':
+                if num <= 1:
+                    return 'month'
+                else:
+                    return 'year'
+            elif unit == 'year':
+                return 'year'
+
+        # Specific time period keywords
+        if any(word in query for word in ['today', 'last 24 hours', '24h', 'past day']):
             return 'day'
         elif any(word in query for word in ['this week', 'past week', 'last week', '7 days']):
             return 'week'
         elif any(word in query for word in ['this month', 'past month', 'last month', '30 days']):
             return 'month'
-        elif any(word in query for word in ['this year', 'past year', 'last year']):
+        elif any(word in query for word in ['this year', 'past year', 'last year', '365 days']):
             return 'year'
 
         # "Newest" and "latest" imply recent time filter
-        if any(word in query for word in ['newest', 'latest', 'recent']):
+        if any(word in query for word in ['newest', 'latest', 'recent', 'recently']):
             return 'week'  # Default to week for "newest/latest"
 
         return None
@@ -251,8 +285,20 @@ class SynthSearchServiceV2:
         time_filter = self._detect_time_filter(query_lower)
 
         # Remove time-related keywords from search terms (they're filters, not search terms)
-        time_keywords = ['today', 'week', 'month', 'year', 'day', 'newest', 'latest', 'recent',
-                        'yesterday', 'last', 'this', 'past', 'hours', 'days', 'weeks', 'months', 'years']
+        time_keywords = [
+            # Time periods
+            'today', 'tonight', 'yesterday', 'tomorrow',
+            'day', 'days', 'week', 'weeks', 'month', 'months', 'year', 'years',
+            'hour', 'hours', 'minute', 'minutes', 'second', 'seconds',
+            # Time descriptors
+            'newest', 'latest', 'recent', 'recently', 'new', 'old', 'older', 'oldest',
+            'current', 'currently', 'now',
+            # Time references
+            'this', 'last', 'past', 'next', 'previous', 'ago',
+            'from', 'since', 'until', 'before', 'after',
+            # Numbers often used with time
+            'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'
+        ]
         keywords = [kw for kw in keywords if kw not in time_keywords]
 
         # Detect sort preference
