@@ -38,15 +38,18 @@ class SearchCacheService:
             self.enabled = False
 
         self.cache_ttl = timedelta(hours=24)
-        self.cache_version = "v7"  # Increment to invalidate all caches after code changes
+        self.cache_version = "v8"  # Increment to invalidate all caches after code changes
 
     def _hash_query(self, query: str, intent: Dict[str, Any]) -> str:
         """
         Generate consistent hash for query + intent.
 
+        CRITICAL: Includes time_filter with actual date to prevent stale cache issues.
+        Time-based searches must generate different cache keys each day/week/month.
+
         Args:
             query: Search query text
-            intent: Parsed intent (sources, keywords, language)
+            intent: Parsed intent (sources, keywords, language, time_filter, sort_by, limit)
 
         Returns:
             MD5 hash string
@@ -58,8 +61,27 @@ class SearchCacheService:
         sources = sorted(intent.get('sources', []))
         keywords = sorted(intent.get('keywords', []))
         language = intent.get('language', '')
+        sort_by = intent.get('sort_by', '')
+        limit = intent.get('limit', '')
 
-        cache_key = f"{self.cache_version}|{normalized_query}|{','.join(sources)}|{','.join(keywords)}|{language}"
+        # CRITICAL: Include actual date range for time-based queries
+        # This ensures "repos from this week" on Nov 20 has different cache than Nov 27
+        time_filter_key = ''
+        if intent.get('time_filter'):
+            from datetime import datetime, timedelta
+            today = datetime.now()
+
+            # Map time filter to actual date range
+            days_map = {'day': 1, 'week': 7, 'month': 30, 'year': 365}
+            days = days_map.get(intent['time_filter'])
+
+            if days:
+                date_threshold = (today - timedelta(days=days)).strftime('%Y-%m-%d')
+                time_filter_key = f"created:>{date_threshold}"
+            else:
+                time_filter_key = intent['time_filter']
+
+        cache_key = f"{self.cache_version}|{normalized_query}|{','.join(sources)}|{','.join(keywords)}|{language}|{sort_by}|{limit}|{time_filter_key}"
 
         return hashlib.md5(cache_key.encode()).hexdigest()
 
