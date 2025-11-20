@@ -105,11 +105,62 @@
 
 **CONFIRMED WORKING:** GitHub smart search is production-ready!
 
-**Next session tasks:**
-- [ ] Apply same improvements to Reddit source (reddit_source.py)
-- [ ] Apply same improvements to HackerNews source (hackernews_source.py)
-- [ ] Implement Dev.to source (finally!)
-- [ ] Fix Reddit's hardcoded tech subreddits issue with dynamic selection
+### 🚀 CURRENT SESSION - Session 5 (2025-11-20)
+
+**Goal:** Fix conversation detection + add time/sort filtering + extend to all sources
+
+**Priority 1: Core Intelligence Improvements** (1-2 hours)
+- [ ] **Fix conversation vs search detection** - Boolean logic approach
+  - Problem: "good job on that scan" triggers search (wrong!)
+  - Solution: Check if has_search_command first, then has_conversation
+  - File: `api/services/conversation_service.py` lines 49-71
+
+- [ ] **Add time-based filtering** - Parse "today", "this week", "newest"
+  - User wants: "5 repos posted today", "articles from this week", "newest posts"
+  - Detect: today, week, month, newest, latest, recent
+  - File: `api/services/synth_search_service_v2.py` lines 117-166
+
+- [ ] **Add sort detection** - Parse "most stars", "most upvotes", "newest"
+  - Detect: most stars, most upvotes, newest, most popular, trending
+  - Map to: GitHub (stars/forks/updated), Reddit (top/new/hot), HN (points/date)
+  - File: `api/services/synth_search_service_v2.py` lines 117-166
+
+- [ ] **Add limit detection** - Parse "5 repos", "top 10", "3 articles"
+  - Extract numbers: "5 repos" → limit=5, "top 10" → limit=10
+  - File: `api/services/synth_search_service_v2.py` lines 117-166
+
+**Priority 2: Apply Smart Search to Other Sources** (4-6 hours)
+- [ ] **Reddit improvements**
+  - Add relevance scoring (upvotes + keyword matching)
+  - Dynamic subreddit selection based on query topic
+  - Progressive refinement
+  - Wire up time_filter and sort from intent
+
+- [ ] **HackerNews improvements**
+  - Add relevance scoring (points + keyword matching)
+  - Lower min_points (10 → 5)
+  - Progressive refinement
+  - Wire up time and sort filters
+
+- [ ] **Dev.to source creation**
+  - Create new source file using GitHub as template
+  - Dev.to API: https://developers.forem.com/api/v1
+  - Full smart search from day one
+  - Register in synth_search_service_v2.py
+
+**Files Being Modified:**
+- `api/services/conversation_service.py` - Conversation detection
+- `api/services/synth_search_service_v2.py` - Intent parsing (time/sort/limit)
+- `api/services/sources/reddit_source.py` - Smart search improvements
+- `api/services/sources/hackernews_source.py` - Smart search improvements
+- `api/services/sources/devto_source.py` - NEW FILE
+
+**Testing Requirements:**
+- [ ] "good job on that scan" → chat (no cards)
+- [ ] "thank you now search for frogger" → search
+- [ ] "5 repos posted today" → limit=5, time=today
+- [ ] "most starred python projects this week" → sort=stars, time=week
+- [ ] "newest articles on hackernews" → sort=new
 
 
 ### Other Testing Checklist
