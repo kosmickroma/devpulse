@@ -62,7 +62,6 @@ else:
 
 @app.get("/")
 async def root():
-    """Health check endpoint."""
     return {
         "status": "online",
         "version": "1.1.0",
@@ -77,11 +76,6 @@ async def scan_stream(
     language: Optional[str] = None,
     time_range: str = "daily"
 ):
-    """
-    Scan platforms and stream results in real-time using Server-Sent Events.
-    NOW WITH TRUE PARALLEL FIREHOSE EXECUTION.
-    """
-
     async def event_generator():
         source_param = sources or platform or "all"
 
@@ -100,10 +94,10 @@ async def scan_stream(
             source_list = [s.strip() for s in source_param.split(',')]
             spiders = [source_to_spider.get(s, s) for s in source_list]
 
-        yield f"data: {json.dumps({'type': 'status', 'message': f'Launching {len(spiders)} sources in parallel...'})}\n\n"
-        await asyncio.sleep(0.3)
+        yield f"data: {json.dumps({'type': 'status', 'message': f'Launching {len(spiders)} sources in true parallel...'})}\n\n"
+        await asyncio.sleep(0.2)
 
-        # FIRE ALL SPIDERS AT ONCE
+        # Launch all spiders simultaneously
         generators = [
             spider_runner.run_spider_async(
                 spider_name=spider_name,
@@ -114,32 +108,47 @@ async def scan_stream(
         ]
 
         queue = asyncio.Queue()
-        total_items_counter = [0]  # mutable counter for Python <3.11
+        total_items_counter = [0]
+        completed = 0
+        connected_sources = set()
 
         async def relay(spider_name, gen):
+            nonlocal completed
+            first_item = True
             try:
                 async for event in gen:
                     if event.get('type') == 'item':
                         total_items_counter[0] += 1
-                        event['data']['source_tag'] = spider_name.replace('_api', '').replace('yahoo_finance', 'stocks').replace('hackernews', 'hn')
+                        event['data']['source_tag'] = spider_name.replace('_api', '').replace('yahoo_finance', 'stocks').replace('hackernews', 'hn').replace('coingecko', 'crypto')
+
+                        if first_item:
+                            source_display = spider_name.replace('_api', '').replace('yahoo_finance', 'stocks').replace('hackernews', 'hn').replace('coingecko', 'crypto')
+                            await queue.put({'type': 'source_connected', 'source': source_display.title()})
+                            first_item = False
+
                     await queue.put(event)
             except Exception as e:
                 await queue.put({'type': 'error', 'spider': spider_name, 'message': str(e)})
             finally:
                 await queue.put(None)
 
-        # Launch all spiders in parallel
+        # FIRE EVERYTHING AT ONCE
         for spider_name, gen in zip(spiders, generators):
             asyncio.create_task(relay(spider_name, gen))
 
-        completed = 0
-        while completed < len(spiders):
-            event = await queue.get()
+        # Stream the firehose — no waiting, no mercy
+        while completed < len(spiders) or not queue.empty():
+            try:
+                event = await asyncio.wait_for(queue.get(), timeout=0.15)
+            except asyncio.TimeoutError:
+                continue
+
             if event is None:
                 completed += 1
                 continue
+
             yield f"data: {json.dumps(event)}\n\n"
-            await asyncio.sleep(0.03)  # perfect retro typing speed
+            await asyncio.sleep(0.03)  # perfect retro feel
 
         yield f"data: {json.dumps({'type': 'scan_complete', 'total_items': total_items_counter[0]})}\n\n"
 
@@ -149,14 +158,13 @@ async def scan_stream(
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",  # helps some proxies
+            "X-Accel-Buffering": "no"
         }
     )
 
 
 @app.get("/api/spiders")
 async def list_spiders():
-    """List available spiders."""
     return {
         "spiders": [
             {"name": "github_api", "display": "GitHub", "supports_language": True, "supports_time_range": True},
@@ -176,7 +184,7 @@ async def health_check():
         "spiders_available": 6,
         "ai_enabled": True,
         "api_version": "2.0.0",
-        "firehose_mode": "ACTIVE"
+        "firehose_mode": "GOD MODE ACTIVATED"
     }
 
 
@@ -210,7 +218,7 @@ app.include_router(badges.router, prefix='/api/arcade/badges', tags=['badges'])
 app.include_router(profile.router, prefix='/api/arcade/profile', tags=['profile'])
 app.include_router(codequest.router, prefix='/api/arcade/codequest', tags=['code-quest'])
 
-# Backfill endpoint (unchanged - still works)
+# Backfill endpoint
 @app.post("/api/backfill")
 async def backfill_trends():
     start_time = datetime.now()
