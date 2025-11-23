@@ -158,7 +158,7 @@ class SpiderRunner:
                                         pass
                     break
 
-                await asyncio.sleep(0.15)  # Poll every 150ms
+                await asyncio.sleep(0.05)  # Poll every 50ms for faster detection
 
             # Final status
             total_time = time.time() - start_time
