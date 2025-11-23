@@ -70,12 +70,19 @@ class SpiderRunner:
             await asyncio.sleep(0.1)
 
             # Start Scrapy process
+            import time
+            start_time = time.time()
+            print(f"🚀 [{start_time:.2f}] {spider_name}: Launching Scrapy process")
+
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
                 cwd=str(self.project_root)
             )
+
+            launch_time = time.time() - start_time
+            print(f"✅ [{time.time():.2f}] {spider_name}: Process started (+{launch_time:.2f}s)")
 
             yield {
                 "type": "scanning",
@@ -86,6 +93,8 @@ class SpiderRunner:
             # Real-time tail-follow the output file
             last_pos = 0
             item_count = 0
+            first_write_time = None
+            first_item_time = None
 
             while True:
                 if not tmp_file.exists():
@@ -97,6 +106,11 @@ class SpiderRunner:
                 current_size = tmp_file.stat().st_size
 
                 if current_size > last_pos:
+                    if first_write_time is None:
+                        first_write_time = time.time()
+                        elapsed = first_write_time - start_time
+                        print(f"📝 [{first_write_time:.2f}] {spider_name}: FIRST FILE WRITE detected! (+{elapsed:.2f}s, size: {current_size} bytes)")
+
                     with open(tmp_path, 'r', encoding='utf-8') as f:
                         f.seek(last_pos)
                         lines = f.readlines()
@@ -109,6 +123,12 @@ class SpiderRunner:
                             try:
                                 item = json.loads(line)
                                 item_count += 1
+
+                                if first_item_time is None:
+                                    first_item_time = time.time()
+                                    elapsed = first_item_time - start_time
+                                    print(f"🎉 [{first_item_time:.2f}] {spider_name}: FIRST ITEM parsed! (+{elapsed:.2f}s)")
+
                                 yield {
                                     "type": "item",
                                     "spider": spider_name,
@@ -141,12 +161,17 @@ class SpiderRunner:
                 await asyncio.sleep(0.15)  # Poll every 150ms
 
             # Final status
+            total_time = time.time() - start_time
             if item_count == 0:
+                print(f"⚠️  [{time.time():.2f}] {spider_name}: Completed with 0 items (total: {total_time:.2f}s)")
                 yield {
                     "type": "warning",
                     "spider": spider_name,
                     "message": f"No items found for {self._get_display_name(spider_name)}"
                 }
+            else:
+                print(f"✅ [{time.time():.2f}] {spider_name}: Completed with {item_count} items")
+                print(f"   └─ Total time: {total_time:.2f}s | First write: +{first_write_time-start_time:.2f}s | First item: +{first_item_time-start_time:.2f}s")
 
         except Exception as e:
             yield {
