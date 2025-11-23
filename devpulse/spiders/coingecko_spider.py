@@ -27,7 +27,9 @@ class CoinGeckoSpider(scrapy.Spider):
 
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
-        'DOWNLOAD_DELAY': 1.5,  # Respect rate limits
+        'DOWNLOAD_DELAY': 0.2,  # Rate limit: 50 calls/min = 1.2s between calls, but concurrent requests help
+        'CONCURRENT_REQUESTS': 8,  # Moderate concurrency to stay within rate limits
+        'CONCURRENT_REQUESTS_PER_DOMAIN': 4,
     }
 
     def __init__(self, category: str = "trending", *args, **kwargs):

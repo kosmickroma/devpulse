@@ -39,7 +39,8 @@ class RedditApiSpider(scrapy.Spider):
     # Set required Scrapy settings for non-HTTP API usage
     custom_settings = {
         'ROBOTSTXT_OBEY': False,  # Not applicable for API interaction
-        'DOWNLOAD_DELAY': 0,      # PRAW handles its own rate limiting efficiently
+        'DOWNLOAD_DELAY': 0,  # PRAW handles its own rate limiting efficiently
+        'CONCURRENT_REQUESTS': 16,  # PRAW handles concurrency internally
     }
 
     def __init__(self, subreddits_list: str = "programming", limit: int = 50, query: str = None, *args, **kwargs):

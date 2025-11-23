@@ -34,7 +34,9 @@ class GithubApiSpider(scrapy.Spider):
 
     custom_settings = {
         'ROBOTSTXT_OBEY': False,  # API doesn't use robots.txt
-        'DOWNLOAD_DELAY': 1,  # Be respectful to API
+        'DOWNLOAD_DELAY': 0,  # API can handle rapid requests (5000/hour with token)
+        'CONCURRENT_REQUESTS': 16,  # Fire multiple requests simultaneously
+        'CONCURRENT_REQUESTS_PER_DOMAIN': 8,  # GitHub API can handle it
     }
 
     def __init__(self, time_range: str = "daily", language: str = "", search_query: str = "", *args, **kwargs):

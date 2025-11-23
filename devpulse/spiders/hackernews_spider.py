@@ -19,7 +19,8 @@ class HackernewsSpider(scrapy.Spider):
 
     custom_settings = {
         'ROBOTSTXT_OBEY': True,
-        'DOWNLOAD_DELAY': 1,  # HN is okay with reasonable scraping
+        'DOWNLOAD_DELAY': 0.3,  # HN is scraper-friendly, minimal delay needed
+        'CONCURRENT_REQUESTS': 8,  # Reasonable concurrency for respectful scraping
     }
 
     def __init__(self, page_limit: int = 1, *args, **kwargs):

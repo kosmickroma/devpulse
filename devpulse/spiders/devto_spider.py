@@ -19,7 +19,8 @@ class DevtoSpider(scrapy.Spider):
 
     custom_settings = {
         'ROBOTSTXT_OBEY': True,
-        'DOWNLOAD_DELAY': 2,
+        'DOWNLOAD_DELAY': 0.5,  # Dev.to is developer-friendly, moderate delay
+        'CONCURRENT_REQUESTS': 8,  # Allow concurrent scraping
     }
 
     def __init__(self, time_range: str = "week", tag: str = "", *args, **kwargs):

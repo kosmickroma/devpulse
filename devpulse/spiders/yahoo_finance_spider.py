@@ -28,7 +28,9 @@ class YahooFinanceSpider(scrapy.Spider):
 
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
-        'DOWNLOAD_DELAY': 0.5,
+        'DOWNLOAD_DELAY': 0,  # Public API, no delay needed
+        'CONCURRENT_REQUESTS': 16,  # Yahoo Finance API can handle concurrent requests
+        'CONCURRENT_REQUESTS_PER_DOMAIN': 8,
     }
 
     def __init__(self, category: str = "trending", *args, **kwargs):
