@@ -39,7 +39,7 @@ class SpiderRunner:
             cmd = [
                 "scrapy", "crawl", spider_name,
                 "-o", tmp_path,
-                "--loglevel=ERROR"  # Keep logs quiet
+                "--loglevel=ERROR"  # Keep logs quiet (only show errors)
             ]
 
             # Spider-specific arguments

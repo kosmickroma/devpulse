@@ -14,7 +14,10 @@
       "Bash(. ./venv/bin/activate)",
       "Bash(venv/bin/python:*)",
       "Bash(awk:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(source:*)",
+      "Bash(scrapy list:*)"
     ],
     "deny": [],
     "ask": []

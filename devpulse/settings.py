@@ -47,8 +47,9 @@ SPIDER_MIDDLEWARES = {
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     "devpulse.middlewares.DevpulseDownloaderMiddleware": 543,
-    # User-agent rotation for better scraping reliability
-    "scrapy_user_agents.middlewares.RandomUserAgentMiddleware": 400,
+    # DISABLED: RandomUserAgentMiddleware causes 40-50s startup delay
+    # Most sources are APIs that don't care about user agents
+    # "scrapy_user_agents.middlewares.RandomUserAgentMiddleware": 400,
 }
 
 # Enable or disable extensions
@@ -113,10 +114,12 @@ DNSCACHE_SIZE = 10000
 # Reactor thread pool (for better I/O performance)
 REACTOR_THREADPOOL_MAXSIZE = 20
 
-# User agent rotation settings (for scrapy-user-agents)
-# This will randomly rotate user agents to appear more like different browsers
-RANDOM_UA_PER_PROXY = True
-RANDOM_UA_TYPE = "random"  # Can be: random, chrome, firefox, safari, etc.
+# User agent rotation settings (DISABLED - caused 40-50s startup delay)
+# The scrapy-user-agents middleware is disabled because:
+# 1. Most sources are APIs that don't care about user agents
+# 2. It causes massive startup delays (possibly network requests on init)
+# RANDOM_UA_PER_PROXY = True
+# RANDOM_UA_TYPE = "random"
 
 # ============================================
 # DEVPULSE HYPER-PERFORMANCE OPTIMIZATIONS
