@@ -415,5 +415,44 @@ This is the difference between:
 
 ---
 
+## 🔥 CRITICAL UPDATE (Same Day)
+
+### The REAL Bottleneck Identified!
+
+After deploying the initial optimizations, logs revealed the subprocess was starting instantly (+0.00s), but Scrapy wasn't making its first request until +48s. This proved the delay was INSIDE Scrapy's initialization.
+
+**Root Cause:** `scrapy-user-agents` `RandomUserAgentMiddleware`
+
+This third-party middleware was causing 40-50 second startup delays, likely due to:
+- Blocking HTTP requests on initialization (fetching user agent lists)
+- Loading large databases from disk
+- Slow middleware initialization multiplied by 6 concurrent spiders
+
+**Solution:** Disabled the middleware completely in `devpulse/settings.py`
+
+```python
+# BEFORE
+DOWNLOADER_MIDDLEWARES = {
+    "scrapy_user_agents.middlewares.RandomUserAgentMiddleware": 400,
+}
+
+# AFTER (DISABLED)
+DOWNLOADER_MIDDLEWARES = {
+    # DISABLED: RandomUserAgentMiddleware causes 40-50s startup delay
+    # "scrapy_user_agents.middlewares.RandomUserAgentMiddleware": 400,
+}
+```
+
+**Justification:**
+- 5 out of 6 sources are APIs (GitHub, Reddit, Yahoo, CoinGecko, HackerNews API)
+- APIs don't care about user agent rotation
+- The 2 web scrapers (HN, Dev.to) work fine with static user agent
+- User agent rotation is unnecessary overhead for our use case
+
+**Result:** This single change should eliminate the 40-50s delay entirely!
+
+---
+
 *Optimized with love by Claude Code*
 *Date: November 23, 2025*
+*Critical fix deployed same day - this is why we monitor logs!*
