@@ -216,7 +216,7 @@ class SynthDemoCacheService:
             {
                 "title": "starship/starship - The minimal, blazing-fast, and infinitely customizable prompt",
                 "url": "https://github.com/starship/starship",
-                "source": "github",
+                "source": "synth/github",
                 "description": "Starship is a cross-shell prompt that's fast, customizable, and shows you the information you need",
                 "stars": 42500,
                 "language": "Rust",
@@ -225,7 +225,7 @@ class SynthDemoCacheService:
             {
                 "title": "I switched to tmux and doubled my productivity",
                 "url": "https://reddit.com/r/programming/tmux",
-                "source": "reddit",
+                "source": "synth/reddit",
                 "description": "Terminal multiplexer that lets you switch between programs, detach and reattach sessions",
                 "score": 2847,
                 "comments": 412,
@@ -234,7 +234,7 @@ class SynthDemoCacheService:
             {
                 "title": "fzf: A command-line fuzzy finder",
                 "url": "https://github.com/junegunn/fzf",
-                "source": "github",
+                "source": "synth/github",
                 "description": "General-purpose command-line fuzzy finder that can be used with any list",
                 "stars": 58900,
                 "language": "Go",
@@ -243,7 +243,7 @@ class SynthDemoCacheService:
             {
                 "title": "The best CLI tools you're not using",
                 "url": "https://news.ycombinator.com/item?id=39876543",
-                "source": "hackernews",
+                "source": "synth/hackernews",
                 "description": "Discussion about modern alternatives to classic Unix tools",
                 "score": 1243,
                 "comments": 389,
@@ -252,7 +252,7 @@ class SynthDemoCacheService:
             {
                 "title": "zoxide - A smarter cd command",
                 "url": "https://github.com/ajeetdsouza/zoxide",
-                "source": "github",
+                "source": "synth/github",
                 "description": "A faster way to navigate your filesystem, inspired by z and autojump",
                 "stars": 18700,
                 "language": "Rust",
@@ -261,7 +261,7 @@ class SynthDemoCacheService:
             {
                 "title": "bat - A cat clone with wings",
                 "url": "https://github.com/sharkdp/bat",
-                "source": "github",
+                "source": "synth/github",
                 "description": "Syntax highlighting and Git integration for your terminal",
                 "stars": 46300,
                 "language": "Rust",

@@ -865,7 +865,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
             const title = item?.title || 'Untitled'
             const displayTitle = title.length > 60 ? title.substring(0, 60) + '...' : title
             addLine(`  ✓ ${displayTitle}`, 'success')
-            setProgress(prev => prev + 1)
+            setProgress(itemsRef.current.length) // Use actual item count, not increment
             break
 
           case 'spider_complete':
@@ -1140,7 +1140,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
             const cachedTitle = cachedItem?.title || 'Untitled'
             const cachedDisplay = cachedTitle.length > 60 ? cachedTitle.substring(0, 60) + '...' : cachedTitle
             addLine(`  ✓ ${cachedDisplay}`, 'success')
-            setProgress(prev => prev + 1)
+            setProgress(itemsRef.current.length) // Use actual item count
             break
 
           case 'status':
@@ -1156,7 +1156,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
             const title = item?.title || 'Untitled'
             const displayTitle = title.length > 60 ? title.substring(0, 60) + '...' : title
             addLine(`  ✓ ${displayTitle}`, 'success')
-            setProgress(prev => prev + 1)
+            setProgress(itemsRef.current.length) // Use actual item count
             break
 
           case 'scan_complete':
@@ -1266,7 +1266,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       addLine('', 'output')
 
       // Display top 5 results with beep sounds (matching what we show in terminal)
-      const displayCount = 5
+      const displayCount = Math.min(5, result.results.length)
       for (const item of result.results.slice(0, displayCount)) {
         playBeep()
         addLine(`✓ ${item.title}`, 'success')
@@ -1277,7 +1277,12 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
         await sleep(150)
       }
 
-      addLine(`✨ ${displayCount} results previewed above. All ${result.results.length} results added to cards below!`, 'output')
+      // Message depends on whether we showed all results or just a preview
+      if (result.results.length <= displayCount) {
+        addLine(`✨ All ${result.results.length} results added to cards below!`, 'output')
+      } else {
+        addLine(`✨ ${displayCount} results previewed above. All ${result.results.length} results added to cards below!`, 'output')
+      }
       addLine('', 'output')
 
       // Send to parent to display as cards

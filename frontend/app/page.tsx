@@ -257,9 +257,9 @@ export default function Home() {
             />
           </div>
 
-          {/* Demo Prompt - Only show for non-logged-in users before demo starts */}
-          {!isUserLoggedIn && !isDemoMode && (
-            <div className={`mt-4 transition-opacity duration-500 ${isDemoMode ? 'opacity-0' : 'opacity-100'}`}>
+          {/* Demo Prompt - Only show for non-logged-in users, fade out when demo starts */}
+          {!isUserLoggedIn && (
+            <div className={`mt-4 transition-all duration-700 ease-out ${isDemoMode ? 'opacity-0 translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
               <p className="text-neon-green font-mono text-lg font-bold animate-pulse" style={{
                 textShadow: '0 0 10px rgba(0, 255, 0, 0.8), 0 0 20px rgba(0, 255, 0, 0.5), 0 0 30px rgba(0, 255, 0, 0.3)',
               }}>
