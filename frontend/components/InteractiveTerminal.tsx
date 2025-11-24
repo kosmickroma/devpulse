@@ -876,7 +876,10 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
           case 'scan_complete':
             clearTimeout(timeoutId)
             addLine('> ', 'output')
-            addLine(`✓ Scan complete! Found ${data.total_items} items`, 'success')
+            // Count unique items by URL (matches what user will see in cards)
+            const uniqueUrls = new Set(itemsRef.current.map(item => item.url))
+            const uniqueCount = uniqueUrls.size
+            addLine(`✓ Scan complete! Found ${uniqueCount} unique items`, 'success')
             playSuccess()
             eventSource.close()
             setIsScanning(false)
@@ -885,7 +888,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
             // ALWAYS show notification, then check if game is active
             console.log('Scan complete! activeGame:', activeGame)
             setScanCompleteNotification(true)
-            setScanCompleteMessage(`Found ${data.total_items} trending items!`)
+            setScanCompleteMessage(`Found ${uniqueCount} unique trending items!`)
 
             // Send data to parent
             onDataReceived(itemsRef.current)
@@ -1161,7 +1164,10 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
 
           case 'scan_complete':
             addLine('> ', 'output')
-            addLine(`✓ Scan complete! Found ${data.total_items} items`, 'success')
+            // Count unique items by URL (matches what user will see in cards)
+            const demoUniqueUrls = new Set(itemsRef.current.map(item => item.url))
+            const demoUniqueCount = demoUniqueUrls.size
+            addLine(`✓ Scan complete! Found ${demoUniqueCount} unique items`, 'success')
             playSuccess()
             eventSource.close()
             setIsScanning(false)
