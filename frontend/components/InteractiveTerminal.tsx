@@ -1027,6 +1027,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       const demoScanPromise = sleep(scanStartDelay).then(() => handleDemoScan())
 
       // STEP 3: Show boot sequence (buying time while scan runs in background)
+      // NO SOUNDS YET - give audio time to unlock properly
       const bootLines = [
         '> DevPulse Terminal v4.0 - SYNTH AI Edition',
         '> Initializing systems...',
@@ -1042,30 +1043,32 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
 
       for (const line of bootLines) {
         addLine(line, line.includes('[✓]') ? 'success' : 'output')
-        playBeep()
+        // No beeps here - silent boot sequence
         await sleep(150) // Fast but visible
       }
 
       await sleep(300)
 
       // STEP 4: Type "Initiating DEMO MODE..." (recreating real terminal feel)
+      // Still no sound - just visual typing
       let demoText = ''
       await simulateTyping('Initiating DEMO MODE...', (char) => {
         demoText += char
         setCurrentInput(demoText)
-        playSound('typing')
+        // No typing sound yet
       }, DEMO_TIMING.TYPING_SPEED_WPM)
 
       addLine(`> ${demoText}`, 'success')
       setCurrentInput('')
       await sleep(500)
 
-      // STEP 5: Type "scan all" command
+      // STEP 5: Type "scan all" command - AUDIO STARTS HERE
+      // By now, ~2-3 seconds have passed and audio is definitely unlocked
       demoText = ''
       await simulateTyping('scan all', (char) => {
         demoText += char
         setCurrentInput(demoText)
-        playSound('typing')
+        playSound('typing') // START AUDIO HERE
       }, DEMO_TIMING.TYPING_SPEED_WPM)
 
       addLine(`> ${demoText}`, 'input')
@@ -1243,8 +1246,9 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       addLine('🔍 I found some awesome tools for you:', 'success')
       addLine('', 'output')
 
-      // Display top results with beep sounds
-      for (const item of result.results.slice(0, 5)) {
+      // Display top 5 results with beep sounds (matching what we show in terminal)
+      const displayCount = 5
+      for (const item of result.results.slice(0, displayCount)) {
         playBeep()
         addLine(`✓ ${item.title}`, 'success')
         addLine(`  🔗 ${item.url}`, 'output')
@@ -1254,7 +1258,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
         await sleep(150)
       }
 
-      addLine(`✨ ${result.results.length} results added to cards below!`, 'output')
+      addLine(`✨ ${displayCount} results shown above, ${result.results.length} total added to cards below!`, 'output')
       addLine('', 'output')
 
       // Send to parent to display as cards

@@ -102,9 +102,8 @@ export function useAutoDemo({
     hasTriggered.current = true
     demoAbortController.current = new AbortController()
 
-    // Audio unlock happens in event handler for trusted events (click/keydown)
-    // For untrusted events (scroll/mousemove), audio may not unlock - that's OK
-    // User can click anywhere during demo to enable audio
+    // Audio unlock happens in event handler (click/keydown always unlock audio)
+    // Audio will be ready before sounds start playing
 
     // IMMEDIATELY lock scroll only - DON'T disable pointer events
     // (we need cards and filters to be clickable!)
@@ -179,14 +178,13 @@ export function useAutoDemo({
     // Cleanup function to remove all listeners
     const listeners: Array<{ event: string; handler: () => void }> = []
 
-    const addTrigger = (event: string, isTrustedEvent: boolean = false) => {
+    const addTrigger = (event: string) => {
       const handler = async () => {
         console.log(`[AUTO-DEMO] Triggered by: ${event}`)
 
-        // For trusted events (click/keydown), unlock audio in parallel (non-blocking)
-        // This is CRITICAL - audio unlock must happen in the event handler itself
-        // But we don't wait for it to complete, so demo starts instantly
-        if (isTrustedEvent && audioUnlockCallback) {
+        // All triggers are now trusted events (click/keydown only)
+        // Unlock audio in parallel (non-blocking)
+        if (audioUnlockCallback) {
           console.log('[AUTO-DEMO] Unlocking audio in event handler (trusted interaction)...')
           audioUnlockCallback().catch(error => {
             console.warn('[AUTO-DEMO] Audio unlock failed:', error)
@@ -206,11 +204,9 @@ export function useAutoDemo({
       listeners.push({ event, handler })
     }
 
-    // Add triggers - only click/keydown are "trusted" for audio unlock
-    addTrigger('scroll', false)      // Not trusted for audio
-    addTrigger('click', true)        // TRUSTED - unlocks audio
-    addTrigger('mousemove', false)   // Not trusted for audio
-    addTrigger('keydown', true)      // TRUSTED - unlocks audio
+    // Add triggers - ONLY trusted events (click/keydown) that can unlock audio
+    addTrigger('click')        // TRUSTED - unlocks audio
+    addTrigger('keydown')      // TRUSTED - unlocks audio
 
     // Cleanup on unmount
     return () => {

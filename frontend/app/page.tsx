@@ -10,7 +10,6 @@ import Sidebar from '@/components/Sidebar'
 import OperatorProfileModal from '@/components/OperatorProfileModal'
 import Footer from '@/components/Footer'
 import AutoDemoController from '@/components/AutoDemoController'
-import SoundIndicator from '@/components/SoundIndicator'
 import { TrendingItem } from '@/lib/types'
 import { loadTodaysScanResults } from '@/lib/db'
 import { supabase } from '@/lib/supabase'
@@ -24,6 +23,8 @@ export default function Home() {
   const [preferenceSources, setPreferenceSources] = useState<string[]>([]) // Sources from user preferences
   const [manualSources, setManualSources] = useState<string[]>([]) // Sources scanned manually via terminal
   const [hasSynthResults, setHasSynthResults] = useState(false) // Track if SYNTH results exist
+  const [synthResultsRevealed, setSynthResultsRevealed] = useState(false) // Track if SYNTH results are revealed
+  const [isSynthScanning, setIsSynthScanning] = useState(false) // Track scan animation
   const [isLoading, setIsLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [isFromCache, setIsFromCache] = useState(false)
@@ -34,7 +35,6 @@ export default function Home() {
   // Auto-demo state
   const [isDemoMode, setIsDemoMode] = useState(false)
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
-  const [showSoundIndicator, setShowSoundIndicator] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminalComponentRef = useRef<any>(null) // Ref to access terminal's audio unlock
 
@@ -102,6 +102,7 @@ export default function Home() {
     const synthSources = scannedSources.filter(src => src === 'synth')
     if (synthSources.length > 0) {
       setHasSynthResults(true)
+      setSynthResultsRevealed(false) // Reset reveal state when new results come in
       console.log('[PAGE] 🤖 SYNTH results detected!')
     }
 
@@ -163,12 +164,25 @@ export default function Home() {
     setPrioritySource(source)
   }
 
-  const handleSynthFindsClick = () => {
-    // Toggle SYNTH priority
-    if (prioritySource === 'synth') {
-      setPrioritySource(null) // Clear priority
+  const handleSynthFindsClick = async () => {
+    if (synthResultsRevealed) {
+      // Already revealed - toggle collapse
+      if (prioritySource === 'synth') {
+        setPrioritySource(null) // Collapse
+        setSynthResultsRevealed(false)
+      } else {
+        setPrioritySource('synth') // Expand again
+      }
     } else {
-      setPrioritySource('synth') // Prioritize SYNTH results
+      // First time clicking - play scan animation
+      setIsSynthScanning(true)
+
+      // Simulate scan animation delay (like demo mode)
+      await new Promise(resolve => setTimeout(resolve, 800))
+
+      setIsSynthScanning(false)
+      setSynthResultsRevealed(true)
+      setPrioritySource('synth') // Show SYNTH results
     }
   }
 
@@ -267,43 +281,47 @@ export default function Home() {
         onDemoStart={() => {
           console.log('[PAGE] Demo starting...')
           setIsDemoMode(true)
-          // Show sound indicator after a brief delay (let demo start first)
-          setTimeout(() => setShowSoundIndicator(true), 1000)
         }}
         onDemoComplete={() => {
           console.log('[PAGE] Demo complete from controller')
           setIsDemoMode(false)
-          setShowSoundIndicator(false)
         }}
         onDemoSkip={() => {
           console.log('[PAGE] Demo skipped')
           setIsDemoMode(false)
-          setShowSoundIndicator(false)
         }}
         audioUnlockCallback={async () => {
           // Unlock audio via terminal component
           if (terminalComponentRef.current?.unlockAudio) {
             await terminalComponentRef.current.unlockAudio()
-            // Hide indicator once audio is unlocked
-            setShowSoundIndicator(false)
           }
         }}
-      />
-
-      {/* Sound Indicator - appears if audio is locked during demo */}
-      <SoundIndicator
-        isVisible={showSoundIndicator && isDemoMode}
-        onDismiss={() => setShowSoundIndicator(false)}
       />
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* SYNTH FINDS Button - Special placement above filters */}
         {hasSynthResults && (
-          <SynthFindsButton
-            onClick={handleSynthFindsClick}
-            isActive={prioritySource === 'synth'}
-            resultCount={synthResultCount}
-          />
+          <div className="relative">
+            <SynthFindsButton
+              onClick={handleSynthFindsClick}
+              isActive={prioritySource === 'synth'}
+              resultCount={synthResultCount}
+            />
+
+            {/* Scanning animation overlay when clicked */}
+            {isSynthScanning && (
+              <div className="absolute inset-x-0 top-0 flex justify-center items-center py-4">
+                <div className="px-6 py-3 bg-dark-card/95 backdrop-blur-sm border-2 border-neon-magenta rounded shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl animate-spin">🤖</div>
+                    <span className="text-neon-magenta font-mono text-sm font-bold animate-pulse">
+                      SCANNING SYNTH RESULTS...
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         <SimpleFilterBar
