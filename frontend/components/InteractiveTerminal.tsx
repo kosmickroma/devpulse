@@ -7,6 +7,7 @@ import { loadTodaysScanResults, saveScanResults } from '@/lib/db'
 import { getMyProfile, type UserProfile } from '@/lib/profile'
 import GameOverlay from './GameOverlay'
 import SynthAvatar from './SynthAvatar'
+import { simulateTyping, sleep, DEMO_TIMING } from '@/utils/demoHelpers'
 
 interface TerminalLine {
   id: string
@@ -18,9 +19,11 @@ interface TerminalLine {
 interface InteractiveTerminalProps {
   onDataReceived: (items: TrendingItem[]) => void
   selectedSources: string[]
+  isDemoMode?: boolean
+  onDemoComplete?: () => void
 }
 
-export default function InteractiveTerminal({ onDataReceived, selectedSources }: InteractiveTerminalProps) {
+export default function InteractiveTerminal({ onDataReceived, selectedSources, isDemoMode = false, onDemoComplete }: InteractiveTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([])
   const [currentInput, setCurrentInput] = useState('')
   const [isScanning, setIsScanning] = useState(false)
@@ -45,6 +48,10 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
   const [synthMode, setSynthMode] = useState(false)
   const [synthThinking, setSynthThinking] = useState(false)
   const [synthJustActivated, setSynthJustActivated] = useState(false)
+
+  // Demo mode state
+  const [isDemoRunning, setIsDemoRunning] = useState(false)
+  const [demoInputDisabled, setDemoInputDisabled] = useState(false)
 
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const terminalContainerRef = useRef<HTMLDivElement>(null)
@@ -949,6 +956,282 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
     }])
   }
 
+  // ============================================
+  // AUTO-DEMO MODE ORCHESTRATION
+  // ============================================
+
+  /**
+   * Run the complete auto-demo sequence
+   * This is called by the AutoDemoController when triggered
+   */
+  const runAutoDemo = async () => {
+    console.log('[DEMO] Starting auto-demo sequence...')
+    setIsDemoRunning(true)
+    setDemoInputDisabled(true)
+
+    try {
+      // Wait for scroll to complete (handled by AutoDemoController)
+      await sleep(800)
+
+      // Play boot sound
+      playSuccess()
+      await sleep(500)
+
+      // STEP 1: Type "Initiating DEMO MODE..."
+      let demoText = ''
+      await simulateTyping('Initiating DEMO MODE...', (char) => {
+        demoText += char
+        setCurrentInput(demoText)
+        playSound('typing')
+      }, DEMO_TIMING.TYPING_SPEED_WPM)
+
+      // Add to terminal
+      addLine(`> ${demoText}`, 'success')
+      setCurrentInput('')
+      await sleep(500)
+
+      // STEP 2: Type "/scan all"
+      demoText = ''
+      await simulateTyping('/scan all', (char) => {
+        demoText += char
+        setCurrentInput(demoText)
+        playSound('typing')
+      }, DEMO_TIMING.TYPING_SPEED_WPM)
+
+      // Add to terminal
+      addLine(`> ${demoText}`, 'input')
+      setCurrentInput('')
+      await sleep(300)
+
+      // STEP 3: Hit ENTER and start scan with demo=true
+      playSuccess()
+      await handleDemoScan()
+
+      // STEP 4: After scan completes, transition to SYNTH mode
+      // (This will be called by the scan completion handler)
+
+    } catch (error) {
+      console.error('[DEMO] Error during demo:', error)
+      setIsDemoRunning(false)
+      setDemoInputDisabled(false)
+    }
+  }
+
+  /**
+   * Handle demo scan with dual-stream (cached + fresh)
+   */
+  const handleDemoScan = async () => {
+    setIsScanning(true)
+    setProgress(0)
+    itemsRef.current = []
+
+    playBeep()
+    addLine('Initiating scan: ALL...', 'output')
+    addLine('Active sources: GITHUB, REDDIT, HACKERNEWS, DEV.TO, STOCKS, CRYPTO', 'output')
+    addLine('  ', 'output')
+
+    try {
+      // Connect to DEMO endpoint (cached burst + fresh scan)
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://devpulse-api.onrender.com'
+      const url = `${API_URL}/api/scan?platform=all&demo=true`
+      const eventSource = new EventSource(url)
+
+      let hasSeenCachedBurst = false
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+
+        switch (data.type) {
+          case 'cached_item':
+            // Cached item from demo burst
+            if (!hasSeenCachedBurst) {
+              hasSeenCachedBurst = true
+              addLine('💥 CACHED ITEMS BURST:', 'success')
+            }
+            itemsRef.current.push(data.data)
+            playBeep()
+            const cachedItem = data.data
+            const cachedTitle = cachedItem?.title || 'Untitled'
+            const cachedDisplay = cachedTitle.length > 60 ? cachedTitle.substring(0, 60) + '...' : cachedTitle
+            addLine(`  ✓ ${cachedDisplay}`, 'success')
+            setProgress(prev => prev + 1)
+            break
+
+          case 'status':
+            addLine(`> ${data.message}`, 'output')
+            playBeep()
+            break
+
+          case 'item':
+            // Fresh item from real-time scan
+            itemsRef.current.push(data.data)
+            playBeep()
+            const item = data.data
+            const title = item?.title || 'Untitled'
+            const displayTitle = title.length > 60 ? title.substring(0, 60) + '...' : title
+            addLine(`  ✓ ${displayTitle}`, 'success')
+            setProgress(prev => prev + 1)
+            break
+
+          case 'scan_complete':
+            addLine('> ', 'output')
+            addLine(`✓ Scan complete! Found ${data.total_items} items`, 'success')
+            playSuccess()
+            eventSource.close()
+            setIsScanning(false)
+
+            // Send data to parent
+            onDataReceived(itemsRef.current)
+            saveScanResults(itemsRef.current)
+
+            // Transition to SYNTH mode demo
+            setTimeout(() => {
+              transitionToSynthDemo()
+            }, 1000)
+            break
+
+          case 'error':
+            addLine(`✗ Error: ${data.message}`, 'error')
+            playError()
+            break
+        }
+      }
+
+      eventSource.onerror = () => {
+        addLine('✗ Connection error during demo', 'error')
+        playError()
+        eventSource.close()
+        setIsScanning(false)
+        setIsDemoRunning(false)
+        setDemoInputDisabled(false)
+      }
+
+    } catch (error) {
+      addLine(`✗ Error: ${error}`, 'error')
+      playError()
+      setIsScanning(false)
+      setIsDemoRunning(false)
+      setDemoInputDisabled(false)
+    }
+  }
+
+  /**
+   * Transition to SYNTH mode and run SYNTH demo
+   */
+  const transitionToSynthDemo = async () => {
+    try {
+      // STEP 1: Type "Initiating SYNTH MODE..."
+      await sleep(500)
+      let synthText = ''
+      await simulateTyping('Initiating SYNTH MODE...', (char) => {
+        synthText += char
+        setCurrentInput(synthText)
+        playSound('typing')
+      }, DEMO_TIMING.TYPING_SPEED_WPM)
+
+      addLine(`> ${synthText}`, 'success')
+      setCurrentInput('')
+      await sleep(500)
+
+      // STEP 2: Activate SYNTH mode (existing state/styles)
+      setSynthMode(true)
+      playSuccess()
+      await sleep(500)
+
+      // STEP 3: Type synth query
+      synthText = ''
+      await simulateTyping('/synth best terminal tools for developers', (char) => {
+        synthText += char
+        setCurrentInput(synthText)
+        playSound('typing')
+      }, DEMO_TIMING.TYPING_SPEED_WPM)
+
+      addLine(`SYNTH > ${synthText}`, 'input')
+      setCurrentInput('')
+      await sleep(300)
+
+      // STEP 4: Execute SYNTH search with pre-cached results
+      playBeep()
+      addLine('🔍 SYNTH is searching across sources...', 'progress')
+      await sleep(500)
+
+      // Fetch pre-cached demo results
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://devpulse-api.onrender.com'
+      const response = await fetch(`${API_URL}/api/demo/synth-search`)
+      const result = await response.json()
+
+      // Display results
+      playSuccess()
+      addLine('', 'output')
+      addLine('╔══════════════════════════════════════════════════════════════╗', 'success')
+      addLine(`║  🔍 SYNTH SEARCH RESULTS: ${result.results.length} found`, 'success')
+      addLine('╚══════════════════════════════════════════════════════════════╝', 'success')
+      addLine('', 'output')
+
+      // Display summary
+      addLine('🤖 SYNTH says:', 'output')
+      addLine(`   ${result.summary}`, 'success')
+      addLine('', 'output')
+
+      // Display results with beep sounds
+      for (const item of result.results) {
+        playBeep()
+        addLine(`✓ ${item.title}`, 'success')
+        addLine(`  🔗 ${item.url}`, 'output')
+        if (item.stars) addLine(`  ⭐ ${item.stars}`, 'output')
+        addLine('', 'output')
+        await sleep(150)
+      }
+
+      // Send to parent to display as cards
+      onDataReceived(result.results)
+
+      // STEP 5: Demo complete
+      await sleep(1000)
+      synthText = ''
+      await simulateTyping('Demo complete! Try it yourself! Type /help to get started', (char) => {
+        synthText += char
+        setCurrentInput(synthText)
+        playSound('typing')
+      }, DEMO_TIMING.TYPING_SPEED_WPM)
+
+      addLine(`> ${synthText}`, 'success')
+      setCurrentInput('')
+
+      // Enable user input
+      setIsDemoRunning(false)
+      setDemoInputDisabled(false)
+      setSynthMode(false)
+
+      // Focus input
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 500)
+
+      // Notify parent
+      if (onDemoComplete) {
+        onDemoComplete()
+      }
+
+    } catch (error) {
+      console.error('[DEMO] Error during SYNTH transition:', error)
+      setIsDemoRunning(false)
+      setDemoInputDisabled(false)
+      setSynthMode(false)
+    }
+  }
+
+  // Expose runAutoDemo for external triggering
+  useEffect(() => {
+    if (isDemoMode && !isDemoRunning) {
+      // Give it a moment for the component to fully render
+      const timer = setTimeout(() => {
+        runAutoDemo()
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isDemoMode])
+
   // Load cached results and trigger auto-scan
   useEffect(() => {
     if (hasAutoScanned && !isScanning) {
@@ -1147,14 +1430,17 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources }:
               value={currentInput}
               onChange={(e) => setCurrentInput(e.target.value)}
               onKeyDown={handleKeyDown}
+              disabled={demoInputDisabled}
               className={`flex-1 bg-transparent outline-none ${
                 synthMode
                   ? 'caret-neon-magenta text-neon-magenta'
                   : 'caret-neon-cyan text-neon-cyan'
-              }`}
+              } ${demoInputDisabled ? 'opacity-60 cursor-not-allowed' : ''}`}
               spellCheck={false}
               placeholder={
-                synthMode
+                demoInputDisabled
+                  ? "Demo in progress..."
+                  : synthMode
                   ? "Chat with SYNTH... (type 'exit' to leave)"
                   : isScanning
                   ? "Scan running... type 'game snake' to play"

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import TrendCard from '@/components/TrendCard'
 import InteractiveTerminal from '@/components/InteractiveTerminal'
 import SimpleFilterBar from '@/components/SimpleFilterBar'
@@ -9,8 +9,10 @@ import Navbar from '@/components/Navbar'
 import Sidebar from '@/components/Sidebar'
 import OperatorProfileModal from '@/components/OperatorProfileModal'
 import Footer from '@/components/Footer'
+import AutoDemoController from '@/components/AutoDemoController'
 import { TrendingItem } from '@/lib/types'
 import { loadTodaysScanResults } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +29,27 @@ export default function Home() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
+
+  // Auto-demo state
+  const [isDemoMode, setIsDemoMode] = useState(false)
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
+  const terminalRef = useRef<HTMLDivElement>(null)
+
+  // Check if user is logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsUserLoggedIn(!!session)
+    }
+    checkAuth()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsUserLoggedIn(!!session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   // Load user preferences and cached results on mount
   useEffect(() => {
@@ -220,12 +243,36 @@ export default function Home() {
       </div>
 
       {/* Interactive Terminal */}
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div ref={terminalRef} className="container mx-auto px-4 py-8 max-w-7xl">
         <InteractiveTerminal
           onDataReceived={handleDataReceived}
           selectedSources={preferenceSources}
+          isDemoMode={isDemoMode}
+          onDemoComplete={() => {
+            console.log('[PAGE] Demo completed!')
+            setIsDemoMode(false)
+          }}
         />
       </div>
+
+      {/* Auto-Demo Controller */}
+      <AutoDemoController
+        isUserLoggedIn={isUserLoggedIn}
+        isHomepage={true}
+        terminalRef={terminalRef}
+        onDemoStart={() => {
+          console.log('[PAGE] Demo starting...')
+          setIsDemoMode(true)
+        }}
+        onDemoComplete={() => {
+          console.log('[PAGE] Demo complete from controller')
+          setIsDemoMode(false)
+        }}
+        onDemoSkip={() => {
+          console.log('[PAGE] Demo skipped')
+          setIsDemoMode(false)
+        }}
+      />
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* SYNTH FINDS Button - Special placement above filters */}
