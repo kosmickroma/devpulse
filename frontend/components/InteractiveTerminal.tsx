@@ -377,6 +377,20 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
     playSound('success')
   }
 
+  // Mute all sounds (for demo mode - audio unlocks silently)
+  const muteAllSounds = () => {
+    Object.values(sounds.current).forEach(sound => {
+      if (sound) sound.volume = 0
+    })
+  }
+
+  // Unmute all sounds (restore volume)
+  const unmuteAllSounds = () => {
+    Object.values(sounds.current).forEach(sound => {
+      if (sound) sound.volume = 0.5
+    })
+  }
+
   // Handle asking SYNTH (reusable for all SYNTH queries)
   const handleAskSynth = async (question: string) => {
     if (!question || question.trim().length === 0) {
@@ -1013,11 +1027,14 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
     setIsDemoRunning(true)
     setDemoInputDisabled(true)
 
+    // Mute all sounds at start - audio unlocks silently
+    muteAllSounds()
+
     try {
       // STEP 1: Wait for SLOW scroll to complete (1.5s for dramatic "WTF is happening" effect)
       await sleep(1500)
 
-      // STEP 2: Terminal "boots up" - play boot sound
+      // STEP 2: Terminal "boots up" - play boot sound (muted)
       playSuccess()
       await sleep(200)
 
@@ -1062,13 +1079,15 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       setCurrentInput('')
       await sleep(500)
 
-      // STEP 5: Type "scan all" command - AUDIO STARTS HERE
+      // STEP 5: Type "scan all" command - UNMUTE AND START AUDIO HERE
       // By now, ~2-3 seconds have passed and audio is definitely unlocked
+      unmuteAllSounds() // Restore volume before typing starts
+
       demoText = ''
       await simulateTyping('scan all', (char) => {
         demoText += char
         setCurrentInput(demoText)
-        playSound('typing') // START AUDIO HERE
+        playSound('typing') // Now audible!
       }, DEMO_TIMING.TYPING_SPEED_WPM)
 
       addLine(`> ${demoText}`, 'input')
@@ -1258,7 +1277,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
         await sleep(150)
       }
 
-      addLine(`✨ ${displayCount} results shown above, ${result.results.length} total added to cards below!`, 'output')
+      addLine(`✨ ${displayCount} results previewed above. All ${result.results.length} results added to cards below!`, 'output')
       addLine('', 'output')
 
       // Send to parent to display as cards
