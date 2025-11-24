@@ -1176,10 +1176,10 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
             onDataReceived(itemsRef.current)
             saveScanResults(itemsRef.current)
 
-            // Transition to SYNTH mode demo
+            // Transition to SYNTH mode demo (1500ms ensures all beep sounds finish)
             setTimeout(() => {
               transitionToSynthDemo()
-            }, 1000)
+            }, 1500)
             break
 
           case 'error':
