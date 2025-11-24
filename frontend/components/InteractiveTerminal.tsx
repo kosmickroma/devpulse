@@ -1184,9 +1184,9 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       playSuccess()
       await sleep(500)
 
-      // STEP 3: Type synth query (faster typing - 120 WPM)
+      // STEP 3: Type natural conversational question (faster typing - 120 WPM)
       synthText = ''
-      await simulateTyping('/synth best terminal tools for developers', (char) => {
+      await simulateTyping('hey synth, what are the best terminal tools for developers?', (char) => {
         synthText += char
         setCurrentInput(synthText)
         playSound('typing')
@@ -1196,38 +1196,48 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       setCurrentInput('')
       await sleep(300)
 
-      // STEP 4: Execute SYNTH search with pre-cached results
+      // STEP 4: Show SYNTH is thinking (like the real AI)
       playBeep()
-      addLine('🔍 SYNTH is searching across sources...', 'progress')
-      await sleep(500)
+      addLine('🤖 SYNTH is thinking...', 'progress')
+      await sleep(800)
 
       // Fetch pre-cached demo results
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://devpulse-api.onrender.com'
       const response = await fetch(`${API_URL}/api/demo/synth-search`)
       const result = await response.json()
 
-      // Display results
+      // STEP 5: Display AI conversational response FIRST
       playSuccess()
       addLine('', 'output')
-      addLine('╔══════════════════════════════════════════════════════════════╗', 'success')
-      addLine(`║  🔍 SYNTH SEARCH RESULTS: ${result.results.length} found`, 'success')
-      addLine('╚══════════════════════════════════════════════════════════════╝', 'success')
+      addLine('🤖 SYNTH:', 'success')
+      // Split summary into lines and display naturally
+      const summaryLines = result.summary.split('. ')
+      for (const line of summaryLines) {
+        if (line.trim()) {
+          addLine(`   ${line.trim()}${line.endsWith('.') ? '' : '.'}`, 'output')
+        }
+      }
+      addLine('', 'output')
+      await sleep(600)
+
+      // STEP 6: Then show search results
+      playBeep()
+      addLine('🔍 I found some awesome tools for you:', 'success')
       addLine('', 'output')
 
-      // Display summary
-      addLine('🤖 SYNTH says:', 'output')
-      addLine(`   ${result.summary}`, 'success')
-      addLine('', 'output')
-
-      // Display results with beep sounds
-      for (const item of result.results) {
+      // Display top results with beep sounds
+      for (const item of result.results.slice(0, 5)) {
         playBeep()
         addLine(`✓ ${item.title}`, 'success')
         addLine(`  🔗 ${item.url}`, 'output')
-        if (item.stars) addLine(`  ⭐ ${item.stars}`, 'output')
+        if (item.stars) addLine(`  ⭐ ${item.stars} stars`, 'output')
+        if (item.language) addLine(`  📝 ${item.language}`, 'output')
         addLine('', 'output')
         await sleep(150)
       }
+
+      addLine(`✨ ${result.results.length} results added to cards below!`, 'output')
+      addLine('', 'output')
 
       // Send to parent to display as cards
       onDataReceived(result.results)
