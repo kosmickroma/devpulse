@@ -211,7 +211,7 @@ class SynthDemoCacheService:
     DEMO_QUERY = "best terminal tools for developers"
     DEMO_RESPONSE = {
         "query": "best terminal tools for developers",
-        "summary": "✨ Based on 47 trending discussions across GitHub, Reddit, and Hacker News, developers are loving these terminal productivity boosters. The community is particularly excited about modern CLI tools that enhance the traditional terminal experience.",
+        "summary": "Yo! I just scanned 47 totally radical discussions across GitHub, Reddit, and Hacker News. Devs are LOVING these terminal productivity boosters right now! 🎸 The community is super stoked about modern CLI tools that make the classic terminal experience way more awesome.",
         "results": [
             {
                 "title": "starship/starship - The minimal, blazing-fast, and infinitely customizable prompt",

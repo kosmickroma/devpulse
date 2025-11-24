@@ -329,14 +329,21 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
     }, 2200)
   }, [isSystemReady, profile, backfillStatus])
 
-  // Play sound helper
+  // Play sound helper with cloning for rapid-fire beeps
   const playSound = (soundType: 'typing' | 'beep' | 'error' | 'success') => {
     if (!audioEnabled || !sounds.current[soundType]) return
 
     const sound = sounds.current[soundType]
     if (sound) {
-      sound.currentTime = 0 // Reset to start
-      sound.play().catch(() => {}) // Ignore errors
+      // For beeps during rapid item display, clone the audio to prevent throttling
+      if (soundType === 'beep') {
+        const clone = sound.cloneNode() as HTMLAudioElement
+        clone.volume = sound.volume
+        clone.play().catch(() => {})
+      } else {
+        sound.currentTime = 0
+        sound.play().catch(() => {})
+      }
     }
   }
 

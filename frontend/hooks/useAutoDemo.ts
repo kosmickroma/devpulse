@@ -55,18 +55,39 @@ export function useAutoDemo({
   const scrollToTerminalAndLock = async () => {
     if (!terminalRef.current) return
 
-    // SLOW, dramatic scroll to center - feels alive!
-    terminalRef.current.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-      inline: 'center'
-    })
-
-    // Lock scroll
+    // Lock scroll immediately
     document.body.style.overflow = 'hidden'
 
-    // Wait for slow scroll to complete (1.5 seconds for dramatic effect)
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    // Calculate target scroll position
+    const terminalRect = terminalRef.current.getBoundingClientRect()
+    const targetY = window.scrollY + terminalRect.top - (window.innerHeight / 2) + (terminalRect.height / 2)
+
+    // Smooth scroll with custom animation (guaranteed smooth)
+    const startY = window.scrollY
+    const distance = targetY - startY
+    const duration = 1500 // 1.5 seconds
+    const startTime = performance.now()
+
+    const animateScroll = (currentTime: number) => {
+      const elapsed = currentTime - startTime
+      const progress = Math.min(elapsed / duration, 1)
+
+      // Easing function (ease-in-out)
+      const ease = progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2
+
+      window.scrollTo(0, startY + (distance * ease))
+
+      if (progress < 1) {
+        requestAnimationFrame(animateScroll)
+      }
+    }
+
+    requestAnimationFrame(animateScroll)
+
+    // Wait for animation to complete
+    await new Promise(resolve => setTimeout(resolve, duration))
   }
 
   // Unlock scroll and restore user control
