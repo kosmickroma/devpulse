@@ -34,6 +34,7 @@ export default function Home() {
 
   // Auto-demo state
   const [isDemoMode, setIsDemoMode] = useState(false)
+  const [demoStarted, setDemoStarted] = useState(false) // Track if demo was ever started
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminalComponentRef = useRef<any>(null) // Ref to access terminal's audio unlock
@@ -257,10 +258,10 @@ export default function Home() {
             />
           </div>
 
-          {/* Demo Prompt - Only show for non-logged-in users, fade out when demo starts */}
-          {!isUserLoggedIn && (
-            <div className={`mt-4 transition-all duration-700 ease-out ${isDemoMode ? 'opacity-0 translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
-              <p className="text-neon-green font-mono text-lg font-bold animate-pulse" style={{
+          {/* Demo Prompt - Only show for non-logged-in users, hide after demo starts */}
+          {!isUserLoggedIn && !demoStarted && (
+            <div className="mt-4 transition-all duration-700 ease-out animate-pulse">
+              <p className="text-neon-green font-mono text-lg font-bold" style={{
                 textShadow: '0 0 10px rgba(0, 255, 0, 0.8), 0 0 20px rgba(0, 255, 0, 0.5), 0 0 30px rgba(0, 255, 0, 0.3)',
               }}>
                 ▸ Click anywhere or press any key to start demo
@@ -292,6 +293,7 @@ export default function Home() {
         onDemoStart={() => {
           console.log('[PAGE] Demo starting...')
           setIsDemoMode(true)
+          setDemoStarted(true) // Mark that demo has started
         }}
         onDemoComplete={() => {
           console.log('[PAGE] Demo complete from controller')
