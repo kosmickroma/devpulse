@@ -102,16 +102,9 @@ export function useAutoDemo({
     hasTriggered.current = true
     demoAbortController.current = new AbortController()
 
-    // CRITICAL: Unlock audio immediately on first user interaction!
-    // This is the only reliable way to unlock audio in browsers
-    if (audioUnlockCallback) {
-      try {
-        console.log('[AUTO-DEMO] Unlocking audio on user interaction...')
-        await audioUnlockCallback()
-      } catch (error) {
-        console.warn('[AUTO-DEMO] Audio unlock failed:', error)
-      }
-    }
+    // Audio unlock happens in event handler for trusted events (click/keydown)
+    // For untrusted events (scroll/mousemove), audio may not unlock - that's OK
+    // User can click anywhere during demo to enable audio
 
     // IMMEDIATELY lock scroll only - DON'T disable pointer events
     // (we need cards and filters to be clickable!)
@@ -186,10 +179,23 @@ export function useAutoDemo({
     // Cleanup function to remove all listeners
     const listeners: Array<{ event: string; handler: () => void }> = []
 
-    const addTrigger = (event: string) => {
-      const handler = () => {
+    const addTrigger = (event: string, isTrustedEvent: boolean = false) => {
+      const handler = async () => {
         console.log(`[AUTO-DEMO] Triggered by: ${event}`)
+
+        // For trusted events (click/keydown), unlock audio IMMEDIATELY in handler
+        // This is CRITICAL - audio unlock must happen in the event handler itself
+        if (isTrustedEvent && audioUnlockCallback) {
+          try {
+            console.log('[AUTO-DEMO] Unlocking audio in event handler (trusted interaction)...')
+            await audioUnlockCallback()
+          } catch (error) {
+            console.warn('[AUTO-DEMO] Audio unlock failed:', error)
+          }
+        }
+
         startDemo()
+
         // Remove all listeners after first trigger
         listeners.forEach(({ event, handler }) => {
           window.removeEventListener(event, handler)
@@ -200,11 +206,11 @@ export function useAutoDemo({
       listeners.push({ event, handler })
     }
 
-    // Add triggers for ANY interaction
-    addTrigger('scroll')
-    addTrigger('click')
-    addTrigger('mousemove')
-    addTrigger('keydown')
+    // Add triggers - only click/keydown are "trusted" for audio unlock
+    addTrigger('scroll', false)      // Not trusted for audio
+    addTrigger('click', true)        // TRUSTED - unlocks audio
+    addTrigger('mousemove', false)   // Not trusted for audio
+    addTrigger('keydown', true)      // TRUSTED - unlocks audio
 
     // Cleanup on unmount
     return () => {
