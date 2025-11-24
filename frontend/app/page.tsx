@@ -10,6 +10,7 @@ import Sidebar from '@/components/Sidebar'
 import OperatorProfileModal from '@/components/OperatorProfileModal'
 import Footer from '@/components/Footer'
 import AutoDemoController from '@/components/AutoDemoController'
+import SoundIndicator from '@/components/SoundIndicator'
 import { TrendingItem } from '@/lib/types'
 import { loadTodaysScanResults } from '@/lib/db'
 import { supabase } from '@/lib/supabase'
@@ -33,6 +34,7 @@ export default function Home() {
   // Auto-demo state
   const [isDemoMode, setIsDemoMode] = useState(false)
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
+  const [showSoundIndicator, setShowSoundIndicator] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const terminalComponentRef = useRef<any>(null) // Ref to access terminal's audio unlock
 
@@ -265,21 +267,33 @@ export default function Home() {
         onDemoStart={() => {
           console.log('[PAGE] Demo starting...')
           setIsDemoMode(true)
+          // Show sound indicator after a brief delay (let demo start first)
+          setTimeout(() => setShowSoundIndicator(true), 1000)
         }}
         onDemoComplete={() => {
           console.log('[PAGE] Demo complete from controller')
           setIsDemoMode(false)
+          setShowSoundIndicator(false)
         }}
         onDemoSkip={() => {
           console.log('[PAGE] Demo skipped')
           setIsDemoMode(false)
+          setShowSoundIndicator(false)
         }}
         audioUnlockCallback={async () => {
           // Unlock audio via terminal component
           if (terminalComponentRef.current?.unlockAudio) {
             await terminalComponentRef.current.unlockAudio()
+            // Hide indicator once audio is unlocked
+            setShowSoundIndicator(false)
           }
         }}
+      />
+
+      {/* Sound Indicator - appears if audio is locked during demo */}
+      <SoundIndicator
+        isVisible={showSoundIndicator && isDemoMode}
+        onDismiss={() => setShowSoundIndicator(false)}
       />
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">

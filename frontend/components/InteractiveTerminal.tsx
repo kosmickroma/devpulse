@@ -1318,12 +1318,9 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       // Audio unlock is handled by useAutoDemo hook via audioUnlockCallback
       // This ensures unlock happens on REAL user interaction, not prop change
 
-      // Small delay to ensure component is mounted, then start demo
-      const timer = setTimeout(() => {
-        console.log('[DEMO] Starting demo (audio already unlocked by user interaction)...')
-        runAutoDemo()
-      }, 100) // Reduced from 500ms since audio unlock happens earlier
-      return () => clearTimeout(timer)
+      // Start demo immediately - no delay needed
+      console.log('[DEMO] Starting demo...')
+      runAutoDemo()
     }
   }, [isDemoMode])
 

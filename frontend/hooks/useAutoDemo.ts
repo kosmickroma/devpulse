@@ -183,17 +183,17 @@ export function useAutoDemo({
       const handler = async () => {
         console.log(`[AUTO-DEMO] Triggered by: ${event}`)
 
-        // For trusted events (click/keydown), unlock audio IMMEDIATELY in handler
+        // For trusted events (click/keydown), unlock audio in parallel (non-blocking)
         // This is CRITICAL - audio unlock must happen in the event handler itself
+        // But we don't wait for it to complete, so demo starts instantly
         if (isTrustedEvent && audioUnlockCallback) {
-          try {
-            console.log('[AUTO-DEMO] Unlocking audio in event handler (trusted interaction)...')
-            await audioUnlockCallback()
-          } catch (error) {
+          console.log('[AUTO-DEMO] Unlocking audio in event handler (trusted interaction)...')
+          audioUnlockCallback().catch(error => {
             console.warn('[AUTO-DEMO] Audio unlock failed:', error)
-          }
+          })
         }
 
+        // Start demo immediately (audio unlock happens in parallel)
         startDemo()
 
         // Remove all listeners after first trigger
