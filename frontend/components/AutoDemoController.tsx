@@ -42,8 +42,8 @@ export default function AutoDemoController({
 
   const handleSkipToSignIn = () => {
     skipDemo()
-    // Navigate to auth page
-    window.location.href = '/auth'
+    // Scroll to top where navbar is (with Sign In button)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (

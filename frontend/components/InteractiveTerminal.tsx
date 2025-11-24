@@ -1166,14 +1166,14 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
    */
   const transitionToSynthDemo = async () => {
     try {
-      // STEP 1: Type "Initiating SYNTH MODE..."
+      // STEP 1: Type "Initiating SYNTH MODE..." (faster typing - 120 WPM)
       await sleep(500)
       let synthText = ''
       await simulateTyping('Initiating SYNTH MODE...', (char) => {
         synthText += char
         setCurrentInput(synthText)
         playSound('typing')
-      }, DEMO_TIMING.TYPING_SPEED_WPM)
+      }, 120) // 2x faster than intro
 
       addLine(`> ${synthText}`, 'success')
       setCurrentInput('')
@@ -1184,13 +1184,13 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       playSuccess()
       await sleep(500)
 
-      // STEP 3: Type synth query
+      // STEP 3: Type synth query (faster typing - 120 WPM)
       synthText = ''
       await simulateTyping('/synth best terminal tools for developers', (char) => {
         synthText += char
         setCurrentInput(synthText)
         playSound('typing')
-      }, DEMO_TIMING.TYPING_SPEED_WPM)
+      }, 120) // 2x faster
 
       addLine(`SYNTH > ${synthText}`, 'input')
       setCurrentInput('')
@@ -1232,26 +1232,26 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       // Send to parent to display as cards
       onDataReceived(result.results)
 
-      // STEP 5: Demo complete - first message
+      // STEP 5: Demo complete - first message (much faster - 150 WPM)
       await sleep(1000)
       synthText = ''
       await simulateTyping('End demo - scroll down for content sources', (char) => {
         synthText += char
         setCurrentInput(synthText)
         playSound('typing')
-      }, DEMO_TIMING.TYPING_SPEED_WPM)
+      }, 150) // 2.5x faster - we've already shown off!
 
       addLine(`> ${synthText}`, 'success')
       setCurrentInput('')
       await sleep(500)
 
-      // STEP 6: Call to action - sign up message
+      // STEP 6: Call to action - sign up message (much faster - 150 WPM)
       synthText = ''
       await simulateTyping('Sign up to try it yourself!', (char) => {
         synthText += char
         setCurrentInput(synthText)
         playSound('typing')
-      }, DEMO_TIMING.TYPING_SPEED_WPM)
+      }, 150) // 2.5x faster
 
       addLine(`> ${synthText}`, 'success')
       setCurrentInput('')
