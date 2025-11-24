@@ -238,7 +238,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources, i
 
   // Initial boot sequence - only runs after user initializes system
   useEffect(() => {
-    if (!isSystemReady || hasBooted.current) return // Don't run if not ready or already booted
+    if (!isSystemReady || hasBooted.current || isDemoMode) return // Don't run if not ready, already booted, or in demo mode
 
     hasBooted.current = true // Mark as booted
 
@@ -970,14 +970,40 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources, i
     setDemoInputDisabled(true)
 
     try {
-      // Wait for scroll to complete (handled by AutoDemoController)
-      await sleep(800)
+      // IMPORTANT: Start the REAL scan IMMEDIATELY in the background
+      // This gives us ~14s to do the boot sequence and typing while scan warms up
+      const demoScanPromise = handleDemoScan()
 
-      // Play boot sound
+      // STEP 1: Wait for SLOW scroll to complete (1.5s for dramatic "WTF is happening" effect)
+      await sleep(1500)
+
+      // STEP 2: Terminal "boots up" - play boot sound
       playSuccess()
-      await sleep(500)
+      await sleep(200)
 
-      // STEP 1: Type "Initiating DEMO MODE..."
+      // STEP 3: Show boot sequence (buying time while scan runs in background)
+      const bootLines = [
+        '> DevPulse Terminal v4.0 - SYNTH AI Edition',
+        '> Initializing systems...',
+        '> [✓] GitHub API: ONLINE',
+        '> [✓] Hacker News: ONLINE',
+        '> [✓] Dev.to: ONLINE',
+        '> [✓] Reddit API: ONLINE',
+        '> [✓] Yahoo Finance: ONLINE',
+        '> [✓] CoinGecko: ONLINE',
+        '> [✓] SYNTH AI: READY',
+        '> '
+      ]
+
+      for (const line of bootLines) {
+        addLine(line, line.includes('[✓]') ? 'success' : 'output')
+        playBeep()
+        await sleep(150) // Fast but visible
+      }
+
+      await sleep(300)
+
+      // STEP 4: Type "Initiating DEMO MODE..." (recreating real terminal feel)
       let demoText = ''
       await simulateTyping('Initiating DEMO MODE...', (char) => {
         demoText += char
@@ -985,12 +1011,11 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources, i
         playSound('typing')
       }, DEMO_TIMING.TYPING_SPEED_WPM)
 
-      // Add to terminal
       addLine(`> ${demoText}`, 'success')
       setCurrentInput('')
       await sleep(500)
 
-      // STEP 2: Type "/scan all"
+      // STEP 5: Type "/scan all" command
       demoText = ''
       await simulateTyping('/scan all', (char) => {
         demoText += char
@@ -998,17 +1023,15 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources, i
         playSound('typing')
       }, DEMO_TIMING.TYPING_SPEED_WPM)
 
-      // Add to terminal
       addLine(`> ${demoText}`, 'input')
       setCurrentInput('')
       await sleep(300)
 
-      // STEP 3: Hit ENTER and start scan with demo=true
+      // STEP 6: Hit ENTER sound
       playSuccess()
-      await handleDemoScan()
 
-      // STEP 4: After scan completes, transition to SYNTH mode
-      // (This will be called by the scan completion handler)
+      // NOW the scan results will start pouring in from the background scan we started!
+      // The handleDemoScan promise is already running and populating results
 
     } catch (error) {
       console.error('[DEMO] Error during demo:', error)
@@ -1043,11 +1066,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources, i
 
         switch (data.type) {
           case 'cached_item':
-            // Cached item from demo burst
-            if (!hasSeenCachedBurst) {
-              hasSeenCachedBurst = true
-              addLine('💥 CACHED ITEMS BURST:', 'success')
-            }
+            // Cached item from demo burst - silently add without announcement
             itemsRef.current.push(data.data)
             playBeep()
             const cachedItem = data.data
@@ -1186,10 +1205,22 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources, i
       // Send to parent to display as cards
       onDataReceived(result.results)
 
-      // STEP 5: Demo complete
+      // STEP 5: Demo complete - first message
       await sleep(1000)
       synthText = ''
-      await simulateTyping('Demo complete! Try it yourself! Type /help to get started', (char) => {
+      await simulateTyping('End demo - scroll down for content sources', (char) => {
+        synthText += char
+        setCurrentInput(synthText)
+        playSound('typing')
+      }, DEMO_TIMING.TYPING_SPEED_WPM)
+
+      addLine(`> ${synthText}`, 'success')
+      setCurrentInput('')
+      await sleep(500)
+
+      // STEP 6: Call to action - sign up message
+      synthText = ''
+      await simulateTyping('Sign up to try it yourself!', (char) => {
         synthText += char
         setCurrentInput(synthText)
         playSound('typing')
@@ -1198,7 +1229,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources, i
       addLine(`> ${synthText}`, 'success')
       setCurrentInput('')
 
-      // Enable user input
+      // Enable user input and restore control
       setIsDemoRunning(false)
       setDemoInputDisabled(false)
       setSynthMode(false)
@@ -1224,6 +1255,23 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources, i
   // Expose runAutoDemo for external triggering
   useEffect(() => {
     if (isDemoMode && !isDemoRunning) {
+      // Auto-dismiss the init overlay for demo mode
+      setShowInitOverlay(false)
+      setIsSystemReady(true)
+      setAudioEnabled(true)
+
+      // Unlock audio immediately for demo
+      if (sounds.current.beep) {
+        const beep = sounds.current.beep
+        const originalVolume = beep.volume
+        beep.volume = 0
+        beep.play().then(() => {
+          beep.pause()
+          beep.currentTime = 0
+          beep.volume = originalVolume
+        }).catch(() => {})
+      }
+
       // Give it a moment for the component to fully render
       const timer = setTimeout(() => {
         runAutoDemo()
@@ -1234,7 +1282,7 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources, i
 
   // Load cached results and trigger auto-scan
   useEffect(() => {
-    if (hasAutoScanned && !isScanning) {
+    if (hasAutoScanned && !isScanning && !isDemoMode) {
       // Try to load cached results first
       loadTodaysScanResults().then(cachedItems => {
         if (cachedItems.length > 0) {

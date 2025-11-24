@@ -53,7 +53,7 @@ export function useAutoDemo({
   const scrollToTerminalAndLock = async () => {
     if (!terminalRef.current) return
 
-    // Smooth scroll to center
+    // SLOW, dramatic scroll to center - feels alive!
     terminalRef.current.scrollIntoView({
       behavior: 'smooth',
       block: 'center',
@@ -63,13 +63,14 @@ export function useAutoDemo({
     // Lock scroll
     document.body.style.overflow = 'hidden'
 
-    // Wait for scroll to complete
-    await new Promise(resolve => setTimeout(resolve, 800))
+    // Wait for slow scroll to complete (1.5 seconds for dramatic effect)
+    await new Promise(resolve => setTimeout(resolve, 1500))
   }
 
-  // Unlock scroll
+  // Unlock scroll and restore user control
   const unlockScroll = () => {
     document.body.style.overflow = 'auto'
+    document.body.style.pointerEvents = 'auto' // Re-enable all interactions
   }
 
   // Start demo sequence
@@ -79,6 +80,10 @@ export function useAutoDemo({
     hasTriggered.current = true
     demoAbortController.current = new AbortController()
 
+    // IMMEDIATELY lock scroll and disable all user interaction
+    document.body.style.overflow = 'hidden'
+    document.body.style.pointerEvents = 'none' // Disable all clicks/interactions
+
     setDemoState({
       isDemoRunning: true,
       demoStep: 'scrolling',
@@ -86,7 +91,7 @@ export function useAutoDemo({
     })
 
     try {
-      // Scroll to terminal and lock
+      // Slow scroll to terminal (feels magical)
       await scrollToTerminalAndLock()
 
       setDemoState(prev => ({ ...prev, demoStep: 'typing' }))
