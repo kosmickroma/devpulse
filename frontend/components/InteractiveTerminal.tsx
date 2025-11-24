@@ -1060,9 +1060,9 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       setCurrentInput('')
       await sleep(500)
 
-      // STEP 5: Type "/scan all" command
+      // STEP 5: Type "scan all" command
       demoText = ''
-      await simulateTyping('/scan all', (char) => {
+      await simulateTyping('scan all', (char) => {
         demoText += char
         setCurrentInput(demoText)
         playSound('typing')
@@ -1263,7 +1263,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       // STEP 5: Demo complete - first message (much faster - 150 WPM)
       await sleep(1000)
       synthText = ''
-      await simulateTyping('End demo - scroll down for content sources', (char) => {
+      await simulateTyping('End demo - scroll down for results', (char) => {
         synthText += char
         setCurrentInput(synthText)
         playSound('typing')
@@ -1313,41 +1313,16 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       // Auto-dismiss the init overlay for demo mode
       setShowInitOverlay(false)
       setIsSystemReady(true)
+      setAudioEnabled(true)
 
-      // CRITICAL: Await audio unlock BEFORE starting demo
-      const initDemo = async () => {
-        console.log('[DEMO] Unlocking audio before starting demo...')
+      // Audio unlock is handled by useAutoDemo hook via audioUnlockCallback
+      // This ensures unlock happens on REAL user interaction, not prop change
 
-        // Unlock ALL audio elements properly
-        const unlockPromises = Object.values(sounds.current).map(async (sound) => {
-          if (sound) {
-            try {
-              sound.volume = 0 // Silent unlock
-              const playPromise = sound.play()
-              if (playPromise !== undefined) {
-                await playPromise
-                await new Promise(resolve => setTimeout(resolve, 30))
-                sound.pause()
-                sound.currentTime = 0
-              }
-              sound.volume = 0.5 // Restore volume
-            } catch (error) {
-              console.warn('[DEMO] Audio unlock failed for sound:', error)
-              sound.volume = 0.5
-            }
-          }
-        })
-
-        await Promise.all(unlockPromises)
-        setAudioEnabled(true)
-        console.log('[DEMO] Audio unlocked successfully, starting demo...')
-
-        // NOW start the demo - audio is guaranteed unlocked
+      // Small delay to ensure component is mounted, then start demo
+      const timer = setTimeout(() => {
+        console.log('[DEMO] Starting demo (audio already unlocked by user interaction)...')
         runAutoDemo()
-      }
-
-      // Small delay to ensure component is mounted
-      const timer = setTimeout(initDemo, 500)
+      }, 100) // Reduced from 500ms since audio unlock happens earlier
       return () => clearTimeout(timer)
     }
   }, [isDemoMode])
