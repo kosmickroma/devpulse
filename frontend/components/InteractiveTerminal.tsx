@@ -80,10 +80,10 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
         error: new Audio('/sounds/ui_hacking_passbad.wav'),
         success: new Audio('/sounds/ui_hacking_passgood.wav'),
       }
-      // Preload sounds
+      // Preload sounds with louder volume
       Object.values(sounds.current).forEach(sound => {
         if (sound) {
-          sound.volume = 0.3
+          sound.volume = 0.5 // Increase from 0.3 to 0.5 for better audibility
           sound.load()
         }
       })
@@ -99,20 +99,20 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       const unlockPromises = Object.values(sounds.current).map(async (sound) => {
         if (sound) {
           try {
-            const originalVolume = sound.volume
-            sound.volume = 0.001 // Very quiet but not zero
+            sound.volume = 0 // Silent unlock
             const playPromise = sound.play()
 
             if (playPromise !== undefined) {
               await playPromise
               // Let it play for a tiny moment to fully unlock
-              await new Promise(resolve => setTimeout(resolve, 50))
+              await new Promise(resolve => setTimeout(resolve, 30))
               sound.pause()
               sound.currentTime = 0
-              sound.volume = originalVolume
             }
+            sound.volume = 0.5 // Restore to louder volume
           } catch (error) {
             console.warn('[TERMINAL] Audio unlock failed for sound:', error)
+            sound.volume = 0.5 // Ensure volume is set even on error
           }
         }
       })
@@ -1021,6 +1021,11 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       playSuccess()
       await sleep(200)
 
+      // Start scan in background AFTER boot sound but BEFORE typing
+      // This gives scan time to warm up while typing happens
+      const scanStartDelay = 3000 // Start scan 3s from now (during typing)
+      const demoScanPromise = sleep(scanStartDelay).then(() => handleDemoScan())
+
       // STEP 3: Show boot sequence (buying time while scan runs in background)
       const bootLines = [
         '> DevPulse Terminal v4.0 - SYNTH AI Edition',
@@ -1070,8 +1075,8 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       // STEP 6: Hit ENTER sound
       playSuccess()
 
-      // NOW start the scan (after typing completes!)
-      await handleDemoScan()
+      // Wait for background scan to complete (it's already running)
+      await demoScanPromise
 
     } catch (error) {
       console.error('[DEMO] Error during demo:', error)
