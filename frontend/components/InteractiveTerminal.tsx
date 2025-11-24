@@ -1021,9 +1021,9 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       playSuccess()
       await sleep(200)
 
-      // Start scan in background AFTER boot sound but BEFORE typing
+      // Start scan in background DURING boot sequence
       // This gives scan time to warm up while typing happens
-      const scanStartDelay = 3000 // Start scan 3s from now (during typing)
+      const scanStartDelay = 500 // Start scan 500ms from now (DURING boot lines)
       const demoScanPromise = sleep(scanStartDelay).then(() => handleDemoScan())
 
       // STEP 3: Show boot sequence (buying time while scan runs in background)
@@ -1313,24 +1313,41 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       // Auto-dismiss the init overlay for demo mode
       setShowInitOverlay(false)
       setIsSystemReady(true)
-      setAudioEnabled(true)
 
-      // Unlock audio immediately for demo
-      if (sounds.current.beep) {
-        const beep = sounds.current.beep
-        const originalVolume = beep.volume
-        beep.volume = 0
-        beep.play().then(() => {
-          beep.pause()
-          beep.currentTime = 0
-          beep.volume = originalVolume
-        }).catch(() => {})
+      // CRITICAL: Await audio unlock BEFORE starting demo
+      const initDemo = async () => {
+        console.log('[DEMO] Unlocking audio before starting demo...')
+
+        // Unlock ALL audio elements properly
+        const unlockPromises = Object.values(sounds.current).map(async (sound) => {
+          if (sound) {
+            try {
+              sound.volume = 0 // Silent unlock
+              const playPromise = sound.play()
+              if (playPromise !== undefined) {
+                await playPromise
+                await new Promise(resolve => setTimeout(resolve, 30))
+                sound.pause()
+                sound.currentTime = 0
+              }
+              sound.volume = 0.5 // Restore volume
+            } catch (error) {
+              console.warn('[DEMO] Audio unlock failed for sound:', error)
+              sound.volume = 0.5
+            }
+          }
+        })
+
+        await Promise.all(unlockPromises)
+        setAudioEnabled(true)
+        console.log('[DEMO] Audio unlocked successfully, starting demo...')
+
+        // NOW start the demo - audio is guaranteed unlocked
+        runAutoDemo()
       }
 
-      // Give it a moment for the component to fully render
-      const timer = setTimeout(() => {
-        runAutoDemo()
-      }, 500)
+      // Small delay to ensure component is mounted
+      const timer = setTimeout(initDemo, 500)
       return () => clearTimeout(timer)
     }
   }, [isDemoMode])
