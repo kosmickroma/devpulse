@@ -34,6 +34,7 @@ export default function Home() {
   const [isDemoMode, setIsDemoMode] = useState(false)
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
+  const terminalComponentRef = useRef<any>(null) // Ref to access terminal's audio unlock
 
   // Check if user is logged in
   useEffect(() => {
@@ -245,6 +246,7 @@ export default function Home() {
       {/* Interactive Terminal */}
       <div ref={terminalRef} className="container mx-auto px-4 py-8 max-w-7xl">
         <InteractiveTerminal
+          ref={terminalComponentRef}
           onDataReceived={handleDataReceived}
           selectedSources={preferenceSources}
           isDemoMode={isDemoMode}
@@ -271,6 +273,12 @@ export default function Home() {
         onDemoSkip={() => {
           console.log('[PAGE] Demo skipped')
           setIsDemoMode(false)
+        }}
+        audioUnlockCallback={async () => {
+          // Unlock audio via terminal component
+          if (terminalComponentRef.current?.unlockAudio) {
+            await terminalComponentRef.current.unlockAudio()
+          }
         }}
       />
 

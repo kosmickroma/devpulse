@@ -15,6 +15,7 @@ interface AutoDemoOptions {
   onDemoStart: () => void
   onDemoComplete: () => void
   onDemoSkip: () => void
+  audioUnlockCallback?: () => Promise<void>
 }
 
 /**
@@ -27,7 +28,8 @@ export function useAutoDemo({
   terminalRef,
   onDemoStart,
   onDemoComplete,
-  onDemoSkip
+  onDemoSkip,
+  audioUnlockCallback
 }: AutoDemoOptions) {
   const [demoState, setDemoState] = useState<AutoDemoState>({
     isDemoRunning: false,
@@ -70,7 +72,6 @@ export function useAutoDemo({
   // Unlock scroll and restore user control
   const unlockScroll = () => {
     document.body.style.overflow = 'auto'
-    document.body.style.pointerEvents = 'auto' // Re-enable all interactions
   }
 
   // Start demo sequence
@@ -80,9 +81,20 @@ export function useAutoDemo({
     hasTriggered.current = true
     demoAbortController.current = new AbortController()
 
-    // IMMEDIATELY lock scroll and disable all user interaction
+    // CRITICAL: Unlock audio immediately on first user interaction!
+    // This is the only reliable way to unlock audio in browsers
+    if (audioUnlockCallback) {
+      try {
+        console.log('[AUTO-DEMO] Unlocking audio on user interaction...')
+        await audioUnlockCallback()
+      } catch (error) {
+        console.warn('[AUTO-DEMO] Audio unlock failed:', error)
+      }
+    }
+
+    // IMMEDIATELY lock scroll only - DON'T disable pointer events
+    // (we need cards and filters to be clickable!)
     document.body.style.overflow = 'hidden'
-    document.body.style.pointerEvents = 'none' // Disable all clicks/interactions
 
     setDemoState({
       isDemoRunning: true,

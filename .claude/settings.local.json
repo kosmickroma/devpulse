@@ -17,7 +17,8 @@
       "Bash(cat:*)",
       "Bash(python -m pytest:*)",
       "Bash(source:*)",
-      "Bash(scrapy list:*)"
+      "Bash(scrapy list:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

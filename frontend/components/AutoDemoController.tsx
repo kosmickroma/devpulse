@@ -9,6 +9,7 @@ interface AutoDemoControllerProps {
   onDemoStart: () => void
   onDemoComplete: () => void
   onDemoSkip: () => void
+  audioUnlockCallback?: () => Promise<void>
 }
 
 /**
@@ -21,7 +22,8 @@ export default function AutoDemoController({
   terminalRef,
   onDemoStart,
   onDemoComplete,
-  onDemoSkip
+  onDemoSkip,
+  audioUnlockCallback
 }: AutoDemoControllerProps) {
   const { demoState, skipDemo } = useAutoDemo({
     isUserLoggedIn,
@@ -29,7 +31,8 @@ export default function AutoDemoController({
     terminalRef,
     onDemoStart,
     onDemoComplete,
-    onDemoSkip
+    onDemoSkip,
+    audioUnlockCallback
   })
 
   // Don't render anything if demo is not running
@@ -39,8 +42,8 @@ export default function AutoDemoController({
 
   const handleSkipToSignIn = () => {
     skipDemo()
-    // Scroll to top where the sign-in button is
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Navigate to auth page
+    window.location.href = '/auth'
   }
 
   return (

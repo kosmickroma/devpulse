@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, KeyboardEvent } from 'react'
+import { useState, useEffect, useRef, KeyboardEvent, forwardRef, useImperativeHandle } from 'react'
 import { TrendingItem } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
 import { loadTodaysScanResults, saveScanResults } from '@/lib/db'
@@ -23,7 +23,11 @@ interface InteractiveTerminalProps {
   onDemoComplete?: () => void
 }
 
-export default function InteractiveTerminal({ onDataReceived, selectedSources, isDemoMode = false, onDemoComplete }: InteractiveTerminalProps) {
+export interface InteractiveTerminalHandle {
+  unlockAudio: () => Promise<void>
+}
+
+const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTerminalProps>(({ onDataReceived, selectedSources, isDemoMode = false, onDemoComplete }, ref) => {
   const [lines, setLines] = useState<TerminalLine[]>([])
   const [currentInput, setCurrentInput] = useState('')
   const [isScanning, setIsScanning] = useState(false)
@@ -85,6 +89,29 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources, i
       })
     }
   }, [])
+
+  // Expose unlockAudio method via ref for demo mode
+  useImperativeHandle(ref, () => ({
+    unlockAudio: async () => {
+      console.log('[TERMINAL] Unlocking audio...')
+      if (sounds.current.beep) {
+        try {
+          const beep = sounds.current.beep
+          const originalVolume = beep.volume
+          beep.volume = 0
+          await beep.play()
+          beep.pause()
+          beep.currentTime = 0
+          beep.volume = originalVolume
+          setAudioEnabled(true)
+          console.log('[TERMINAL] Audio unlocked successfully!')
+        } catch (error) {
+          console.warn('[TERMINAL] Audio unlock failed:', error)
+          setAudioEnabled(true) // Try anyway
+        }
+      }
+    }
+  }))
 
   // Handle system initialization (unlock audio and start boot)
   const handleInitialize = async () => {
@@ -1536,4 +1563,8 @@ export default function InteractiveTerminal({ onDataReceived, selectedSources, i
       </div>
     </>
   )
-}
+})
+
+InteractiveTerminal.displayName = 'InteractiveTerminal'
+
+export default InteractiveTerminal
