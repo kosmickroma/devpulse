@@ -74,7 +74,8 @@ async def scan_stream(
     sources: Optional[str] = None,
     platform: Optional[str] = None,
     language: Optional[str] = None,
-    time_range: str = "daily"
+    time_range: str = "daily",
+    demo: bool = False
 ):
     async def event_generator():
         source_param = sources or platform or "all"
@@ -94,6 +95,23 @@ async def scan_stream(
             source_list = [s.strip() for s in source_param.split(',')]
             spiders = [source_to_spider.get(s, s) for s in source_list]
 
+        # DEMO MODE: Send cached items INSTANTLY
+        if demo:
+            from api.services.demo_cache_service import DemoCacheService
+
+            # PHASE 1: INSTANT CACHED BURST (360 items in <1s)
+            cached_items = await DemoCacheService.get_cached_items_shuffled()
+
+            if cached_items:
+                for item in cached_items:
+                    yield f"data: {json.dumps({'type': 'cached_item', 'data': item})}\n\n"
+                    await asyncio.sleep(0.002)  # ~2ms per item = ~720ms total for 360 items
+
+            # PHASE 2: TRANSITION MESSAGE
+            yield f"data: {json.dumps({'type': 'status', 'message': '🔄 Fetching latest updates...'})}\n\n"
+            await asyncio.sleep(0.1)
+
+        # NORMAL MODE or continuing after cached burst in DEMO MODE
         yield f"data: {json.dumps({'type': 'status', 'message': f'Launching {len(spiders)} sources in true parallel...'})}\n\n"
         await asyncio.sleep(0.2)
 
@@ -278,6 +296,68 @@ async def get_backfill_status():
         return {"last_updated": None, "total_trends": 0, "message": "No backfill runs yet"}
     except Exception as e:
         return {"error": str(e)}
+
+
+# ============================================
+# DEMO MODE ENDPOINTS
+# ============================================
+
+@app.get("/api/demo/cached-items")
+async def get_demo_cached_items():
+    """
+    Get cached items for instant demo mode display.
+    Returns up to 360 items (60 per source) in randomized order.
+    """
+    from api.services.demo_cache_service import DemoCacheService
+
+    items = await DemoCacheService.get_cached_items_shuffled()
+    return {
+        "success": True,
+        "count": len(items),
+        "items": items
+    }
+
+
+@app.get("/api/demo/synth-search")
+async def get_demo_synth_search():
+    """
+    Get pre-cached Synth search result for demo mode.
+    Returns instant results without calling Gemini API.
+    """
+    from api.services.demo_cache_service import SynthDemoCacheService
+
+    result = await SynthDemoCacheService.get_demo_search_result()
+    return result
+
+
+@app.post("/api/demo/refresh-cache")
+async def refresh_demo_cache():
+    """
+    Manually trigger cache refresh for all sources.
+    Runs full scan and stores top 60 items per source.
+    """
+    from api.services.demo_cache_service import DemoCacheService
+    import asyncio
+
+    # Run refresh in background
+    asyncio.create_task(DemoCacheService.refresh_all_sources())
+
+    return {
+        "success": True,
+        "message": "Cache refresh started in background"
+    }
+
+
+@app.get("/api/demo/cache-stats")
+async def get_cache_stats():
+    """
+    Get statistics about cached items.
+    Shows count per source, last updated times, etc.
+    """
+    from api.services.demo_cache_service import DemoCacheService
+
+    stats = await DemoCacheService.get_cache_stats()
+    return stats
 
 
 if __name__ == "__main__":
