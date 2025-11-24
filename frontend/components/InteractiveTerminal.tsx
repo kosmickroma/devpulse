@@ -94,22 +94,32 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
   useImperativeHandle(ref, () => ({
     unlockAudio: async () => {
       console.log('[TERMINAL] Unlocking audio...')
-      if (sounds.current.beep) {
-        try {
-          const beep = sounds.current.beep
-          const originalVolume = beep.volume
-          beep.volume = 0
-          await beep.play()
-          beep.pause()
-          beep.currentTime = 0
-          beep.volume = originalVolume
-          setAudioEnabled(true)
-          console.log('[TERMINAL] Audio unlocked successfully!')
-        } catch (error) {
-          console.warn('[TERMINAL] Audio unlock failed:', error)
-          setAudioEnabled(true) // Try anyway
+
+      // Unlock ALL audio elements by playing them silently
+      const unlockPromises = Object.values(sounds.current).map(async (sound) => {
+        if (sound) {
+          try {
+            const originalVolume = sound.volume
+            sound.volume = 0.001 // Very quiet but not zero
+            const playPromise = sound.play()
+
+            if (playPromise !== undefined) {
+              await playPromise
+              // Let it play for a tiny moment to fully unlock
+              await new Promise(resolve => setTimeout(resolve, 50))
+              sound.pause()
+              sound.currentTime = 0
+              sound.volume = originalVolume
+            }
+          } catch (error) {
+            console.warn('[TERMINAL] Audio unlock failed for sound:', error)
+          }
         }
-      }
+      })
+
+      await Promise.all(unlockPromises)
+      setAudioEnabled(true)
+      console.log('[TERMINAL] Audio unlocked successfully!')
     }
   }))
 
@@ -1004,10 +1014,6 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
     setDemoInputDisabled(true)
 
     try {
-      // IMPORTANT: Start the REAL scan IMMEDIATELY in the background
-      // This gives us ~14s to do the boot sequence and typing while scan warms up
-      const demoScanPromise = handleDemoScan()
-
       // STEP 1: Wait for SLOW scroll to complete (1.5s for dramatic "WTF is happening" effect)
       await sleep(1500)
 
@@ -1064,8 +1070,8 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       // STEP 6: Hit ENTER sound
       playSuccess()
 
-      // NOW the scan results will start pouring in from the background scan we started!
-      // The handleDemoScan promise is already running and populating results
+      // NOW start the scan (after typing completes!)
+      await handleDemoScan()
 
     } catch (error) {
       console.error('[DEMO] Error during demo:', error)
