@@ -109,7 +109,9 @@ class ConversationService:
                 'repo', 'repository', 'project', 'code', 'trending', 'popular', 'latest',
                 'tutorial', 'tutorials', 'discussion', 'discussions', 'article', 'articles',
                 'post', 'posts', 'thread', 'threads', 'examples', 'resources',
-                'tools', 'libraries', 'frameworks', 'packages'
+                'tools', 'libraries', 'frameworks', 'packages',
+                # Financial terms for crypto/stocks routing
+                'price', 'value', 'market', 'trading', 'ticker', 'chart'
             ]
             has_search_indicators = any(indicator in query_lower for indicator in search_indicators)
 
@@ -140,28 +142,37 @@ class ConversationService:
                 query = f"{query} about {last_query}"
                 print(f"💭 SYNTH adding context from DB: {last_query}")
 
-        query_type = self.detect_query_type(query)
-        print(f"🤖 SYNTH detected query type: {query_type}")
-
-        # SHADOW MODE: Test IntentClassifier alongside current system
+        # Try IntentClassifier first (pattern matching - 0.03ms)
+        intent_result = None
         if self.intent_classifier:
             try:
                 intent_result = self.intent_classifier.classify(query)
-                print(f"🔬 SHADOW MODE - IntentClassifier Results:")
+                print(f"🎯 IntentClassifier Results:")
                 print(f"   Confidence: {intent_result.confidence:.2f}")
                 print(f"   Intent: {intent_result.intent_type.value}")
                 print(f"   Sources: {intent_result.sources}")
                 print(f"   Keywords: {intent_result.keywords}")
-                print(f"   Entities: {intent_result.entities}")
-                print(f"   Time: {intent_result.classification_time_ms:.2f}ms")
-                print(f"   Time Sensitive: {intent_result.time_sensitive}")
             except Exception as e:
-                print(f"⚠️ SHADOW MODE - IntentClassifier error: {e}")
+                print(f"⚠️ IntentClassifier error, falling back: {e}")
+                intent_result = None
 
-        if query_type == 'search':
-            result = await self._handle_search(query)
+        # Route based on IntentClassifier confidence
+        if intent_result and intent_result.confidence >= 0.5:
+            # High confidence - use IntentClassifier routing
+            if intent_result.sources:
+                result = await self._handle_search_with_intent(query, intent_result)
+            else:
+                result = await self._handle_chat(query, user_id=user_id)
         else:
-            result = await self._handle_chat(query, user_id=user_id)
+            # Low confidence - fall back to old system
+            query_type = self.detect_query_type(query)
+            if intent_result:
+                print(f"⚠️ Low confidence ({intent_result.confidence:.2f}), using fallback")
+
+            if query_type == 'search':
+                result = await self._handle_search(query)
+            else:
+                result = await self._handle_chat(query, user_id=user_id)
 
         # Store query in conversation history (DB or memory)
         if user_id:
@@ -223,6 +234,43 @@ class ConversationService:
             'commentary': search_results.get('commentary', ''),
             'total_found': search_results.get('total_found', 0),
             'intent': search_results.get('intent', {}),
+            'errors': search_results.get('errors')
+        }
+
+    async def _handle_search_with_intent(self, query: str, intent_result) -> Dict[str, Any]:
+        """
+        Handle search using IntentClassifier results.
+
+        Args:
+            query: User's query
+            intent_result: IntentClassifier result with sources, keywords, entities
+
+        Returns:
+            Search results with AI commentary
+        """
+        # Pass IntentClassifier data to search service
+        search_results = await self.search_service.search_with_intent(
+            query=query,
+            sources=intent_result.sources,
+            keywords=intent_result.keywords,
+            entities=intent_result.entities,
+            intent_type=intent_result.intent_type.value,
+            time_sensitive=intent_result.time_sensitive
+        )
+
+        return {
+            'type': 'search',
+            'query': query,
+            'results': search_results.get('results', []),
+            'commentary': search_results.get('commentary', ''),
+            'total_found': search_results.get('total_found', 0),
+            'intent': {
+                'type': intent_result.intent_type.value,
+                'confidence': intent_result.confidence,
+                'sources': intent_result.sources,
+                'keywords': intent_result.keywords,
+                'entities': intent_result.entities
+            },
             'errors': search_results.get('errors')
         }
 

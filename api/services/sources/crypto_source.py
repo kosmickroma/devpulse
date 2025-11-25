@@ -91,7 +91,7 @@ class CryptoSource(SearchSource):
         return 'Crypto'
 
     def get_source_type(self) -> SourceType:
-        return SourceType.OTHER
+        return SourceType.MARKET
 
     def get_capabilities(self) -> dict:
         return {
@@ -205,7 +205,7 @@ class CryptoSource(SearchSource):
                     title=title,
                     url=f"https://www.coingecko.com/en/coins/{coin_id}",
                     source='synth/crypto',
-                    result_type=SourceType.OTHER,
+                    result_type=SourceType.MARKET,
                     description=description,
                     author='CoinGecko',
                     score=market_cap_rank if market_cap_rank else 999,  # Lower rank = higher score
@@ -282,7 +282,7 @@ class CryptoSource(SearchSource):
                     title=title,
                     url=f"https://www.coingecko.com/en/coins/{coin_id}",
                     source='synth/crypto',
-                    result_type=SourceType.OTHER,
+                    result_type=SourceType.MARKET,
                     description=description,
                     author='CoinGecko',
                     score=int(market_cap) if market_cap else 0,  # Use market cap as score

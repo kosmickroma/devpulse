@@ -123,7 +123,7 @@ class StocksSource(SearchSource):
         return 'Stocks'
 
     def get_source_type(self) -> SourceType:
-        return SourceType.OTHER
+        return SourceType.MARKET
 
     def get_capabilities(self) -> dict:
         return {
@@ -252,7 +252,7 @@ class StocksSource(SearchSource):
                     title=title,
                     url=f"https://finance.yahoo.com/quote/{symbol}",
                     source='synth/stocks',
-                    result_type=SourceType.OTHER,
+                    result_type=SourceType.MARKET,
                     description=description,
                     author='Yahoo Finance',
                     score=int(volume) if volume else 0,  # Use volume as score

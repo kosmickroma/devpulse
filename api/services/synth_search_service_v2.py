@@ -8,6 +8,7 @@ Fixes 'stars' KeyError and enables parallel multi-source searching.
 from typing import Dict, List, Any, Optional
 import asyncio
 import re
+from datetime import datetime
 from api.services.source_registry import get_registry, SearchResult
 from api.services.sources import GitHubSource, RedditSource, HackerNewsSource, DevToSource, StocksSource, CryptoSource
 from api.services.gemini_service import GeminiService
@@ -470,8 +471,21 @@ class SynthSearchServiceV2:
             else:
                 all_results.extend(result)
 
-        # Sort by score (stars/upvotes/points) and deduplicate by URL
-        all_results.sort(key=lambda x: x.score, reverse=True)
+        # Sort with time-awareness
+        if intent.get('time_filter'):
+            # Time-sensitive queries: Sort by date first, then score
+            all_results.sort(
+                key=lambda x: (
+                    getattr(x, 'created_at', datetime.min),  # Primary: date
+                    x.score                                   # Secondary: score
+                ),
+                reverse=True
+            )
+            print(f"📅 Sorted by date (time-sensitive)")
+        else:
+            # Normal queries: Sort by score only
+            all_results.sort(key=lambda x: x.score, reverse=True)
+            print(f"⭐ Sorted by score")
         seen_urls = set()
         unique_results = []
         for result in all_results:
@@ -499,6 +513,179 @@ class SynthSearchServiceV2:
             'commentary': commentary,
             'errors': errors if errors else None,
             'from_cache': False
+        }
+
+    async def search_with_intent(
+        self,
+        query: str,
+        sources: List[str],
+        keywords: List[str],
+        entities: Dict[str, List[str]],
+        intent_type: str,
+        time_sensitive: bool
+    ) -> Dict[str, Any]:
+        """
+        Execute search using IntentClassifier results.
+
+        This bypasses parse_search_intent() and uses pre-classified data.
+
+        Args:
+            query: Original query
+            sources: Pre-selected sources from IntentClassifier
+            keywords: Cleaned keywords (stop words removed)
+            entities: Extracted entities (languages, frameworks, games, etc.)
+            intent_type: Detected intent type
+            time_sensitive: Whether query is time-sensitive
+
+        Returns:
+            Combined search results with AI commentary
+        """
+        print(f"🎯 Smart search with intent:")
+        print(f"   Sources: {sources}")
+        print(f"   Keywords: {keywords}")
+        print(f"   Entities: {entities}")
+        print(f"   Intent: {intent_type}")
+        print(f"   Time Sensitive: {time_sensitive}")
+
+        # Build intent object (skip parse_search_intent)
+        intent = {
+            'sources': sources,
+            'language': entities.get('languages', [None])[0],  # First language
+            'keywords': keywords,
+            'original_query': query,
+            'time_filter': 'week' if time_sensitive else None,
+            'sort_by': 'new' if time_sensitive else None,
+            'limit': 15
+        }
+
+        # Extract specific entities for filtering
+        frameworks = entities.get('frameworks', [])
+        games = entities.get('games', [])
+        cryptos = entities.get('cryptocurrencies', [])
+
+        print(f"🔍 SYNTH Intent (from IntentClassifier): {intent}")
+
+        # Check cache first
+        cache_key = self._generate_cache_key(intent)
+        cached = await self._get_cached_results(cache_key)
+        if cached:
+            print(f"✅ Cache HIT: {cache_key[:8]}...")
+            return cached
+
+        print(f"❌ Cache MISS: {cache_key[:8]}...")
+
+        # Execute searches in parallel (only for selected sources)
+        search_tasks = []
+        for source_name in intent['sources']:
+            source = self.registry.get_source(source_name)
+            if not source:
+                print(f"⚠️ Source '{source_name}' not found in registry")
+                continue
+
+            # Build source-specific query and filters
+            search_query = ' '.join(keywords) if keywords else query
+
+            # Add language filter for code sources
+            filters = {}
+            if intent['language'] and source_name in ['github']:
+                filters['language'] = intent['language']
+
+            # Add framework filter
+            if frameworks and source_name in ['github', 'devto']:
+                search_query = f"{' '.join(frameworks)} {search_query}"
+
+            # Add game filter
+            if games:
+                search_query = f"{' '.join(games)} {search_query}"
+
+            # Add crypto filter
+            if cryptos and source_name == 'crypto':
+                search_query = ' '.join(cryptos)
+
+            # Time filter for time-sensitive queries
+            if intent.get('time_filter'):
+                filters['time_filter'] = intent['time_filter']
+
+            # Sort preference
+            if intent.get('sort_by'):
+                if source_name == 'github':
+                    sort_map = {'stars': 'stars', 'new': 'updated', 'top': 'stars'}
+                    filters['sort'] = sort_map.get(intent['sort_by'], 'stars')
+                elif source_name == 'reddit':
+                    sort_map = {'stars': 'top', 'new': 'new', 'top': 'top'}
+                    filters['sort'] = sort_map.get(intent['sort_by'], 'relevance')
+
+            result_limit = intent.get('limit', 15)
+
+            print(f"🔍 {source_name} query: '{search_query}' (limit={result_limit}, filters={filters})")
+
+            task = source.search(query=search_query, limit=result_limit, **filters)
+            search_tasks.append((source_name, task))
+
+        # Execute all searches in parallel
+        results_by_source = await asyncio.gather(
+            *[task for _, task in search_tasks],
+            return_exceptions=True
+        )
+
+        # Collect results
+        all_results = []
+        errors = []
+
+        for (source_name, _), result in zip(search_tasks, results_by_source):
+            if isinstance(result, Exception):
+                error_msg = f"{source_name}: {str(result)}"
+                errors.append(error_msg)
+                print(f"❌ {error_msg}")
+            elif isinstance(result, list):
+                print(f"✅ {source_name}: Found {len(result)} results")
+                all_results.extend(result)
+            else:
+                print(f"⚠️ {source_name}: Unexpected result type {type(result)}")
+
+        # Sort results with time-awareness
+        if time_sensitive and intent.get('time_filter'):
+            # Time-sensitive: Sort by date first, then score
+            all_results.sort(
+                key=lambda x: (
+                    getattr(x, 'created_at', datetime.min),
+                    x.score
+                ),
+                reverse=True
+            )
+            print(f"📅 Sorted by date (time-sensitive query)")
+        else:
+            # Normal: Sort by score only
+            all_results.sort(key=lambda x: x.score, reverse=True)
+            print(f"⭐ Sorted by score")
+
+        # Deduplicate by URL (keep highest score)
+        seen_urls = set()
+        deduplicated = []
+        for result in all_results:
+            if result.url not in seen_urls:
+                seen_urls.add(result.url)
+                deduplicated.append(result)
+
+        # Limit to top results
+        final_results = deduplicated[:intent.get('limit', 15)]
+
+        # Generate AI commentary
+        commentary = await self._generate_commentary_async(
+            query=query,
+            intent=intent,
+            results=[r.to_dict() for r in final_results]
+        )
+
+        # Cache results
+        await self._cache_results(cache_key, final_results, commentary, intent)
+
+        return {
+            'results': [r.to_dict() for r in final_results],
+            'commentary': commentary,
+            'total_found': len(final_results),
+            'intent': intent,
+            'errors': errors if errors else None
         }
 
     def _generate_commentary(self, query: str, intent: Dict[str, Any], results: List[Dict[str, Any]]) -> str:
