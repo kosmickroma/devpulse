@@ -565,14 +565,17 @@ class SynthSearchServiceV2:
 
         print(f"🔍 SYNTH Intent (from IntentClassifier): {intent}")
 
-        # Check cache first
-        cache_key = self._generate_cache_key(intent)
-        cached = await self._get_cached_results(cache_key)
+        # Check cache first (using same cache service as regular search)
+        cached = await self.cache.get_cached_results(query, intent)
         if cached:
-            print(f"✅ Cache HIT: {cache_key[:8]}...")
+            print(f"✅ Cache HIT for: {query}")
+            # Add AI commentary to cached results
+            commentary = self._generate_commentary(query, intent, cached['results'])
+            cached['commentary'] = commentary
+            cached['query'] = query
             return cached
 
-        print(f"❌ Cache MISS: {cache_key[:8]}...")
+        print(f"❌ Cache MISS for: {query}")
 
         # Execute searches in parallel (only for selected sources)
         search_tasks = []
@@ -670,22 +673,23 @@ class SynthSearchServiceV2:
         # Limit to top results
         final_results = deduplicated[:intent.get('limit', 15)]
 
-        # Generate AI commentary
-        commentary = await self._generate_commentary_async(
-            query=query,
-            intent=intent,
-            results=[r.to_dict() for r in final_results]
-        )
+        # Convert results to dicts for caching
+        result_dicts = [r.to_dict() for r in final_results]
 
-        # Cache results
-        await self._cache_results(cache_key, final_results, commentary, intent)
+        # Generate AI commentary (synchronous)
+        commentary = self._generate_commentary(query, intent, result_dicts)
+
+        # Cache results (using same cache service as regular search)
+        await self.cache.cache_results(query, intent, result_dicts)
 
         return {
-            'results': [r.to_dict() for r in final_results],
-            'commentary': commentary,
-            'total_found': len(final_results),
+            'query': query,
             'intent': intent,
-            'errors': errors if errors else None
+            'results': result_dicts,
+            'total_found': len(result_dicts),
+            'commentary': commentary,
+            'errors': errors if errors else None,
+            'from_cache': False
         }
 
     def _generate_commentary(self, query: str, intent: Dict[str, Any], results: List[Dict[str, Any]]) -> str:
