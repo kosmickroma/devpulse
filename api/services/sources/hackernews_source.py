@@ -43,14 +43,18 @@ class HackerNewsSource(SearchSource):
         **filters
     ) -> List[SearchResult]:
         """
-        Search HackerNews stories.
+        Search HackerNews stories with progressive refinement.
+
+        Uses smart fallback strategy: if initial query returns too few results,
+        automatically tries broader queries. Copied from GitHub's proven pattern.
 
         Args:
             query: Search query
             limit: Max results
             **filters:
                 tags: Filter by tags ('story', 'show_hn', 'ask_hn', etc.)
-                min_points: Minimum points required
+                min_points: Minimum points required (default: 10)
+                time_filter: 'day', 'week', 'month', 'year' (optional)
 
         Returns:
             List of SearchResult objects (with score = points)
@@ -58,6 +62,7 @@ class HackerNewsSource(SearchSource):
         # Extract filters
         tags = filters.get('tags', 'story')
         min_points = filters.get('min_points', 10)
+        time_filter = filters.get('time_filter')  # 'day', 'week', 'month', 'year'
 
         # Run in thread pool
         loop = asyncio.get_event_loop()
@@ -67,19 +72,56 @@ class HackerNewsSource(SearchSource):
             query,
             tags,
             min_points,
+            time_filter,
             limit
         )
 
-        return results
+        # Progressive refinement: if too few results, try with lower threshold
+        # COPIED FROM GITHUB SOURCE (lines 117-145)
+        if len(results) < 5 and min_points > 5:
+            print(f"⚡ Progressive refinement: Only {len(results)} results, trying with points>=5")
 
-    def _sync_search(self, query: str, tags: str, min_points: int, limit: int) -> List[SearchResult]:
-        """Synchronous search helper."""
+            fallback_results = await loop.run_in_executor(
+                None,
+                self._sync_search,
+                query,
+                tags,
+                5,  # Lower points threshold
+                time_filter,
+                limit
+            )
+
+            # Combine and deduplicate by URL
+            seen_urls = {r.url for r in results}
+            for r in fallback_results:
+                if r.url not in seen_urls:
+                    results.append(r)
+                    seen_urls.add(r.url)
+
+            # Re-sort by relevance then points
+            results.sort(key=lambda x: (x.metadata.get('relevance_score', 0), x.score), reverse=True)
+
+        return results[:limit]
+
+    def _sync_search(self, query: str, tags: str, min_points: int, time_filter: Optional[str], limit: int) -> List[SearchResult]:
+        """
+        Synchronous search helper (runs in thread pool).
+
+        Implements over-fetching + client-side filtering pattern from GitHub source.
+        """
         try:
+            # Build time filter (HN uses Unix timestamps)
+            numeric_filters = f'points>={min_points}'
+            if time_filter:
+                timestamp = self._get_timestamp_filter(time_filter)
+                if timestamp:
+                    numeric_filters += f',created_at_i>{timestamp}'
+
             params = {
                 'query': query,
                 'tags': tags,
-                'hitsPerPage': min(limit, 100),
-                'numericFilters': f'points>={min_points}'
+                'hitsPerPage': min(limit * 2, 100),  # Over-fetch 2x for relevance filtering (GitHub pattern line 154)
+                'numericFilters': numeric_filters
             }
 
             response = requests.get(
@@ -95,9 +137,15 @@ class HackerNewsSource(SearchSource):
             data = response.json()
             hits = data.get('hits', [])
 
-            # Transform to SearchResult objects
+            # Extract search terms for relevance scoring
+            search_terms = [t.strip().lower() for t in query.split() if len(t.strip()) > 2]
+
+            # Transform to SearchResult objects with relevance scoring
             results = []
-            for hit in hits[:limit]:
+            for hit in hits:
+                # Calculate relevance score (COPIED FROM GITHUB SOURCE lines 211-255)
+                relevance = self._calculate_relevance(hit, search_terms)
+
                 url = hit.get('url') or f"https://news.ycombinator.com/item?id={hit.get('objectID')}"
 
                 result = SearchResult(
@@ -111,14 +159,84 @@ class HackerNewsSource(SearchSource):
                     metadata={
                         'comments': hit.get('num_comments', 0),
                         'created_at': hit.get('created_at', ''),
-                        'story_id': hit.get('objectID')
+                        'story_id': hit.get('objectID'),
+                        'relevance_score': relevance
                     }
                 )
                 results.append(result)
 
-            print(f"✅ HackerNews: Found {len(results)} stories")
-            return results
+            # Sort by relevance first, then by points (COPIED FROM GITHUB SOURCE line 200)
+            results.sort(key=lambda x: (x.metadata.get('relevance_score', 0), x.score), reverse=True)
+
+            # Return top results after filtering
+            final_results = results[:limit]
+            print(f"✅ HackerNews: Found {len(final_results)} stories (filtered from {len(hits)})")
+            return final_results
 
         except Exception as e:
             print(f"❌ HackerNews search error: {e}")
             return []
+
+    def _get_timestamp_filter(self, time_filter: str) -> Optional[int]:
+        """
+        Convert time filter to Unix timestamp for HN API.
+
+        Args:
+            time_filter: 'day' | 'week' | 'month' | 'year'
+
+        Returns:
+            Unix timestamp (seconds since epoch)
+        """
+        days_map = {'day': 1, 'week': 7, 'month': 30, 'year': 365}
+        days = days_map.get(time_filter)
+
+        if days:
+            threshold = datetime.now() - timedelta(days=days)
+            return int(threshold.timestamp())
+
+        return None
+
+    def _calculate_relevance(self, hit: dict, search_terms: List[str]) -> float:
+        """
+        Calculate relevance score for a HackerNews story.
+
+        COPIED FROM GITHUB SOURCE (lines 211-255) with HN-specific adaptations.
+
+        Returns:
+            Float score (0-100)
+        """
+        if not search_terms:
+            return 50.0
+
+        score = 0.0
+        title = hit.get('title', '').lower()
+        story_text = hit.get('story_text', '').lower() if hit.get('story_text') else ''
+
+        for term in search_terms:
+            # Exact title match: highest weight
+            if term == title:
+                score += 50
+            # Title contains term: high weight
+            elif term in title:
+                score += 30
+            # Story text contains term: medium weight
+            elif term in story_text:
+                score += 15
+
+        # Bonus for high engagement (like GitHub's star bonus)
+        points = hit.get('points', 0)
+        if points > 100:
+            score += 10
+        elif points > 50:
+            score += 5
+
+        # Bonus for high comment activity
+        comments = hit.get('num_comments', 0)
+        if comments > 50:
+            score += 5
+
+        # Bonus for having story text (like GitHub's description bonus)
+        if hit.get('story_text'):
+            score += 5
+
+        return min(score, 100.0)

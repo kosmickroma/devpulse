@@ -5,6 +5,13 @@
 - [x] SYNTH personality matching production
 - [x] Optional sound indicator for office-friendly demos
 - [x] Zero-lag timing restoration
+- [x] **SYNTH AI Polish - ALL 6 Sources Wired!** (11/24/2025)
+  - [x] Phase 1: Fixed source detection exclusivity bug ("on reddit" now searches ONLY Reddit)
+  - [x] Phase 2+3: Added relevance scoring + progressive refinement to HackerNewsSource
+  - [x] Phase 4: Created DevToSource with GitHub-pattern relevance scoring
+  - [x] Phase 5: Created StocksSource (Yahoo Finance wrapper)
+  - [x] Phase 6: Created CryptoSource (CoinGecko wrapper)
+  - **Result:** SYNTH now works with GitHub, HN, Dev.to, Reddit, Stocks, Crypto!
 
 ## 🚀 Next Priorities
 
@@ -15,7 +22,8 @@
 - [ ] Analytics tracking (demo_started, demo_completed, etc.)
 
 ### SYNTH Improvements
-- [ ] Apply smart search to Reddit/HN/Dev.to (currently only GitHub)
+- [x] ~~Apply smart search to Reddit/HN/Dev.to~~ ✅ DONE! (11/24/2025)
+- [ ] Apply smart search to Reddit (Phase 6 - requires permission first)
 - [ ] Conversation history persistence
 
 ### Performance

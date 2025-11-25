@@ -78,7 +78,10 @@ class RedditSource(SearchSource):
         **filters
     ) -> List[SearchResult]:
         """
-        Search Reddit posts.
+        Search Reddit posts with progressive refinement.
+
+        Uses smart fallback strategy: if initial query returns too few results,
+        automatically tries broader searches. Follows GitHub's proven pattern.
 
         Args:
             query: Search query
@@ -112,7 +115,44 @@ class RedditSource(SearchSource):
             limit
         )
 
-        return results
+        # Progressive refinement: if too few results, expand subreddits
+        if len(results) < 5 and len(subreddits) < 20:
+            print(f"⚡ Progressive refinement: Only {len(results)} results, expanding subreddits")
+
+            expanded_subreddits = self.default_subreddits + [
+                'datascience',
+                'artificial',
+                'devops',
+                'sysadmin',
+                'aws',
+                'docker',
+                'kubernetes',
+                'react',
+                'node',
+                'golang'
+            ]
+
+            fallback_results = await loop.run_in_executor(
+                None,
+                self._sync_search,
+                query,
+                expanded_subreddits,
+                sort,
+                time_filter,
+                limit
+            )
+
+            # Combine and deduplicate by URL
+            seen_urls = {r.url for r in results}
+            for r in fallback_results:
+                if r.url not in seen_urls:
+                    results.append(r)
+                    seen_urls.add(r.url)
+
+            # Re-sort by relevance then score
+            results.sort(key=lambda x: (x.metadata.get('relevance_score', 0), x.score), reverse=True)
+
+        return results[:limit]
 
     def _sync_search(
         self,
@@ -122,9 +162,16 @@ class RedditSource(SearchSource):
         time_filter: str,
         limit: int
     ) -> List[SearchResult]:
-        """Synchronous search helper."""
+        """
+        Synchronous search helper.
+
+        Implements over-fetching + client-side filtering pattern from GitHub source.
+        """
         try:
             all_results = []
+
+            # Extract search terms for relevance scoring
+            search_terms = [t.strip().lower() for t in query.split() if len(t.strip()) > 2]
 
             # Search each subreddit
             for sub_name in subreddits:
@@ -134,10 +181,13 @@ class RedditSource(SearchSource):
                         query=query,
                         sort=sort,
                         time_filter=time_filter,
-                        limit=limit
+                        limit=min(limit * 2, 100)  # Over-fetch for relevance filtering
                     )
 
                     for post in search_results:
+                        # Calculate relevance score
+                        relevance = self._calculate_relevance(post, search_terms)
+
                         result = SearchResult(
                             title=post.title,
                             url=f"https://reddit.com{post.permalink}",
@@ -145,11 +195,12 @@ class RedditSource(SearchSource):
                             result_type=SourceType.DISCUSSION,
                             description=post.selftext[:200] if post.selftext else 'No description',
                             author=str(post.author) if post.author else '[deleted]',
-                            score=post.score,  # Reddit upvotes = score (NOT stars!)
+                            score=post.score,
                             metadata={
                                 'comments': post.num_comments,
                                 'subreddit': sub_name,
-                                'created_utc': post.created_utc
+                                'created_utc': post.created_utc,
+                                'relevance_score': relevance
                             }
                         )
                         all_results.append(result)
@@ -158,13 +209,60 @@ class RedditSource(SearchSource):
                     print(f"⚠️ Error searching r/{sub_name}: {e}")
                     continue
 
-            # Sort by score and limit
-            all_results.sort(key=lambda x: x.score, reverse=True)
+            # Sort by relevance first, then by score
+            all_results.sort(key=lambda x: (x.metadata.get('relevance_score', 0), x.score), reverse=True)
+
+            # Return top results after filtering
             final_results = all_results[:limit]
 
-            print(f"✅ Reddit: Found {len(final_results)} posts")
+            print(f"✅ Reddit: Found {len(final_results)} posts (filtered from {len(all_results)})")
             return final_results
 
         except Exception as e:
             print(f"❌ Reddit search error: {e}")
             return []
+
+    def _calculate_relevance(self, post, search_terms: List[str]) -> float:
+        """
+        Calculate relevance score for a Reddit post.
+
+        Uses same approach as GitHub source with Reddit-specific adaptations.
+
+        Returns:
+            Float score (0-100)
+        """
+        if not search_terms:
+            return 50.0
+
+        score = 0.0
+        title = post.title.lower()
+        selftext = (post.selftext or '').lower()
+
+        for term in search_terms:
+            # Exact title match: highest weight
+            if term == title:
+                score += 50
+            # Title contains term: high weight
+            elif term in title:
+                score += 30
+            # Body contains term: medium weight
+            elif term in selftext:
+                score += 15
+
+        # Bonus for high engagement
+        if post.score > 100:
+            score += 10
+        elif post.score > 50:
+            score += 5
+
+        # Bonus for high comment activity
+        if post.num_comments > 50:
+            score += 5
+        elif post.num_comments > 20:
+            score += 3
+
+        # Bonus for having body text
+        if post.selftext:
+            score += 5
+
+        return min(score, 100.0)

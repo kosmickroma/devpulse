@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Optional
 import asyncio
 import re
 from api.services.source_registry import get_registry, SearchResult
-from api.services.sources import GitHubSource, RedditSource, HackerNewsSource
+from api.services.sources import GitHubSource, RedditSource, HackerNewsSource, DevToSource, StocksSource, CryptoSource
 from api.services.gemini_service import GeminiService
 from api.services.search_cache_service import SearchCacheService
 
@@ -31,7 +31,9 @@ class SynthSearchServiceV2:
             'github': ['github', 'repo', 'repository', 'code', 'project', 'open source', 'opensource'],
             'reddit': ['reddit', 'discussion', 'community', 'thread', 'post'],
             'hackernews': ['hackernews', 'hn', 'hacker news', 'tech news'],
-            'devto': ['dev.to', 'devto', 'dev to'],  # Note: DevTo source not implemented yet
+            'devto': ['dev.to', 'devto', 'dev to', 'article', 'tutorial', 'guide'],
+            'stocks': ['stock', 'stocks', 'ticker', 'market', 'nasdaq', 'nyse', 'trading'],
+            'crypto': ['crypto', 'cryptocurrency', 'bitcoin', 'ethereum', 'blockchain', 'coin'],
         }
 
         # Programming language keywords
@@ -57,6 +59,21 @@ class SynthSearchServiceV2:
             self.registry.register(HackerNewsSource())
         except Exception as e:
             print(f"⚠️ Failed to register HackerNews: {e}")
+
+        try:
+            self.registry.register(DevToSource())
+        except Exception as e:
+            print(f"⚠️ Failed to register Dev.to: {e}")
+
+        try:
+            self.registry.register(StocksSource())
+        except Exception as e:
+            print(f"⚠️ Failed to register Stocks: {e}")
+
+        try:
+            self.registry.register(CryptoSource())
+        except Exception as e:
+            print(f"⚠️ Failed to register Crypto: {e}")
 
     def _optimize_query_for_source(self, keywords: List[str], source_name: str, original_query: str) -> str:
         """
@@ -234,6 +251,34 @@ class SynthSearchServiceV2:
 
         return None
 
+    def _detect_explicit_source(self, query: str) -> Optional[str]:
+        """
+        Detect explicit source mentions like "on reddit", "from github".
+
+        These patterns indicate the user wants to search ONLY that source (exclusive mode).
+
+        Args:
+            query: Lowercase query string
+
+        Returns:
+            Source name if explicit mention found, None otherwise
+        """
+        # Explicit patterns that indicate exclusive source selection
+        explicit_patterns = {
+            'reddit': ['on reddit', 'from reddit', 'in reddit', 'at reddit', 'r/'],
+            'github': ['on github', 'from github', 'in github', 'at github'],
+            'hackernews': ['on hackernews', 'on hacker news', 'on hn', 'from hn', 'from hackernews', 'in hn'],
+            'devto': ['on dev.to', 'on devto', 'from dev.to', 'at dev.to', 'in dev.to'],
+            'stocks': ['stock for', 'stocks for', 'ticker for'],
+            'crypto': ['crypto for', 'cryptocurrency for', 'price of']
+        }
+
+        for source, patterns in explicit_patterns.items():
+            if any(pattern in query for pattern in patterns):
+                return source
+
+        return None
+
     def parse_search_intent(self, query: str) -> Dict[str, Any]:
         """
         Parse user query to determine search intent.
@@ -246,15 +291,25 @@ class SynthSearchServiceV2:
         """
         query_lower = query.lower()
 
-        # Detect sources
-        detected_sources = []
-        for source, keywords in self.source_keywords.items():
-            if any(keyword in query_lower for keyword in keywords):
-                detected_sources.append(source)
+        # STEP 1: Check for EXPLICIT source mentions (e.g., "on reddit", "from github")
+        # These indicate user wants to search ONLY that source (exclusive mode)
+        explicit_source = self._detect_explicit_source(query_lower)
 
-        # If no source specified, search all available
-        if not detected_sources:
-            detected_sources = self.registry.get_source_names()
+        if explicit_source:
+            # Exclusive mode: search ONLY the explicitly mentioned source
+            detected_sources = [explicit_source]
+            print(f"🎯 Explicit source detected: {explicit_source} (exclusive mode)")
+        else:
+            # STEP 2: Fall back to implicit keyword detection
+            # This allows queries like "show me repos" to search GitHub without saying "on github"
+            detected_sources = []
+            for source, keywords in self.source_keywords.items():
+                if any(keyword in query_lower for keyword in keywords):
+                    detected_sources.append(source)
+
+            # If no source specified, search all available
+            if not detected_sources:
+                detected_sources = self.registry.get_source_names()
 
         # Detect programming language (word boundary matching to avoid false positives)
         detected_language = None
