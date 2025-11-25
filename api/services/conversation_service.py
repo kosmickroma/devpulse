@@ -40,16 +40,16 @@ class ConversationService:
 
         # Explicit search commands (highest priority)
         self.explicit_search_commands = [
-            'search for', 'find me', 'show me', 'get me', 'look for',
+            'search for', 'search all', 'find me', 'show me', 'get me', 'look for',
             'scan github', 'scan reddit', 'scan hackernews', 'scan all',
-            'give me', 'show', 'discover', 'fetch'
+            'give me', 'show', 'discover', 'fetch', 'search'
         ]
 
         # Source mentions (high priority for search)
         self.source_mentions = [
-            'on github', 'on reddit', 'on hackernews', 'from github',
-            'from reddit', 'from hackernews', 'github repo', 'reddit thread',
-            'hn post'
+            'on github', 'on reddit', 'on hackernews', 'on hacker news',
+            'from github', 'from reddit', 'from hackernews', 'from hacker news',
+            'github repo', 'reddit thread', 'hn post', 'hackernews', 'hacker news'
         ]
 
         # Conversational phrases (override ambiguous keywords)
@@ -96,7 +96,12 @@ class ConversationService:
             return 'chat'    # "good job on that scan" → chat
         else:
             # Ambiguous cases - check for search-related nouns/adjectives
-            search_indicators = ['repo', 'repository', 'project', 'code', 'trending', 'popular', 'latest']
+            search_indicators = [
+                'repo', 'repository', 'project', 'code', 'trending', 'popular', 'latest',
+                'tutorial', 'tutorials', 'discussion', 'discussions', 'article', 'articles',
+                'post', 'posts', 'thread', 'threads', 'examples', 'resources',
+                'tools', 'libraries', 'frameworks', 'packages'
+            ]
             has_search_indicators = any(indicator in query_lower for indicator in search_indicators)
 
             if has_search_indicators:
