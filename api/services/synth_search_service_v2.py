@@ -12,6 +12,7 @@ from api.services.source_registry import get_registry, SearchResult
 from api.services.sources import GitHubSource, RedditSource, HackerNewsSource, DevToSource, StocksSource, CryptoSource
 from api.services.gemini_service import GeminiService
 from api.services.search_cache_service import SearchCacheService
+from api.services.synth_personality import SynthPersonality
 
 
 class SynthSearchServiceV2:
@@ -22,6 +23,7 @@ class SynthSearchServiceV2:
         self.gemini = GeminiService()
         self.registry = get_registry()
         self.cache = SearchCacheService()
+        self.personality = SynthPersonality()
 
         # Register all sources
         self._register_sources()
@@ -501,7 +503,7 @@ class SynthSearchServiceV2:
 
     def _generate_commentary(self, query: str, intent: Dict[str, Any], results: List[Dict[str, Any]]) -> str:
         """
-        Generate AI commentary about search results.
+        Generate SYNTH commentary about search results with personality.
 
         Args:
             query: Original user query
@@ -509,27 +511,17 @@ class SynthSearchServiceV2:
             results: Search results
 
         Returns:
-            SYNTH's commentary
+            SYNTH's commentary with 80s personality
         """
         if not results:
-            return f"Couldn't find anything matching '{query}'. Try different keywords or check back later when fresh content rolls in! 🌆"
+            return self.personality.generate_error_response('no_results')
 
-        # Create summary for Gemini
-        result_summary = []
-        for r in results[:5]:
-            result_summary.append(f"- {r.get('title', 'Untitled')} ({r.get('source', 'unknown')})")
+        # Use personality engine for response
+        sources = intent.get('sources', [])
+        response = self.personality.generate_search_response(
+            query=query,
+            result_count=len(results),
+            sources=sources
+        )
 
-        summary_text = '\n'.join(result_summary)
-
-        context = f"""User searched for: "{query}"
-Found {len(results)} results from {', '.join(intent['sources'])}.
-Top items: {summary_text}"""
-
-        try:
-            # Combine context + question into single parameter
-            full_question = f"{context}\n\nProvide a brief (1-2 sentences) comment on these search results."
-            commentary = self.gemini.generate_answer(full_question)
-            return commentary
-        except Exception as e:
-            print(f"⚠️ Commentary generation failed: {e}")
-            return f"Found {len(results)} results across {', '.join(intent['sources'])}. Check them out!"
+        return response
