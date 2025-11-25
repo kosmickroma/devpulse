@@ -9,6 +9,7 @@ import requests
 import asyncio
 from typing import List, Optional
 from api.services.source_registry import SearchSource, SearchResult, SourceType
+from api.services.relevance_scorer import relevance_scorer
 
 
 class GitHubSource(SearchSource):
@@ -170,13 +171,24 @@ class GitHubSource(SearchSource):
 
             # Extract main search terms for relevance scoring
             main_terms = search_query.lower().replace('stars:>0', '').replace('stars:>5', '').strip()
-            search_terms = [t.strip() for t in main_terms.split() if len(t.strip()) > 2]
+            # Remove language filters and date filters from query for relevance scoring
+            main_terms = main_terms.split('language:')[0].split('created:')[0].split('pushed:')[0].strip()
 
             # Transform to SearchResult objects with relevance scoring
             results = []
             for repo in items:
-                # Calculate relevance score
-                relevance = self._calculate_relevance(repo, search_terms)
+                # Calculate relevance score using unified scorer
+                relevance = relevance_scorer.calculate_relevance(
+                    title=repo.get('name', ''),
+                    body=repo.get('description'),
+                    tags=repo.get('topics', []),
+                    search_query=main_terms,
+                    metadata={
+                        'stars': repo.get('stargazers_count', 0),
+                        'year': self._extract_year(repo.get('updated_at', '')),
+                        'has_description': bool(repo.get('description'))
+                    }
+                )
 
                 result = SearchResult(
                     title=repo['name'],
@@ -208,48 +220,11 @@ class GitHubSource(SearchSource):
             print(f"❌ GitHub search error: {e}")
             return []
 
-    def _calculate_relevance(self, repo: dict, search_terms: List[str]) -> float:
-        """
-        Calculate relevance score for a repository.
-
-        Pro search engines use TF-IDF and semantic analysis. We use a simpler but effective
-        approach: keyword matching in name/description with position weighting.
-
-        Returns:
-            Float score (0-100)
-        """
-        if not search_terms:
-            return 50.0
-
-        score = 0.0
-        name = repo.get('name', '').lower()
-        description = (repo.get('description') or '').lower()
-        topics = [t.lower() for t in repo.get('topics', [])]
-
-        for term in search_terms:
-            # Exact name match: highest weight
-            if term == name:
-                score += 50
-            # Name contains term: high weight
-            elif term in name:
-                score += 30
-            # Description contains term: medium weight
-            elif term in description:
-                score += 15
-            # In topics: medium weight
-            elif term in topics:
-                score += 20
-
-        # Bonus for recent activity (repos updated in last year)
+    def _extract_year(self, date_string: str) -> Optional[int]:
+        """Extract year from GitHub's date format (2024-11-24T...)."""
+        if not date_string:
+            return None
         try:
-            updated = repo.get('updated_at', '')
-            if '2024' in updated or '2025' in updated:
-                score += 5
+            return int(date_string[:4])
         except:
-            pass
-
-        # Bonus for having a description
-        if repo.get('description'):
-            score += 5
-
-        return min(score, 100.0)
+            return None

@@ -11,6 +11,7 @@ import asyncio
 from typing import List, Optional
 from dotenv import load_dotenv
 from api.services.source_registry import SearchSource, SearchResult, SourceType
+from api.services.relevance_scorer import relevance_scorer
 
 load_dotenv()
 
@@ -170,9 +171,6 @@ class RedditSource(SearchSource):
         try:
             all_results = []
 
-            # Extract search terms for relevance scoring
-            search_terms = [t.strip().lower() for t in query.split() if len(t.strip()) > 2]
-
             # Search each subreddit
             for sub_name in subreddits:
                 try:
@@ -185,8 +183,18 @@ class RedditSource(SearchSource):
                     )
 
                     for post in search_results:
-                        # Calculate relevance score
-                        relevance = self._calculate_relevance(post, search_terms)
+                        # Calculate relevance score using unified scorer
+                        relevance = relevance_scorer.calculate_relevance(
+                            title=post.title,
+                            body=post.selftext if post.selftext else '',
+                            tags=[],  # Reddit posts don't have tags
+                            search_query=query,
+                            metadata={
+                                'stars': post.score,
+                                'year': self._extract_year(post.created_utc),
+                                'has_description': bool(post.selftext)
+                            }
+                        )
 
                         result = SearchResult(
                             title=post.title,
@@ -222,47 +230,13 @@ class RedditSource(SearchSource):
             print(f"❌ Reddit search error: {e}")
             return []
 
-    def _calculate_relevance(self, post, search_terms: List[str]) -> float:
-        """
-        Calculate relevance score for a Reddit post.
-
-        Uses same approach as GitHub source with Reddit-specific adaptations.
-
-        Returns:
-            Float score (0-100)
-        """
-        if not search_terms:
-            return 50.0
-
-        score = 0.0
-        title = post.title.lower()
-        selftext = (post.selftext or '').lower()
-
-        for term in search_terms:
-            # Exact title match: highest weight
-            if term == title:
-                score += 50
-            # Title contains term: high weight
-            elif term in title:
-                score += 30
-            # Body contains term: medium weight
-            elif term in selftext:
-                score += 15
-
-        # Bonus for high engagement
-        if post.score > 100:
-            score += 10
-        elif post.score > 50:
-            score += 5
-
-        # Bonus for high comment activity
-        if post.num_comments > 50:
-            score += 5
-        elif post.num_comments > 20:
-            score += 3
-
-        # Bonus for having body text
-        if post.selftext:
-            score += 5
-
-        return min(score, 100.0)
+    def _extract_year(self, created_utc: float) -> Optional[int]:
+        """Extract year from Reddit's Unix timestamp."""
+        if not created_utc:
+            return None
+        try:
+            from datetime import datetime
+            dt = datetime.fromtimestamp(created_utc)
+            return dt.year
+        except:
+            return None

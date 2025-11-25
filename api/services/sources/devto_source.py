@@ -11,6 +11,7 @@ import asyncio
 from typing import List, Optional
 from datetime import datetime, timedelta
 from api.services.source_registry import SearchSource, SearchResult, SourceType
+from api.services.relevance_scorer import relevance_scorer
 
 
 class DevToSource(SearchSource):
@@ -149,14 +150,21 @@ class DevToSource(SearchSource):
 
             articles = response.json()
 
-            # Extract search terms for relevance scoring
-            search_terms = [t.strip().lower() for t in query.split() if len(t.strip()) > 2]
-
             # Transform to SearchResult objects with relevance scoring
             results = []
             for article in articles:
-                # Calculate relevance score (COPIED FROM GITHUB SOURCE lines 211-255)
-                relevance = self._calculate_relevance(article, search_terms)
+                # Calculate relevance score using unified scorer
+                relevance = relevance_scorer.calculate_relevance(
+                    title=article.get('title', ''),
+                    body=article.get('description', ''),
+                    tags=article.get('tag_list', []),
+                    search_query=query,
+                    metadata={
+                        'stars': article.get('public_reactions_count', 0),
+                        'year': self._extract_year(article.get('published_at', '')),
+                        'has_description': bool(article.get('description'))
+                    }
+                )
 
                 # Filter by minimum reactions
                 reactions = article.get('public_reactions_count', 0)
@@ -272,3 +280,13 @@ class DevToSource(SearchSource):
             score += 5
 
         return min(score, 100.0)
+
+    def _extract_year(self, date_string: str) -> Optional[int]:
+        """Extract year from Dev.to's ISO date format."""
+        if not date_string:
+            return None
+        try:
+            # Dev.to uses ISO format: 2024-11-24T...Z
+            return int(date_string[:4])
+        except:
+            return None

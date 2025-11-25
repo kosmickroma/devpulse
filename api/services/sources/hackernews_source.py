@@ -10,6 +10,7 @@ import asyncio
 from typing import List, Optional
 from datetime import datetime, timedelta
 from api.services.source_registry import SearchSource, SearchResult, SourceType
+from api.services.relevance_scorer import relevance_scorer
 
 
 class HackerNewsSource(SearchSource):
@@ -137,14 +138,21 @@ class HackerNewsSource(SearchSource):
             data = response.json()
             hits = data.get('hits', [])
 
-            # Extract search terms for relevance scoring
-            search_terms = [t.strip().lower() for t in query.split() if len(t.strip()) > 2]
-
             # Transform to SearchResult objects with relevance scoring
             results = []
             for hit in hits:
-                # Calculate relevance score (COPIED FROM GITHUB SOURCE lines 211-255)
-                relevance = self._calculate_relevance(hit, search_terms)
+                # Calculate relevance score using unified scorer
+                relevance = relevance_scorer.calculate_relevance(
+                    title=hit.get('title', ''),
+                    body=hit.get('story_text'),
+                    tags=[],  # HN doesn't have tags
+                    search_query=query,
+                    metadata={
+                        'stars': hit.get('points', 0),
+                        'year': self._extract_year(hit.get('created_at', '')),
+                        'has_description': bool(hit.get('story_text'))
+                    }
+                )
 
                 url = hit.get('url') or f"https://news.ycombinator.com/item?id={hit.get('objectID')}"
 
@@ -196,47 +204,12 @@ class HackerNewsSource(SearchSource):
 
         return None
 
-    def _calculate_relevance(self, hit: dict, search_terms: List[str]) -> float:
-        """
-        Calculate relevance score for a HackerNews story.
-
-        COPIED FROM GITHUB SOURCE (lines 211-255) with HN-specific adaptations.
-
-        Returns:
-            Float score (0-100)
-        """
-        if not search_terms:
-            return 50.0
-
-        score = 0.0
-        title = hit.get('title', '').lower()
-        story_text = hit.get('story_text', '').lower() if hit.get('story_text') else ''
-
-        for term in search_terms:
-            # Exact title match: highest weight
-            if term == title:
-                score += 50
-            # Title contains term: high weight
-            elif term in title:
-                score += 30
-            # Story text contains term: medium weight
-            elif term in story_text:
-                score += 15
-
-        # Bonus for high engagement (like GitHub's star bonus)
-        points = hit.get('points', 0)
-        if points > 100:
-            score += 10
-        elif points > 50:
-            score += 5
-
-        # Bonus for high comment activity
-        comments = hit.get('num_comments', 0)
-        if comments > 50:
-            score += 5
-
-        # Bonus for having story text (like GitHub's description bonus)
-        if hit.get('story_text'):
-            score += 5
-
-        return min(score, 100.0)
+    def _extract_year(self, date_string: str) -> Optional[int]:
+        """Extract year from HN's date format."""
+        if not date_string:
+            return None
+        try:
+            # HN uses ISO format: 2024-11-24T...
+            return int(date_string[:4])
+        except:
+            return None
