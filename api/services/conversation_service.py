@@ -10,6 +10,7 @@ Routes queries intelligently:
 from typing import Dict, Any, Optional
 from api.services.synth_search_service_v2 import SynthSearchServiceV2
 from api.services.gemini_service import GeminiService
+from api.services.intent_classifier import IntentClassifier
 from supabase import create_client, Client
 import os
 
@@ -21,6 +22,14 @@ class ConversationService:
         """Initialize conversation service."""
         self.search_service = SynthSearchServiceV2()
         self.gemini = GeminiService()
+
+        # NEW: Initialize IntentClassifier for pattern-based classification
+        try:
+            self.intent_classifier = IntentClassifier()
+            print("✅ IntentClassifier initialized (shadow mode)")
+        except Exception as e:
+            print(f"⚠️ IntentClassifier failed to initialize: {e}")
+            self.intent_classifier = None
 
         # Supabase for persistent conversation history
         try:
@@ -133,6 +142,21 @@ class ConversationService:
 
         query_type = self.detect_query_type(query)
         print(f"🤖 SYNTH detected query type: {query_type}")
+
+        # SHADOW MODE: Test IntentClassifier alongside current system
+        if self.intent_classifier:
+            try:
+                intent_result = self.intent_classifier.classify(query)
+                print(f"🔬 SHADOW MODE - IntentClassifier Results:")
+                print(f"   Confidence: {intent_result.confidence:.2f}")
+                print(f"   Intent: {intent_result.intent_type.value}")
+                print(f"   Sources: {intent_result.sources}")
+                print(f"   Keywords: {intent_result.keywords}")
+                print(f"   Entities: {intent_result.entities}")
+                print(f"   Time: {intent_result.classification_time_ms:.2f}ms")
+                print(f"   Time Sensitive: {intent_result.time_sensitive}")
+            except Exception as e:
+                print(f"⚠️ SHADOW MODE - IntentClassifier error: {e}")
 
         if query_type == 'search':
             result = await self._handle_search(query)
