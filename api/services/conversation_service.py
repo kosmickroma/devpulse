@@ -157,7 +157,7 @@ class ConversationService:
                 intent_result = None
 
         # Route based on IntentClassifier confidence
-        if intent_result and intent_result.confidence >= 0.5:
+        if intent_result and intent_result.confidence >= 0.4:
             # High confidence - use IntentClassifier routing
             if intent_result.sources:
                 result = await self._handle_search_with_intent(query, intent_result)
