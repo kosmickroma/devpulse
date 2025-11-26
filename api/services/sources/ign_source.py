@@ -128,10 +128,10 @@ class IGNSource(SearchSource):
                     continue
 
                 # Calculate relevance score
-                score = relevance_scorer.calculate_score(
-                    query=query,
+                score = relevance_scorer.calculate_relevance(
+                    search_query=query,
                     title=title,
-                    description=description
+                    body=description
                 )
 
                 # Only include if relevance threshold met (or if query is very broad)

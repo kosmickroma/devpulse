@@ -15,6 +15,8 @@ const ALL_SOURCES = [
   { id: 'reddit', label: 'REDDIT', color: 'orange' },
   { id: 'stocks', label: 'STOCKS', color: 'blue' },
   { id: 'crypto', label: 'CRYPTO', color: 'purple' },
+  { id: 'ign', label: 'IGN', color: 'gaming-orange' },
+  { id: 'pcgamer', label: 'PC GAMER', color: 'gaming-purple' },
 ]
 
 export default function SimpleFilterBar({ onSourceSelect, activeSources, prioritySource }: SimpleFilterBarProps) {
@@ -57,6 +59,14 @@ export default function SimpleFilterBar({ onSourceSelect, activeSources, priorit
     purple: {
       active: 'border-neon-purple text-neon-purple shadow-neon-purple bg-neon-purple/10',
       inactive: 'border-neon-purple/30 text-neon-purple/40 hover:border-neon-purple/50 hover:text-neon-purple/60'
+    },
+    'gaming-orange': {
+      active: 'border-[#ff6600] text-[#ff6600] shadow-[0_0_10px_#ff6600] bg-[#ff6600]/10',
+      inactive: 'border-[#ff6600]/30 text-[#ff6600]/40 hover:border-[#ff6600]/50 hover:text-[#ff6600]/60'
+    },
+    'gaming-purple': {
+      active: 'border-[#a855f7] text-[#a855f7] shadow-[0_0_10px_#a855f7] bg-[#a855f7]/10',
+      inactive: 'border-[#a855f7]/30 text-[#a855f7]/40 hover:border-[#a855f7]/50 hover:text-[#a855f7]/60'
     },
   }
 

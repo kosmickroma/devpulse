@@ -15,6 +15,8 @@ const AVAILABLE_SOURCES = [
   { id: 'reddit', label: 'Reddit', icon: '🤖', description: 'Discussions and posts from subreddits' },
   { id: 'stocks', label: 'Stocks', icon: '📈', description: 'Trending stocks and market movers' },
   { id: 'crypto', label: 'Crypto', icon: '₿', description: 'Trending cryptocurrencies' },
+  { id: 'ign', label: 'IGN', icon: '🎮', description: 'Gaming news and reviews' },
+  { id: 'pcgamer', label: 'PC Gamer', icon: '🖥️', description: 'PC gaming news and reviews' },
 ]
 
 export default function SettingsPage() {
@@ -22,7 +24,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto'])
+  const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto', 'ign', 'pcgamer'])
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -174,7 +176,7 @@ export default function SettingsPage() {
         <div className="border-2 border-gray-600/30 rounded-lg p-6 opacity-50">
           <h2 className="text-2xl font-bold text-gray-500 mb-4">🔮 Coming Soon</h2>
           <ul className="space-y-2 text-gray-500 font-mono text-sm">
-            <li>• Gaming News (IGN, GameSpot, Polygon)</li>
+            <li>• More Gaming News (GameSpot, Polygon, Kotaku)</li>
             <li>• Space News (NASA, SpaceX)</li>
             <li>• Detailed Reddit Subreddit Configuration</li>
             <li>• SYNTH Personality Settings</li>

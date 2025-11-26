@@ -86,8 +86,13 @@ async def scan_stream(
             'devto': 'devto',
             'reddit': 'reddit_api',
             'stocks': 'yahoo_finance',
-            'crypto': 'coingecko'
+            'crypto': 'coingecko',
+            'ign': 'ign',
+            'pcgamer': 'pcgamer'
         }
+
+        # Sources that use unified search interface (not Scrapy)
+        unified_sources = {'ign', 'pcgamer'}
 
         if source_param == "all":
             spiders = list(source_to_spider.values())
@@ -115,15 +120,27 @@ async def scan_stream(
         yield f"data: {json.dumps({'type': 'status', 'message': f'Launching {len(spiders)} sources in true parallel...'})}\n\n"
         await asyncio.sleep(0.2)
 
-        # Launch all spiders simultaneously
-        generators = [
-            spider_runner.run_spider_async(
-                spider_name=spider_name,
-                language=language if spider_name == "github_api" else None,
-                time_range=time_range
-            )
-            for spider_name in spiders
-        ]
+        # Launch all spiders simultaneously (route to appropriate runner)
+        generators = []
+        for spider_name in spiders:
+            if spider_name in unified_sources:
+                # Use unified source runner for IGN, PC Gamer, etc.
+                generators.append(
+                    spider_runner.run_unified_source_async(
+                        source_name=spider_name,
+                        query="gaming",
+                        limit=15
+                    )
+                )
+            else:
+                # Use Scrapy spider runner
+                generators.append(
+                    spider_runner.run_spider_async(
+                        spider_name=spider_name,
+                        language=language if spider_name == "github_api" else None,
+                        time_range=time_range
+                    )
+                )
 
         queue = asyncio.Queue()
         total_items_counter = [0]

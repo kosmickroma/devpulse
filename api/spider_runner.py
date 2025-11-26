@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 from typing import AsyncGenerator, Optional, Dict, Any
 from datetime import datetime
+import time
 
 
 class SpiderRunner:
@@ -214,6 +215,99 @@ class SpiderRunner:
             "devto": "Dev.to",
             "reddit_api": "Reddit",
             "yahoo_finance": "Yahoo Finance",
-            "coingecko": "CoinGecko"
+            "coingecko": "CoinGecko",
+            "ign": "IGN",
+            "pcgamer": "PC Gamer"
         }
         return names.get(spider_name, spider_name.replace("_", " ").title())
+
+    async def run_unified_source_async(
+        self,
+        source_name: str,
+        query: str = "gaming",
+        limit: int = 15
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """
+        Run a unified search source (e.g., IGN, PC Gamer) and stream results.
+
+        This handles sources that aren't Scrapy spiders but use the unified search interface.
+        """
+        try:
+            # Import the search service
+            from api.services.synth_search_service_v2 import SynthSearchServiceV2
+
+            start_time = time.time()
+            print(f"🚀 [{start_time:.2f}] {source_name}: Launching Scrapy process")
+
+            # Notify frontend
+            yield {
+                "type": "connecting",
+                "spider": source_name,
+                "message": f"Connecting to {self._get_display_name(source_name)}..."
+            }
+            await asyncio.sleep(0.1)
+
+            print(f"✅ [{time.time():.2f}] {source_name}: Process started (+0.00s)")
+
+            yield {
+                "type": "scanning",
+                "spider": source_name,
+                "message": f"Scanning {self._get_display_name(source_name)}..."
+            }
+
+            # Get search service and run search
+            search_service = SynthSearchServiceV2()
+            source = search_service.registry.get_source(source_name)
+
+            if not source:
+                raise Exception(f"Source {source_name} not found in registry")
+
+            # Execute search
+            results = await source.search(query=query, limit=limit)
+
+            item_count = 0
+            first_item_time = time.time()
+            elapsed = first_item_time - start_time
+            print(f"🎉 [{first_item_time:.2f}] {source_name}: FIRST ITEM parsed! (+{elapsed:.2f}s)")
+
+            # Stream results
+            for result in results:
+                item_count += 1
+                yield {
+                    "type": "item",
+                    "spider": source_name,
+                    "data": {
+                        "id": f"{source_name}-{hash(result.url)}",
+                        "title": result.title,
+                        "url": result.url,
+                        "source": result.source,
+                        "author": result.author,
+                        "description": result.description,
+                        "score": result.score,
+                        "category": result.metadata.get('category', 'article'),
+                        "scrapedAt": datetime.now().isoformat(),
+                        "isNew": True
+                    }
+                }
+                await asyncio.sleep(0.03)  # Match scrapy streaming speed
+
+            # Final status
+            total_time = time.time() - start_time
+            if item_count == 0:
+                print(f"⚠️  [{time.time():.2f}] {source_name}: Completed with 0 items (total: {total_time:.2f}s)")
+                yield {
+                    "type": "warning",
+                    "spider": source_name,
+                    "message": f"No items found for {self._get_display_name(source_name)}"
+                }
+            else:
+                print(f"✅ [{time.time():.2f}] {source_name}: Completed with {item_count} items")
+                print(f"   └─ Total time: {total_time:.2f}s")
+
+        except Exception as e:
+            print(f"❌ {source_name} error: {e}")
+            yield {
+                "type": "error",
+                "spider": source_name,
+                "message": f"Source error: {str(e)}"
+            }
