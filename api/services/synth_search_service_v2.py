@@ -11,6 +11,8 @@ import re
 from datetime import datetime
 from api.services.source_registry import get_registry, SearchResult
 from api.services.sources import GitHubSource, RedditSource, HackerNewsSource, DevToSource, StocksSource, CryptoSource
+from api.services.sources.ign_source import IGNSource
+from api.services.sources.pcgamer_source import PCGamerSource
 from api.services.gemini_service import GeminiService
 from api.services.search_cache_service import SearchCacheService
 from api.services.synth_personality import SynthPersonality
@@ -77,6 +79,16 @@ class SynthSearchServiceV2:
             self.registry.register(CryptoSource())
         except Exception as e:
             print(f"⚠️ Failed to register Crypto: {e}")
+
+        try:
+            self.registry.register(IGNSource())
+        except Exception as e:
+            print(f"⚠️ Failed to register IGN: {e}")
+
+        try:
+            self.registry.register(PCGamerSource())
+        except Exception as e:
+            print(f"⚠️ Failed to register PC Gamer: {e}")
 
     def _optimize_query_for_source(self, keywords: List[str], source_name: str, original_query: str) -> str:
         """

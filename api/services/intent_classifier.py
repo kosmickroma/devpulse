@@ -89,6 +89,15 @@ class IntentClassifier:
                 r'\bcryptocurrency\b',
                 r'\bcrypto\s+market\b',
             ],
+            'ign': [
+                r'\b(on|from|in|at)\s+ign\b',
+                r'\bign\s+(news|article|review)\b',
+                r'\bgaming\s+(news|article)\b',
+            ],
+            'pcgamer': [
+                r'\b(on|from|in|at)\s+pc\s*gamer\b',
+                r'\bpc\s*gamer\s+(news|article|review)\b',
+            ],
         }
 
         # INTENT TYPE PATTERNS
@@ -491,7 +500,7 @@ class IntentClassifier:
 
         # Only use all sources if truly ambiguous (very low confidence)
         elif confidence < 0.3:
-            sources = ['github', 'reddit', 'hackernews', 'devto', 'stocks', 'crypto']
+            sources = ['github', 'reddit', 'hackernews', 'devto', 'stocks', 'crypto', 'ign', 'pcgamer']
 
         # Default to code-focused sources
         else:
