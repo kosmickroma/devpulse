@@ -136,8 +136,9 @@ class PCGamerSource(SearchSource):
                     body=snippet
                 )
 
-                # Only include if relevance threshold met (or if query is very broad)
-                if score > 0.1 or len(query.split()) <= 2:
+                # Include all gaming articles (PC Gamer is gaming-only, so relevance filter is less critical)
+                # Use very low threshold since we're already on a gaming-specific site
+                if score > 0.01 or len(query.split()) <= 2:
                     # Parse date for metadata
                     created_at = None
                     if date_str:
@@ -164,10 +165,10 @@ class PCGamerSource(SearchSource):
             # Sort by relevance score
             results.sort(key=lambda x: x.score, reverse=True)
 
-            # Limit results
+            # Limit results (but only if we have enough)
             results = results[:limit]
 
-            print(f"✅ PC Gamer: Found {len(results)} relevant articles")
+            print(f"✅ PC Gamer: Scraped {len(articles)} total, returning {len(results)} relevant articles")
             return results
 
         except Exception as e:

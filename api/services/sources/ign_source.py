@@ -119,9 +119,15 @@ class IGNSource(SearchSource):
                     continue
 
                 title = content.get('title', '')
-                url = content.get('url', '')
+                relative_url = content.get('url', '')
                 description = content.get('subtitle', '')
                 category = content.get('type', 'News')
+
+                # Build full URL from relative path
+                if relative_url:
+                    url = relative_url if relative_url.startswith('http') else f"https://www.ign.com{relative_url}"
+                else:
+                    url = None
 
                 # Skip if missing essential fields
                 if not title or not url:
@@ -134,8 +140,9 @@ class IGNSource(SearchSource):
                     body=description
                 )
 
-                # Only include if relevance threshold met (or if query is very broad)
-                if score > 0.1 or len(query.split()) <= 2:
+                # Include all gaming articles (IGN is gaming-only, so relevance filter is less critical)
+                # Use very low threshold since we're already on a gaming-specific site
+                if score > 0.01 or len(query.split()) <= 2:
                     result = SearchResult(
                         title=title,
                         url=url,
