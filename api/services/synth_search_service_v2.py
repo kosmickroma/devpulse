@@ -39,6 +39,8 @@ class SynthSearchServiceV2:
             'devto': ['dev.to', 'devto', 'dev to', 'article', 'tutorial', 'guide'],
             'stocks': ['stock', 'stocks', 'ticker', 'market', 'nasdaq', 'nyse', 'trading'],
             'crypto': ['crypto', 'cryptocurrency', 'bitcoin', 'ethereum', 'blockchain', 'coin'],
+            'ign': ['ign', 'gaming', 'game', 'video game', 'game news', 'game review'],
+            'pcgamer': ['pc gamer', 'pcgamer', 'pc gaming', 'pc game'],
         }
 
         # Programming language keywords

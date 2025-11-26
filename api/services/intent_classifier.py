@@ -92,11 +92,16 @@ class IntentClassifier:
             'ign': [
                 r'\b(on|from|in|at)\s+ign\b',
                 r'\bign\s+(news|article|review)\b',
-                r'\bgaming\s+(news|article)\b',
+                r'\bgaming\s+(news|article|review)\b',
+                r'\b(video\s+)?game\s+(news|review|reviews|article)\b',
+                r'\b(newest|latest|recent)\s+game\s+(news|review|reviews)\b',
+                r'\bgame\s+(release|releases|announcement)\b',
             ],
             'pcgamer': [
                 r'\b(on|from|in|at)\s+pc\s*gamer\b',
                 r'\bpc\s*gamer\s+(news|article|review)\b',
+                r'\bpc\s+game\s+(news|review|reviews)\b',
+                r'\bpc\s+gaming\s+(news|review|reviews)\b',
             ],
         }
 
