@@ -630,7 +630,8 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       case 'help':
         playBeep()
         addLine('Available commands:', 'output')
-        addLine('  scan [all|github|hackernews|devto] - Scan platforms for trending content', 'output')
+        addLine('  scan [source] - Scan a specific source for trending content', 'output')
+        addLine('                 (github, hacker news, devto, reddit, stocks, crypto, ign, pc gamer)', 'output')
         addLine('  scan github [language] - Scan GitHub for specific language', 'output')
         addLine('  jobs - Browse 100+ tech companies hiring', 'output')
         addLine('  jobs search [keyword] - Filter companies by keyword', 'output')
@@ -775,15 +776,59 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
     }
   }
 
+  // Parse source name from command arguments, handling multi-word sources
+  const parseSourceFromArgs = (args: string[]): { platform: string, remainingArgs: string[] } => {
+    if (args.length === 0) {
+      return { platform: '', remainingArgs: [] }
+    }
+
+    // Known multi-word source mappings (display name variations → source ID)
+    const multiWordSources: { [key: string]: string } = {
+      'pc gamer': 'pcgamer',
+      'pcgamer': 'pcgamer',
+      'hacker news': 'hackernews',
+      'hackernews': 'hackernews',
+      'dev.to': 'devto',
+      'devto': 'devto'
+    }
+
+    // Try 2-word combination first
+    if (args.length >= 2) {
+      const twoWord = `${args[0]} ${args[1]}`.toLowerCase()
+      if (multiWordSources[twoWord]) {
+        return {
+          platform: multiWordSources[twoWord],
+          remainingArgs: args.slice(2)
+        }
+      }
+    }
+
+    // Fall back to single word
+    const singleWord = args[0].toLowerCase()
+    if (multiWordSources[singleWord]) {
+      return {
+        platform: multiWordSources[singleWord],
+        remainingArgs: args.slice(1)
+      }
+    }
+
+    // Return as-is for single-word sources (github, reddit, stocks, etc.)
+    return {
+      platform: args[0],
+      remainingArgs: args.slice(1)
+    }
+  }
+
   // Handle scan command
   const handleScan = async (args: string[]) => {
     setIsScanning(true)
     setProgress(0)
     itemsRef.current = []
 
-    // Determine platform from args or selected sources
-    let platform = args[0] || ''
-    const language = args[1] || ''
+    // Parse source name handling multi-word sources
+    const { platform: parsedPlatform, remainingArgs } = parseSourceFromArgs(args)
+    let platform = parsedPlatform
+    const language = remainingArgs[0] || ''
 
     // If no platform specified in command, use selected sources
     if (!platform) {
