@@ -310,7 +310,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
     }
 
     const bootLines = [
-      { id: '1', text: '> DevPulse Terminal v4.0 - SYNTH AI Edition', type: 'output' as const, timestamp: Date.now() },
+      { id: '1', text: '> DevPulse Terminal v4.5 - SYNTH AI Edition', type: 'output' as const, timestamp: Date.now() },
       { id: '2', text: '> Initializing systems...', type: 'output' as const, timestamp: Date.now() + 300 },
       { id: '3', text: '> [✓] GitHub API: ONLINE', type: 'success' as const, timestamp: Date.now() + 600 },
       { id: '4', text: '> [✓] Hacker News: ONLINE', type: 'success' as const, timestamp: Date.now() + 900 },
@@ -318,12 +318,14 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       { id: '6', text: '> [✓] Reddit API: ONLINE', type: 'success' as const, timestamp: Date.now() + 1500 },
       { id: '7', text: '> [✓] Yahoo Finance: ONLINE', type: 'success' as const, timestamp: Date.now() + 1800 },
       { id: '8', text: '> [✓] CoinGecko: ONLINE', type: 'success' as const, timestamp: Date.now() + 2100 },
-      { id: '9', text: '> [✓] SYNTH AI: READY', type: 'success' as const, timestamp: Date.now() + 2400 },
-      { id: '10', text: operatorLine, type: 'success' as const, timestamp: Date.now() + 2700 },
-      ...(lastUpdatedLine ? [{ id: '11', text: lastUpdatedLine, type: 'output' as const, timestamp: Date.now() + 3000 }] : []),
-      { id: '12', text: '> ', type: 'output' as const, timestamp: Date.now() + 3300 },
-      { id: '13', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 3600 },
+      { id: '9', text: '> [✓] IGN: ONLINE', type: 'success' as const, timestamp: Date.now() + 2400 },
+      { id: '10', text: '> [✓] PC Gamer: ONLINE', type: 'success' as const, timestamp: Date.now() + 2700 },
+      { id: '11', text: '> [✓] SYNTH AI: READY', type: 'success' as const, timestamp: Date.now() + 3000 },
+      { id: '12', text: operatorLine, type: 'success' as const, timestamp: Date.now() + 3300 },
+      ...(lastUpdatedLine ? [{ id: '13', text: lastUpdatedLine, type: 'output' as const, timestamp: Date.now() + 3600 }] : []),
       { id: '14', text: '> ', type: 'output' as const, timestamp: Date.now() + 3900 },
+      { id: '15', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 4200 },
+      { id: '16', text: '> ', type: 'output' as const, timestamp: Date.now() + 4500 },
     ]
 
     bootLines.forEach((line, index) => {
@@ -851,14 +853,6 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
     addLine(`Initiating scan: ${platform.toUpperCase()}${language ? ` (${language})` : ''}...`, 'output')
     addLine(`Active sources: ${sourcesList}`, 'output')
 
-    // Show game prompt after a short delay
-    setTimeout(() => {
-      setShowGamePrompt(true)
-      addLine('  ', 'output')
-      addLine('💡 Want to play a game while you wait? Type "game snake"', 'output')
-      addLine('  ', 'output')
-    }, 1500)
-
     try {
       // Connect to SSE endpoint (Render backend)
       const url = `https://devpulse-api.onrender.com/api/scan?platform=${platform}${language ? `&language=${language}` : ''}`
@@ -1094,7 +1088,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       // STEP 3: Show boot sequence (buying time while scan runs in background)
       // NO SOUNDS YET - give audio time to unlock properly
       const bootLines = [
-        '> DevPulse Terminal v4.0 - SYNTH AI Edition',
+        '> DevPulse Terminal v4.5 - SYNTH AI Edition',
         '> Initializing systems...',
         '> [✓] GitHub API: ONLINE',
         '> [✓] Hacker News: ONLINE',
@@ -1102,6 +1096,8 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
         '> [✓] Reddit API: ONLINE',
         '> [✓] Yahoo Finance: ONLINE',
         '> [✓] CoinGecko: ONLINE',
+        '> [✓] IGN: ONLINE',
+        '> [✓] PC Gamer: ONLINE',
         '> [✓] SYNTH AI: READY',
         '> '
       ]
@@ -1648,7 +1644,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
               DEVPULSE TERMINAL
             </div>
             <div className="text-xl text-neon-green neon-text-green font-mono mb-8">
-              v4.0 - SYNTH AI EDITION
+              v4.5 - SYNTH AI EDITION
             </div>
             <div className="text-lg text-gray-300 font-mono">
               [ CLICK TO INITIALIZE ]
