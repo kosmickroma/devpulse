@@ -1,37 +1,39 @@
 -- Create conversation history tables for SYNTH AI
 -- Stores user conversations and individual queries for recall/resume
 
+-- Drop existing tables if they exist (for clean migration)
+DROP TABLE IF EXISTS conversation_results CASCADE;
+DROP TABLE IF EXISTS conversation_queries CASCADE;
+DROP TABLE IF EXISTS conversations CASCADE;
+
 -- Main conversations table (one per session)
-CREATE TABLE IF NOT EXISTS conversations (
+CREATE TABLE conversations (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   title text,  -- Auto-generated from first query or user-provided
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   query_count int DEFAULT 0,  -- Number of queries in this conversation
-  is_saved boolean DEFAULT false,  -- User explicitly saved this conversation
-  CONSTRAINT conversations_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+  is_saved boolean DEFAULT false  -- User explicitly saved this conversation
 );
 
 -- Individual queries within conversations
-CREATE TABLE IF NOT EXISTS conversation_queries (
+CREATE TABLE conversation_queries (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   conversation_id uuid NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
   query text NOT NULL,  -- The user's search query
   result_count int DEFAULT 0,  -- Number of results returned
   sources jsonb,  -- Array of sources searched: ['github', 'reddit', ...]
   intent jsonb,  -- Intent classification result
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT conversation_queries_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
+  created_at timestamp with time zone DEFAULT now()
 );
 
 -- Results for each query (optional, for full history replay)
-CREATE TABLE IF NOT EXISTS conversation_results (
+CREATE TABLE conversation_results (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   query_id uuid NOT NULL REFERENCES conversation_queries(id) ON DELETE CASCADE,
   result_data jsonb NOT NULL,  -- Full SearchResult object
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT conversation_results_query_id_fkey FOREIGN KEY (query_id) REFERENCES conversation_queries(id) ON DELETE CASCADE
+  created_at timestamp with time zone DEFAULT now()
 );
 
 -- Indexes for fast queries
@@ -149,6 +151,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to update conversation timestamp when new query added
+DROP TRIGGER IF EXISTS update_conversation_on_new_query ON conversation_queries;
 CREATE TRIGGER update_conversation_on_new_query
 AFTER INSERT ON conversation_queries
 FOR EACH ROW
@@ -166,6 +169,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to increment query count
+DROP TRIGGER IF EXISTS increment_query_count_on_insert ON conversation_queries;
 CREATE TRIGGER increment_query_count_on_insert
 AFTER INSERT ON conversation_queries
 FOR EACH ROW
