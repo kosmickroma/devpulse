@@ -10,6 +10,11 @@ const AVAILABLE_SOURCES = [
   { id: 'github', label: 'GITHUB', color: 'cyan' },
   { id: 'hackernews', label: 'HACKER NEWS', color: 'magenta' },
   { id: 'devto', label: 'DEV.TO', color: 'green' },
+  { id: 'reddit', label: 'REDDIT', color: 'blue' },
+  { id: 'stocks', label: 'STOCKS', color: 'pink' },
+  { id: 'crypto', label: 'CRYPTO', color: 'purple' },
+  { id: 'ign', label: 'IGN', color: 'orange' },
+  { id: 'pcgamer', label: 'PC GAMER', color: 'purple' },
 ]
 
 const STORAGE_KEY = 'devpulse-sources'
@@ -75,6 +80,10 @@ export default function FilterBar({ onSourcesChange }: FilterBarProps) {
             cyan: 'border-neon-cyan text-neon-cyan shadow-neon-cyan',
             magenta: 'border-neon-magenta text-neon-magenta shadow-neon-magenta',
             green: 'border-neon-green text-neon-green shadow-neon-green',
+            blue: 'border-neon-blue text-neon-blue shadow-neon-blue',
+            pink: 'border-neon-pink text-neon-pink shadow-neon-pink',
+            purple: 'border-neon-purple text-neon-purple shadow-neon-purple',
+            orange: 'border-neon-orange text-neon-orange shadow-neon-orange',
           }
 
           return (
@@ -127,6 +136,10 @@ export default function FilterBar({ onSourcesChange }: FilterBarProps) {
                 cyan: 'border-neon-cyan text-neon-cyan shadow-neon-cyan',
                 magenta: 'border-neon-magenta text-neon-magenta shadow-neon-magenta',
                 green: 'border-neon-green text-neon-green shadow-neon-green',
+                blue: 'border-neon-blue text-neon-blue shadow-neon-blue',
+                pink: 'border-neon-pink text-neon-pink shadow-neon-pink',
+                purple: 'border-neon-purple text-neon-purple shadow-neon-purple',
+                orange: 'border-neon-orange text-neon-orange shadow-neon-orange',
               }
 
               return (

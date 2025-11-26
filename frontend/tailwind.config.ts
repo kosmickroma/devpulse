@@ -20,6 +20,8 @@ const config: Config = {
     'border-neon-blue/30', 'text-neon-blue/40', 'border-neon-blue/50', 'text-neon-blue/60',
     'border-neon-purple', 'text-neon-purple', 'bg-neon-purple/10', 'shadow-neon-purple',
     'border-neon-purple/30', 'text-neon-purple/40', 'border-neon-purple/50', 'text-neon-purple/60',
+    'border-neon-pink', 'text-neon-pink', 'bg-neon-pink/10', 'shadow-neon-pink',
+    'border-neon-pink/30', 'text-neon-pink/40', 'border-neon-pink/50', 'text-neon-pink/60',
   ],
   theme: {
     extend: {
@@ -53,6 +55,7 @@ const config: Config = {
         'neon-green': '0 0 20px rgba(57, 255, 20, 0.5), 0 0 40px rgba(57, 255, 20, 0.3)',
         'neon-orange': '0 0 20px rgba(255, 102, 0, 0.5), 0 0 40px rgba(255, 102, 0, 0.3)',
         'neon-blue': '0 0 20px rgba(0, 217, 255, 0.5), 0 0 40px rgba(0, 217, 255, 0.3)',
+        'neon-pink': '0 0 20px rgba(255, 16, 240, 0.5), 0 0 40px rgba(255, 16, 240, 0.3)',
       },
       animation: {
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
