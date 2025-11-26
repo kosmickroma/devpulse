@@ -272,8 +272,9 @@ class CryptoSource(SearchSource):
 
                 # Format title and description
                 title = f"{direction} {symbol} - {name}"
+                price_formatted = f"${price:.6f}" if price < 1 else f"${price:.2f}"
                 description = (
-                    f"${price:.6f if price < 1 else .2f} ({price_change_24h:+.2f}%) "
+                    f"{price_formatted} ({price_change_24h:+.2f}%) "
                     f"| Market Cap: {self._format_number(market_cap)} "
                     f"| Volume: {self._format_number(volume_24h)}"
                 )

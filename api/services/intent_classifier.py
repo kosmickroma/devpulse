@@ -461,40 +461,50 @@ class IntentClassifier:
 
         Logic:
         - If explicit sources mentioned → use those
-        - If crypto/stock entities → add relevant markets
-        - If code intent → prioritize GitHub, Dev.to
-        - If discussion intent → prioritize Reddit, HN
-        - If low confidence → search all sources
+        - Otherwise route based on intent (REPLACE not EXTEND)
+        - Add crypto/stocks if entities detected
+        - Only use all sources if confidence < 0.3
         """
 
-        # Start with detected sources
-        sources = list(detected_sources)
+        sources = []
 
-        # Add sources based on entities
-        if 'cryptocurrencies' in entities:
-            if 'crypto' not in sources:
-                sources.append('crypto')
+        # If explicit sources mentioned, use those
+        if detected_sources:
+            sources = list(detected_sources)
 
-        if 'stocks' in entities:
-            if 'stocks' not in sources:
-                sources.append('stocks')
+        # Otherwise, route based on intent
+        elif detected_intent == IntentType.TUTORIAL:
+            sources = ['github', 'devto']
 
-        # Add sources based on intent (if no explicit sources)
-        if not detected_sources:
-            if detected_intent == IntentType.CODE_SEARCH:
-                sources.extend(['github', 'devto'])
-            elif detected_intent == IntentType.DISCUSSION:
-                sources.extend(['reddit', 'hackernews'])
-            elif detected_intent == IntentType.TUTORIAL:
-                sources.extend(['devto', 'github'])
-            elif detected_intent == IntentType.NEWS:
-                sources.extend(['hackernews', 'reddit', 'devto'])
-            elif detected_intent == IntentType.PRICE_CHECK:
-                sources.extend(['stocks', 'crypto'])
+        elif detected_intent == IntentType.CODE_SEARCH:
+            sources = ['github', 'devto']
 
-        # If still no sources or low confidence → search all
-        if not sources or confidence < 0.5:
+        elif detected_intent == IntentType.DISCUSSION:
+            sources = ['reddit', 'hackernews']
+
+        elif detected_intent == IntentType.NEWS:
+            sources = ['hackernews', 'reddit', 'devto']
+
+        elif detected_intent == IntentType.PRICE_CHECK:
+            sources = ['crypto', 'stocks']
+
+        elif detected_intent == IntentType.DOCUMENTATION:
+            sources = ['github', 'devto']
+
+        # Only use all sources if truly ambiguous (very low confidence)
+        elif confidence < 0.3:
             sources = ['github', 'reddit', 'hackernews', 'devto', 'stocks', 'crypto']
+
+        # Default to code-focused sources
+        else:
+            sources = ['github', 'devto', 'hackernews']
+
+        # Add crypto/stocks if entities detected and not already in sources
+        if 'cryptocurrencies' in entities and 'crypto' not in sources:
+            sources.insert(0, 'crypto')
+
+        if 'stocks' in entities and 'stocks' not in sources:
+            sources.insert(0, 'stocks')
 
         # Remove duplicates while preserving order
         seen = set()
