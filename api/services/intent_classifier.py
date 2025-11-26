@@ -78,12 +78,10 @@ class IntentClassifier:
                 r'\bdev\.to\s+(article|post|tutorial)\b',
             ],
             'stocks': [
-                r'\b(stock|stocks|share|shares)\s+(price|ticker|quote|market|news|updates?)\b',
-                r'\b(nasdaq|nyse|dow|s&p)\b',
-                r'\bstock\s+market\b',
-                r'\bmarket\s+(news|updates?|analysis)\b',
-                r'\b(from|on|at)\s+yahoo\s+(finance)?\b',
-                r'\byahoo\s+(stock|market|finance)\b',
+                r'\b(stock|stocks|share|shares)\s+(price|ticker|quote)\b',
+                r'\b(nasdaq|nyse|dow|s&p)\s+(price|quote|ticker)?\b',
+                r'\byahoo\s+(finance)?\s+(price|quote|stock)\b',
+                r'\b[A-Z]{2,5}\s+(stock|price|quote)\b',  # Ticker symbols like "AAPL stock"
             ],
             'crypto': [
                 r'\b(bitcoin|ethereum|crypto|cryptocurrency)\s+(price|value|market|news|updates?)\b',
