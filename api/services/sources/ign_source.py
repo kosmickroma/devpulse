@@ -139,7 +139,7 @@ class IGNSource(SearchSource):
                     result = SearchResult(
                         title=title,
                         url=url,
-                        source='synth/ign',
+                        source='ign',
                         result_type=SourceType.ARTICLE,
                         description=description,
                         author='IGN',

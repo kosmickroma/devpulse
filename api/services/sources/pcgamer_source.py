@@ -134,7 +134,7 @@ class PCGamerSource(SearchSource):
 
                 # Only include if relevance threshold met (or if query is very broad)
                 if score > 0.1 or len(query.split()) <= 2:
-                    # Parse date
+                    # Parse date for metadata
                     created_at = None
                     if date_str:
                         try:
@@ -145,14 +145,14 @@ class PCGamerSource(SearchSource):
                     result = SearchResult(
                         title=title,
                         url=url,
-                        source='synth/pcgamer',
+                        source='pcgamer',
                         result_type=SourceType.ARTICLE,
                         description=snippet,
                         author=author,
                         score=score,
-                        created_at=created_at,
                         metadata={
-                            'category': category
+                            'category': category,
+                            'created_at': created_at.isoformat() if created_at else None
                         }
                     )
                     results.append(result)

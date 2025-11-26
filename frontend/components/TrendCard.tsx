@@ -66,6 +66,20 @@ const sourceColors = {
     shadow: 'shadow-neon-magenta',
     icon: '🤖',
   },
+  ign: {
+    bg: 'bg-yellow-400/10',
+    border: 'border-yellow-400',
+    text: 'text-yellow-400',
+    shadow: 'shadow-[0_0_10px_rgba(250,204,21,0.3)]',
+    icon: '🎮',
+  },
+  pcgamer: {
+    bg: 'bg-purple-500/10',
+    border: 'border-purple-500',
+    text: 'text-purple-500',
+    shadow: 'shadow-[0_0_10px_rgba(168,85,247,0.3)]',
+    icon: '🖥️',
+  },
 }
 
 export default function TrendCard({ trend, index }: TrendCardProps) {
