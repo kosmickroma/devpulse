@@ -82,6 +82,8 @@ class IntentClassifier:
                 r'\b(nasdaq|nyse|dow|s&p)\b',
                 r'\bstock\s+market\b',
                 r'\bmarket\s+(news|updates?|analysis)\b',
+                r'\b(from|on|at)\s+yahoo\s+(finance)?\b',
+                r'\byahoo\s+(stock|market|finance)\b',
             ],
             'crypto': [
                 r'\b(bitcoin|ethereum|crypto|cryptocurrency)\s+(price|value|market|news|updates?)\b',
