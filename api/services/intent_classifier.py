@@ -470,12 +470,8 @@ class IntentClassifier:
 
         sources = []
 
-        # If explicit sources mentioned, use those
-        if detected_sources:
-            sources = list(detected_sources)
-
-        # Otherwise, route based on intent
-        elif detected_intent == IntentType.TUTORIAL:
+        # Start with intent-based routing
+        if detected_intent == IntentType.TUTORIAL:
             sources = ['github', 'devto']
 
         elif detected_intent == IntentType.CODE_SEARCH:
@@ -500,6 +496,11 @@ class IntentClassifier:
         # Default to code-focused sources
         else:
             sources = ['github', 'devto', 'hackernews']
+
+        # Add explicitly mentioned sources (merge with intent-based)
+        for explicit_source in detected_sources:
+            if explicit_source not in sources:
+                sources.insert(0, explicit_source)
 
         # Add crypto/stocks if entities detected and not already in sources
         if 'cryptocurrencies' in entities and 'crypto' not in sources:
