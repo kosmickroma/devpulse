@@ -75,35 +75,51 @@ class PCGamerSource(SearchSource):
         """
         Synchronous search helper (runs in thread pool).
 
-        Scrapes PC Gamer news/reviews pages and filters by relevance.
+        Scrapes PC Gamer news/reviews pages WITH PAGINATION and filters by relevance.
         """
         results = []
 
         try:
-            # Determine which page to scrape
+            # Determine base URL for category
             if category.lower() == 'reviews':
-                url = self.reviews_url
+                base_url = self.reviews_url
             else:
-                url = self.news_url
+                base_url = self.news_url
 
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
 
-            response = requests.get(url, headers=headers, timeout=10)
+            # Scrape first 3 pages to get ~30 articles (each page has ~11 articles)
+            pages_to_scrape = [
+                base_url,                      # Page 1
+                f"{base_url}page/2/",          # Page 2
+                f"{base_url}page/3/",          # Page 3
+            ]
 
-            if response.status_code != 200:
-                print(f"❌ PC Gamer error: {response.status_code}")
-                return []
+            all_articles = []
 
-            soup = BeautifulSoup(response.text, 'html.parser')
+            for page_url in pages_to_scrape:
+                try:
+                    response = requests.get(page_url, headers=headers, timeout=10)
 
-            # Find article containers (from POC: div.listingResult)
-            articles = soup.select('div.listingResult')
+                    if response.status_code != 200:
+                        print(f"⚠️ PC Gamer page error: {response.status_code} for {page_url}")
+                        continue  # Skip this page, try next
 
-            print(f"✅ PC Gamer: Found {len(articles)} {category} articles")
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    articles = soup.select('div.listingResult')
+                    all_articles.extend(articles)
 
-            for article in articles:
+                    print(f"✅ PC Gamer: Found {len(articles)} articles on {page_url}")
+
+                except Exception as e:
+                    print(f"⚠️ PC Gamer scrape error for {page_url}: {e}")
+                    continue  # Skip this page, try next
+
+            print(f"✅ PC Gamer: Total {len(all_articles)} {category} articles from {len(pages_to_scrape)} pages")
+
+            for article in all_articles:
                 # Extract fields using POC selectors
                 title_elem = article.select_one('h3.article-name')
                 title = title_elem.get_text(strip=True) if title_elem else None
@@ -168,7 +184,7 @@ class PCGamerSource(SearchSource):
             # Limit results (but only if we have enough)
             results = results[:limit]
 
-            print(f"✅ PC Gamer: Scraped {len(articles)} total, returning {len(results)} relevant articles")
+            print(f"✅ PC Gamer: Scraped {len(all_articles)} total, returning {len(results)} relevant articles")
             return results
 
         except Exception as e:

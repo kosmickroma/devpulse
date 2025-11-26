@@ -25,6 +25,7 @@ class IntentType(Enum):
     NEWS = "news"                         # Trending/latest updates
     PRICE_CHECK = "price_check"           # Stock/crypto prices
     DOCUMENTATION = "documentation"       # Official docs
+    GAMING = "gaming"                     # Gaming news/reviews
     GENERAL = "general"                   # Ambiguous/multi-intent
 
 
@@ -136,6 +137,14 @@ class IntentClassifier:
                 r'\b(library|libraries|package|packages|framework|frameworks)\b',
                 r'\bopen\s+source\b',
                 r'\bgithub\s+(repo|repos|code|project)\b',
+            ],
+            IntentType.GAMING: [
+                r'\b(game|games|gaming)\s+(news|review|reviews|article|articles|release|releases)\b',
+                r'\b(video\s+game|pc\s+game|console\s+game)s?\b',
+                r'\b(newest|latest|recent)\s+game\b',
+                r'\b(game|gaming)\s+(content|updates?|announcement|trailer)\b',
+                r'\bign\b',
+                r'\bpc\s*gamer\b',
             ],
         }
 
@@ -317,6 +326,7 @@ class IntentClassifier:
             # Priority order if tied
             priority_order = [
                 IntentType.PRICE_CHECK,
+                IntentType.GAMING,
                 IntentType.TUTORIAL,
                 IntentType.CODE_SEARCH,
                 IntentType.DISCUSSION,
@@ -502,6 +512,9 @@ class IntentClassifier:
 
         elif detected_intent == IntentType.DOCUMENTATION:
             sources = ['github', 'devto']
+
+        elif detected_intent == IntentType.GAMING:
+            sources = ['ign', 'pcgamer']
 
         # Only use all sources if truly ambiguous (very low confidence)
         elif confidence < 0.3:

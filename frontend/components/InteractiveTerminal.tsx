@@ -338,7 +338,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
     // Trigger cache check after boot completes
     setTimeout(() => {
       setHasAutoScanned(true)
-    }, 2200)
+    }, 4800)
   }, [isSystemReady, profile, backfillStatus])
 
   // Play sound helper with cloning for rapid-fire beeps
