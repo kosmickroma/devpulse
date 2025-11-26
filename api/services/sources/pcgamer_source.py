@@ -110,7 +110,11 @@ class PCGamerSource(SearchSource):
 
                 link_elem = article.select_one('a.article-link')
                 relative_url = link_elem.get('href') if link_elem else None
-                url = f"{self.base_url}{relative_url}" if relative_url else None
+                # Handle both absolute and relative URLs
+                if relative_url:
+                    url = relative_url if relative_url.startswith('http') else f"{self.base_url}{relative_url}"
+                else:
+                    url = None
 
                 author_elem = article.select_one('.byline span[style="white-space:nowrap"]')
                 author = author_elem.get_text(strip=True) if author_elem else 'PC Gamer'
