@@ -25,7 +25,7 @@ class IGNSource(SearchSource):
                 "filter": "Latest",
                 "region": "us",
                 "startIndex": 0,
-                "count": 30,  # Fetch 30 for better filtering
+                "count": 50,  # Fetch 50 for better filtering
                 "newsOnly": True
             },
             "extensions": {
@@ -55,7 +55,7 @@ class IGNSource(SearchSource):
     async def search(
         self,
         query: str,
-        limit: int = 15,
+        limit: int = 30,
         **filters
     ) -> List[SearchResult]:
         """

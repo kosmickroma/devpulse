@@ -225,7 +225,7 @@ class SpiderRunner:
         self,
         source_name: str,
         query: str = "gaming",
-        limit: int = 15
+        limit: int = 30
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """
         Run a unified search source (e.g., IGN, PC Gamer) and stream results.

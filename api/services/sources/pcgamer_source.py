@@ -42,7 +42,7 @@ class PCGamerSource(SearchSource):
     async def search(
         self,
         query: str,
-        limit: int = 15,
+        limit: int = 30,
         **filters
     ) -> List[SearchResult]:
         """

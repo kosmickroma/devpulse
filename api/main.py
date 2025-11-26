@@ -129,7 +129,7 @@ async def scan_stream(
                     spider_runner.run_unified_source_async(
                         source_name=spider_name,
                         query="gaming",
-                        limit=15
+                        limit=30
                     )
                 )
             else:
