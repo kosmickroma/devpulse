@@ -11,6 +11,7 @@ from typing import Dict, Any, Optional
 from api.services.synth_search_service_v2 import SynthSearchServiceV2
 from api.services.gemini_service import GeminiService
 from api.services.intent_classifier import IntentClassifier
+from api.services.conversation_history_service import ConversationHistoryService
 from supabase import create_client, Client
 import os
 
@@ -37,15 +38,22 @@ class ConversationService:
             SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
             if SUPABASE_URL and SUPABASE_KEY:
                 self.supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+                self.history_service = ConversationHistoryService(self.supabase)
+                print("✅ Conversation history service initialized")
             else:
                 self.supabase = None
+                self.history_service = None
                 print("⚠️ Supabase not configured for conversation memory")
         except Exception as e:
             print(f"⚠️ Failed to initialize Supabase: {e}")
             self.supabase = None
+            self.history_service = None
 
         # Fallback in-memory history if DB unavailable
         self.conversation_history: Dict[str, str] = {}
+
+        # Active conversation tracking (user_id -> conversation_id)
+        self.active_conversations: Dict[str, str] = {}
 
         # Explicit search commands (highest priority)
         self.explicit_search_commands = [
@@ -131,6 +139,12 @@ class ConversationService:
         Returns:
             Unified response with results and commentary
         """
+        # NEW: Check for history management commands first
+        if self.history_service and user_id:
+            history_command = await self.history_service.detect_history_command(query)
+            if history_command:
+                return await self._handle_history_command(history_command, user_id)
+
         # Check for follow-up queries that need context
         follow_up_keywords = ['dive deeper', 'dig', 'tell me more', 'explain more', 'continue', 'go on', 'elaborate']
         is_follow_up = any(kw in query.lower() for kw in follow_up_keywords)
@@ -174,7 +188,28 @@ class ConversationService:
             else:
                 result = await self._handle_chat(query, user_id=user_id)
 
-        # Store query in conversation history (DB or memory)
+        # NEW: Save query to conversation history (with results metadata)
+        if user_id and self.history_service and result.get('type') != 'history_command':
+            try:
+                conversation_id = await self._ensure_active_conversation(user_id)
+
+                # Extract metadata from result
+                result_count = result.get('total_found', 0)
+                sources = result.get('intent', {}).get('sources', [])
+                intent_data = result.get('intent', {})
+
+                await self.history_service.add_query_to_conversation(
+                    conversation_id=conversation_id,
+                    query=query,
+                    result_count=result_count,
+                    sources=sources,
+                    intent=intent_data
+                )
+                print(f"💾 Saved query to conversation: {conversation_id}")
+            except Exception as e:
+                print(f"⚠️ Failed to save query to history: {e}")
+
+        # Legacy: Store query in conversation history (fallback memory)
         if user_id:
             await self._save_query(user_id, query)
 
@@ -320,3 +355,171 @@ class ConversationService:
                 'total_found': 0,
                 'error': str(e)
             }
+
+    async def _handle_history_command(self, command: Dict[str, Any], user_id: str) -> Dict[str, Any]:
+        """
+        Handle history management commands (show, clear, load, save).
+
+        Args:
+            command: Detected history command with type and params
+            user_id: User's UUID
+
+        Returns:
+            Response dict formatted for SYNTH display
+        """
+        command_type = command['type']
+        params = command['params']
+
+        try:
+            if command_type == 'show_history':
+                # Show conversation history
+                limit = params.get('limit', 10)
+                conversations = await self.history_service.get_user_conversations(user_id, limit=limit)
+                formatted_history = self.history_service.format_history_response(conversations)
+
+                return {
+                    'type': 'history_command',
+                    'command': 'show_history',
+                    'response': formatted_history,
+                    'results': [],
+                    'total_found': len(conversations)
+                }
+
+            elif command_type == 'load_conversation':
+                # Load a previous conversation
+                conv_num = params['conversation_number']
+                conversations = await self.history_service.get_user_conversations(user_id, limit=20)
+
+                if conv_num < 1 or conv_num > len(conversations):
+                    return {
+                        'type': 'history_command',
+                        'command': 'load_conversation',
+                        'response': f"❌ Conversation #{conv_num} not found. Type '/h' to see available conversations.",
+                        'results': [],
+                        'total_found': 0
+                    }
+
+                # Get the conversation (1-indexed from user's perspective)
+                selected_conv = conversations[conv_num - 1]
+                conv_details = await self.history_service.get_conversation_details(selected_conv['id'])
+
+                # Format loaded conversation for display
+                title = conv_details.get('title', 'Untitled')
+                queries = conv_details.get('queries', [])
+
+                response_lines = [
+                    f"📂 Loaded: {title}",
+                    f"━" * 50,
+                    f"Contains {len(queries)} queries:"
+                ]
+
+                for idx, q in enumerate(queries, 1):
+                    query_text = q.get('query', '')
+                    result_count = q.get('result_count', 0)
+                    response_lines.append(f"{idx}. {query_text} ({result_count} results)")
+
+                response_lines.append("━" * 50)
+                response_lines.append("Conversation loaded! You can continue from here.")
+
+                # Set as active conversation
+                self.active_conversations[user_id] = selected_conv['id']
+
+                return {
+                    'type': 'history_command',
+                    'command': 'load_conversation',
+                    'response': '\n'.join(response_lines),
+                    'results': [],
+                    'total_found': len(queries),
+                    'conversation_id': selected_conv['id']
+                }
+
+            elif command_type == 'clear_current':
+                # Clear current conversation
+                if user_id in self.active_conversations:
+                    conv_id = self.active_conversations[user_id]
+                    await self.history_service.clear_current_conversation(conv_id)
+                    del self.active_conversations[user_id]
+                    response = "✅ Current conversation cleared. Starting fresh!"
+                else:
+                    response = "✅ No active conversation to clear. You're already starting fresh!"
+
+                return {
+                    'type': 'history_command',
+                    'command': 'clear_current',
+                    'response': response,
+                    'results': [],
+                    'total_found': 0
+                }
+
+            elif command_type == 'clear_all':
+                # Clear all conversations (with confirmation)
+                # TODO: Add confirmation step in frontend
+                await self.history_service.clear_all_conversations(user_id, except_saved=True)
+                self.active_conversations.pop(user_id, None)
+
+                return {
+                    'type': 'history_command',
+                    'command': 'clear_all',
+                    'response': "✅ All conversations cleared (saved conversations preserved). Starting fresh!",
+                    'results': [],
+                    'total_found': 0,
+                    'requires_confirmation': True  # Frontend should show confirmation dialog
+                }
+
+            elif command_type == 'save_conversation':
+                # Save current conversation with a name
+                name = params.get('name', 'Saved session')
+
+                if user_id in self.active_conversations:
+                    conv_id = self.active_conversations[user_id]
+                    await self.history_service.save_conversation_with_name(conv_id, name)
+                    response = f"💾 Saved as \"{name}\"! You can recall it anytime."
+                else:
+                    response = "⚠️ No active conversation to save. Start searching first!"
+
+                return {
+                    'type': 'history_command',
+                    'command': 'save_conversation',
+                    'response': response,
+                    'results': [],
+                    'total_found': 0
+                }
+
+            else:
+                return {
+                    'type': 'history_command',
+                    'command': 'unknown',
+                    'response': f"❌ Unknown history command: {command_type}",
+                    'results': [],
+                    'total_found': 0
+                }
+
+        except Exception as e:
+            print(f"❌ History command error: {e}")
+            return {
+                'type': 'history_command',
+                'command': command_type,
+                'response': f"❌ Error executing command: {str(e)}",
+                'results': [],
+                'total_found': 0,
+                'error': str(e)
+            }
+
+    async def _ensure_active_conversation(self, user_id: str) -> str:
+        """
+        Ensure user has an active conversation. Create one if needed.
+
+        Args:
+            user_id: User's UUID
+
+        Returns:
+            conversation_id: UUID of active conversation
+        """
+        if user_id not in self.active_conversations:
+            # Create new conversation
+            conv_id = await self.history_service.create_conversation(user_id)
+            self.active_conversations[user_id] = conv_id
+            print(f"📝 Created new conversation: {conv_id}")
+            return conv_id
+        else:
+            return self.active_conversations[user_id]

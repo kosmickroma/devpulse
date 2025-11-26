@@ -18,7 +18,10 @@
       "Bash(python -m pytest:*)",
       "Bash(source:*)",
       "Bash(scrapy list:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(python:*)",
+      "Bash(git checkout:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
