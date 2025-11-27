@@ -56,6 +56,11 @@ const config: Config = {
         'neon-orange': '0 0 20px rgba(255, 102, 0, 0.5), 0 0 40px rgba(255, 102, 0, 0.3)',
         'neon-blue': '0 0 20px rgba(0, 217, 255, 0.5), 0 0 40px rgba(0, 217, 255, 0.3)',
         'neon-pink': '0 0 20px rgba(255, 16, 240, 0.5), 0 0 40px rgba(255, 16, 240, 0.3)',
+        'neon-yellow': '0 0 20px rgba(250, 204, 21, 0.5), 0 0 40px rgba(250, 204, 21, 0.3)',
+        'neon-gaming-purple': '0 0 20px rgba(168, 85, 247, 0.5), 0 0 40px rgba(168, 85, 247, 0.3)',
+        'neon-crimson': '0 0 20px rgba(193, 18, 36, 0.5), 0 0 40px rgba(193, 18, 36, 0.3)',
+        'neon-transmitter-blue': '0 0 20px rgba(10, 63, 120, 0.5), 0 0 40px rgba(10, 63, 120, 0.3)',
+        'neon-indigo-chronicle': '0 0 20px rgba(42, 60, 103, 0.5), 0 0 40px rgba(42, 60, 103, 0.3)',
       },
       animation: {
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
