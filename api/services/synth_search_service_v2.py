@@ -14,6 +14,8 @@ from api.services.sources import GitHubSource, RedditSource, HackerNewsSource, D
 from api.services.sources.ign_source import IGNSource
 from api.services.sources.pcgamer_source import PCGamerSource
 from api.services.sources.bbc_news_source import BBCNewsSource
+from api.services.sources.deutsche_welle_source import DeutscheWelleSource
+from api.services.sources.the_hindu_source import TheHinduSource
 from api.services.gemini_service import GeminiService
 from api.services.search_cache_service import SearchCacheService
 from api.services.synth_personality import SynthPersonality
@@ -43,6 +45,8 @@ class SynthSearchServiceV2:
             'ign': ['ign', 'gaming', 'game', 'video game', 'game news', 'game review'],
             'pcgamer': ['pc gamer', 'pcgamer', 'pc gaming', 'pc game'],
             'bbc': ['bbc', 'bbc news', 'british', 'uk news', 'world news', 'news'],
+            'deutschewelle': ['deutsche welle', 'dw', 'german news', 'germany', 'european news'],
+            'thehindu': ['the hindu', 'hindu', 'india news', 'indian news', 'south asia'],
         }
 
         # Programming language keywords
@@ -98,6 +102,16 @@ class SynthSearchServiceV2:
             self.registry.register(BBCNewsSource())
         except Exception as e:
             print(f"⚠️ Failed to register BBC News: {e}")
+
+        try:
+            self.registry.register(DeutscheWelleSource())
+        except Exception as e:
+            print(f"⚠️ Failed to register Deutsche Welle: {e}")
+
+        try:
+            self.registry.register(TheHinduSource())
+        except Exception as e:
+            print(f"⚠️ Failed to register The Hindu: {e}")
 
     def _optimize_query_for_source(self, keywords: List[str], source_name: str, original_query: str) -> str:
         """

@@ -89,11 +89,13 @@ async def scan_stream(
             'crypto': 'coingecko',
             'ign': 'ign',
             'pcgamer': 'pcgamer',
-            'bbc': 'bbc'
+            'bbc': 'bbc',
+            'deutschewelle': 'deutschewelle',
+            'thehindu': 'thehindu'
         }
 
         # Sources that use unified search interface (not Scrapy)
-        unified_sources = {'ign', 'pcgamer', 'bbc'}
+        unified_sources = {'ign', 'pcgamer', 'bbc', 'deutschewelle', 'thehindu'}
 
         if source_param == "all":
             spiders = list(source_to_spider.values())
@@ -125,11 +127,17 @@ async def scan_stream(
         generators = []
         for spider_name in spiders:
             if spider_name in unified_sources:
-                # Use unified source runner for IGN, PC Gamer, BBC, etc.
+                # Use unified source runner for IGN, PC Gamer, BBC, DW, Hindu, etc.
                 # Set appropriate query and limit per source
                 if spider_name == 'bbc':
                     query = "news"
                     limit = 88
+                elif spider_name == 'deutschewelle':
+                    query = "news"
+                    limit = 150  # DW has 100+ articles
+                elif spider_name == 'thehindu':
+                    query = "news"
+                    limit = 120  # Hindu has ~100 articles
                 else:
                     # Gaming sources (IGN, PC Gamer)
                     query = "gaming"
