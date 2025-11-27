@@ -288,12 +288,17 @@ app.include_router(codequest.router, prefix='/api/arcade/codequest', tags=['code
 async def backfill_trends():
     start_time = datetime.now()
     print(f"[{start_time}] Scheduled backfill started")
-    sources = ['github_api', 'hackernews', 'devto', 'reddit_api', 'yahoo_finance', 'coingecko']
+
+    # ALL 14 sources - Scrapy + Unified
+    scrapy_sources = ['github_api', 'hackernews', 'devto', 'reddit_api', 'yahoo_finance', 'coingecko']
+    unified_sources = ['ign', 'pcgamer', 'bbc', 'deutschewelle', 'thehindu', 'africanews', 'bangkokpost', 'rt']
+
     all_results = []
     errors = []
 
     try:
-        for spider_name in sources:
+        # Run Scrapy sources
+        for spider_name in scrapy_sources:
             try:
                 print(f"[{datetime.now()}] Running {spider_name}...")
                 async for event in spider_runner.run_spider_async(spider_name):
@@ -305,12 +310,54 @@ async def backfill_trends():
                 errors.append(f"{spider_name}: {str(e)}")
                 print(f"[ERROR] {spider_name}: {str(e)}")
 
+        # Run Unified sources with appropriate query and limits
+        for source_name in unified_sources:
+            try:
+                # Set query and limit based on source type
+                if source_name == 'bbc':
+                    query = "news"
+                    limit = 88
+                elif source_name == 'deutschewelle':
+                    query = "news"
+                    limit = 150
+                elif source_name == 'thehindu':
+                    query = "news"
+                    limit = 120
+                elif source_name == 'africanews':
+                    query = "news"
+                    limit = 50
+                elif source_name == 'bangkokpost':
+                    query = "news"
+                    limit = 200
+                elif source_name == 'rt':
+                    query = "news"
+                    limit = 150
+                else:
+                    # Gaming sources (IGN, PC Gamer)
+                    query = "gaming"
+                    limit = 30
+
+                print(f"[{datetime.now()}] Running {source_name} (unified)...")
+                async for event in spider_runner.run_unified_source_async(
+                    source_name=source_name,
+                    query=query,
+                    limit=limit
+                ):
+                    if event['type'] == 'item':
+                        all_results.append(event['data'])
+                    elif event['type'] == 'error':
+                        errors.append(f"{source_name}: {event['message']}")
+            except Exception as e:
+                errors.append(f"{source_name}: {str(e)}")
+                print(f"[ERROR] {source_name}: {str(e)}")
+
         if supabase:
             try:
+                all_sources = scrapy_sources + unified_sources
                 metadata = {
                     'last_updated': start_time.isoformat(),
                     'total_trends': len(all_results),
-                    'sources_included': sources,
+                    'sources_included': all_sources,
                     'status': 'success' if not errors else 'partial',
                     'error_message': '; '.join(errors) if errors else None
                 }
