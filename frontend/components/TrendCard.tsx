@@ -87,6 +87,20 @@ const sourceColors = {
     shadow: 'shadow-[0_0_10px_rgba(193,18,36,0.3)]',
     icon: '📰',
   },
+  deutschewelle: {
+    bg: 'bg-[#0A3F78]/10',
+    border: 'border-[#0A3F78]',
+    text: 'text-[#0A3F78]',
+    shadow: 'shadow-[0_0_10px_rgba(10,63,120,0.3)]',
+    icon: '📰',
+  },
+  thehindu: {
+    bg: 'bg-[#2A3C67]/10',
+    border: 'border-[#2A3C67]',
+    text: 'text-[#2A3C67]',
+    shadow: 'shadow-[0_0_10px_rgba(42,60,103,0.3)]',
+    icon: '📰',
+  },
 }
 
 export default function TrendCard({ trend, index }: TrendCardProps) {

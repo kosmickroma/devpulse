@@ -18,6 +18,8 @@ const ALL_SOURCES = [
   { id: 'ign', label: 'IGN', color: 'yellow' },
   { id: 'pcgamer', label: 'PC GAMER', color: 'gaming-purple' },
   { id: 'bbc', label: 'BBC NEWS', color: 'crimson' },
+  { id: 'deutschewelle', label: 'DEUTSCHE WELLE', color: 'transmitter-blue' },
+  { id: 'thehindu', label: 'THE HINDU', color: 'indigo-chronicle' },
 ]
 
 export default function SimpleFilterBar({ onSourceSelect, activeSources, prioritySource }: SimpleFilterBarProps) {
@@ -72,6 +74,14 @@ export default function SimpleFilterBar({ onSourceSelect, activeSources, priorit
     crimson: {
       active: 'border-[#C11224] text-[#C11224] shadow-[0_0_10px_rgba(193,18,36,0.5)] bg-[#C11224]/10',
       inactive: 'border-[#C11224]/30 text-[#C11224]/40 hover:border-[#C11224]/50 hover:text-[#C11224]/60'
+    },
+    'transmitter-blue': {
+      active: 'border-[#0A3F78] text-[#0A3F78] shadow-[0_0_10px_rgba(10,63,120,0.5)] bg-[#0A3F78]/10',
+      inactive: 'border-[#0A3F78]/30 text-[#0A3F78]/40 hover:border-[#0A3F78]/50 hover:text-[#0A3F78]/60'
+    },
+    'indigo-chronicle': {
+      active: 'border-[#2A3C67] text-[#2A3C67] shadow-[0_0_10px_rgba(42,60,103,0.5)] bg-[#2A3C67]/10',
+      inactive: 'border-[#2A3C67]/30 text-[#2A3C67]/40 hover:border-[#2A3C67]/50 hover:text-[#2A3C67]/60'
     },
   }
 
