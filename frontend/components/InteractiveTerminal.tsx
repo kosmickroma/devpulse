@@ -310,7 +310,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
     }
 
     const bootLines = [
-      { id: '1', text: '> DevPulse Terminal v4.5 - SYNTH AI Edition', type: 'output' as const, timestamp: Date.now() },
+      { id: '1', text: '> DevPulse Terminal v4.6 - SYNTH AI Edition', type: 'output' as const, timestamp: Date.now() },
       { id: '2', text: '> Initializing systems...', type: 'output' as const, timestamp: Date.now() + 300 },
       { id: '3', text: '> [✓] GitHub API: ONLINE', type: 'success' as const, timestamp: Date.now() + 600 },
       { id: '4', text: '> [✓] Hacker News: ONLINE', type: 'success' as const, timestamp: Date.now() + 900 },
@@ -320,12 +320,13 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       { id: '8', text: '> [✓] CoinGecko: ONLINE', type: 'success' as const, timestamp: Date.now() + 2100 },
       { id: '9', text: '> [✓] IGN: ONLINE', type: 'success' as const, timestamp: Date.now() + 2400 },
       { id: '10', text: '> [✓] PC Gamer: ONLINE', type: 'success' as const, timestamp: Date.now() + 2700 },
-      { id: '11', text: '> [✓] SYNTH AI: READY', type: 'success' as const, timestamp: Date.now() + 3000 },
-      { id: '12', text: operatorLine, type: 'success' as const, timestamp: Date.now() + 3300 },
-      ...(lastUpdatedLine ? [{ id: '13', text: lastUpdatedLine, type: 'output' as const, timestamp: Date.now() + 3600 }] : []),
-      { id: '14', text: '> ', type: 'output' as const, timestamp: Date.now() + 3900 },
-      { id: '15', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 4200 },
-      { id: '16', text: '> ', type: 'output' as const, timestamp: Date.now() + 4500 },
+      { id: '10.5', text: '> [✓] BBC News: ONLINE', type: 'success' as const, timestamp: Date.now() + 2850 },
+      { id: '11', text: '> [✓] SYNTH AI: READY', type: 'success' as const, timestamp: Date.now() + 3150 },
+      { id: '12', text: operatorLine, type: 'success' as const, timestamp: Date.now() + 3450 },
+      ...(lastUpdatedLine ? [{ id: '13', text: lastUpdatedLine, type: 'output' as const, timestamp: Date.now() + 3750 }] : []),
+      { id: '14', text: '> ', type: 'output' as const, timestamp: Date.now() + 4050 },
+      { id: '15', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 4350 },
+      { id: '16', text: '> ', type: 'output' as const, timestamp: Date.now() + 4650 },
     ]
 
     bootLines.forEach((line, index) => {
