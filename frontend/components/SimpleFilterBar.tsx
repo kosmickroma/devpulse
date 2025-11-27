@@ -17,6 +17,7 @@ const ALL_SOURCES = [
   { id: 'crypto', label: 'CRYPTO', color: 'purple' },
   { id: 'ign', label: 'IGN', color: 'yellow' },
   { id: 'pcgamer', label: 'PC GAMER', color: 'gaming-purple' },
+  { id: 'bbc', label: 'BBC NEWS', color: 'crimson' },
 ]
 
 export default function SimpleFilterBar({ onSourceSelect, activeSources, prioritySource }: SimpleFilterBarProps) {
@@ -67,6 +68,10 @@ export default function SimpleFilterBar({ onSourceSelect, activeSources, priorit
     'gaming-purple': {
       active: 'border-[#a855f7] text-[#a855f7] shadow-[0_0_10px_#a855f7] bg-[#a855f7]/10',
       inactive: 'border-[#a855f7]/30 text-[#a855f7]/40 hover:border-[#a855f7]/50 hover:text-[#a855f7]/60'
+    },
+    crimson: {
+      active: 'border-[#C11224] text-[#C11224] shadow-[0_0_10px_rgba(193,18,36,0.5)] bg-[#C11224]/10',
+      inactive: 'border-[#C11224]/30 text-[#C11224]/40 hover:border-[#C11224]/50 hover:text-[#C11224]/60'
     },
   }
 

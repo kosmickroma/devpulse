@@ -80,6 +80,13 @@ const sourceColors = {
     shadow: 'shadow-[0_0_10px_rgba(168,85,247,0.3)]',
     icon: '🖥️',
   },
+  bbc: {
+    bg: 'bg-[#C11224]/10',
+    border: 'border-[#C11224]',
+    text: 'text-[#C11224]',
+    shadow: 'shadow-[0_0_10px_rgba(193,18,36,0.3)]',
+    icon: '📰',
+  },
 }
 
 export default function TrendCard({ trend, index }: TrendCardProps) {
