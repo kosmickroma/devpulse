@@ -22,6 +22,13 @@ const config: Config = {
     'border-neon-purple/30', 'text-neon-purple/40', 'border-neon-purple/50', 'text-neon-purple/60',
     'border-neon-pink', 'text-neon-pink', 'bg-neon-pink/10', 'shadow-neon-pink',
     'border-neon-pink/30', 'text-neon-pink/40', 'border-neon-pink/50', 'text-neon-pink/60',
+    // New sources (Africanews, Bangkok Post, RT)
+    'border-[#C6FF00]', 'text-[#C6FF00]', 'bg-[#C6FF00]/10', 'shadow-neon-lime',
+    'border-[#C6FF00]/30', 'text-[#C6FF00]/40', 'border-[#C6FF00]/50', 'text-[#C6FF00]/60',
+    'border-[#1A4E8A]', 'text-[#1A4E8A]', 'bg-[#1A4E8A]/10', 'shadow-neon-bangkok-blue',
+    'border-[#1A4E8A]/30', 'text-[#1A4E8A]/40', 'border-[#1A4E8A]/50', 'text-[#1A4E8A]/60',
+    'border-[#6CCF00]', 'text-[#6CCF00]', 'bg-[#6CCF00]/10', 'shadow-neon-signal-green',
+    'border-[#6CCF00]/30', 'text-[#6CCF00]/40', 'border-[#6CCF00]/50', 'text-[#6CCF00]/60',
   ],
   theme: {
     extend: {
@@ -61,6 +68,9 @@ const config: Config = {
         'neon-crimson': '0 0 20px rgba(193, 18, 36, 0.5), 0 0 40px rgba(193, 18, 36, 0.3)',
         'neon-transmitter-blue': '0 0 20px rgba(10, 63, 120, 0.5), 0 0 40px rgba(10, 63, 120, 0.3)',
         'neon-indigo-chronicle': '0 0 20px rgba(42, 60, 103, 0.5), 0 0 40px rgba(42, 60, 103, 0.3)',
+        'neon-lime': '0 0 20px rgba(198, 255, 0, 0.5), 0 0 40px rgba(198, 255, 0, 0.3)',
+        'neon-bangkok-blue': '0 0 20px rgba(26, 78, 138, 0.5), 0 0 40px rgba(26, 78, 138, 0.3)',
+        'neon-signal-green': '0 0 20px rgba(108, 207, 0, 0.5), 0 0 40px rgba(108, 207, 0, 0.3)',
       },
       animation: {
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
