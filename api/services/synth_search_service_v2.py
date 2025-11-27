@@ -16,6 +16,9 @@ from api.services.sources.pcgamer_source import PCGamerSource
 from api.services.sources.bbc_news_source import BBCNewsSource
 from api.services.sources.deutsche_welle_source import DeutscheWelleSource
 from api.services.sources.the_hindu_source import TheHinduSource
+from api.services.sources.africanews_source import AfricanewsSource
+from api.services.sources.bangkok_post_source import BangkokPostSource
+from api.services.sources.rt_source import RTSource
 from api.services.gemini_service import GeminiService
 from api.services.search_cache_service import SearchCacheService
 from api.services.synth_personality import SynthPersonality
@@ -47,6 +50,9 @@ class SynthSearchServiceV2:
             'bbc': ['bbc', 'bbc news', 'british', 'uk news', 'world news', 'news'],
             'deutschewelle': ['deutsche welle', 'dw', 'german news', 'germany', 'european news'],
             'thehindu': ['the hindu', 'hindu', 'india news', 'indian news', 'south asia'],
+            'africanews': ['africanews', 'africa', 'african news'],
+            'bangkokpost': ['bangkok post', 'bangkok', 'thailand', 'southeast asia'],
+            'rt': ['rt', 'russia today', 'russian news'],
         }
 
         # Programming language keywords
@@ -112,6 +118,21 @@ class SynthSearchServiceV2:
             self.registry.register(TheHinduSource())
         except Exception as e:
             print(f"⚠️ Failed to register The Hindu: {e}")
+
+        try:
+            self.registry.register(AfricanewsSource())
+        except Exception as e:
+            print(f"⚠️ Failed to register Africanews: {e}")
+
+        try:
+            self.registry.register(BangkokPostSource())
+        except Exception as e:
+            print(f"⚠️ Failed to register Bangkok Post: {e}")
+
+        try:
+            self.registry.register(RTSource())
+        except Exception as e:
+            print(f"⚠️ Failed to register RT: {e}")
 
     def _optimize_query_for_source(self, keywords: List[str], source_name: str, original_query: str) -> str:
         """

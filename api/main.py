@@ -91,11 +91,14 @@ async def scan_stream(
             'pcgamer': 'pcgamer',
             'bbc': 'bbc',
             'deutschewelle': 'deutschewelle',
-            'thehindu': 'thehindu'
+            'thehindu': 'thehindu',
+            'africanews': 'africanews',
+            'bangkokpost': 'bangkokpost',
+            'rt': 'rt'
         }
 
         # Sources that use unified search interface (not Scrapy)
-        unified_sources = {'ign', 'pcgamer', 'bbc', 'deutschewelle', 'thehindu'}
+        unified_sources = {'ign', 'pcgamer', 'bbc', 'deutschewelle', 'thehindu', 'africanews', 'bangkokpost', 'rt'}
 
         if source_param == "all":
             spiders = list(source_to_spider.values())
@@ -138,6 +141,15 @@ async def scan_stream(
                 elif spider_name == 'thehindu':
                     query = "news"
                     limit = 120  # Hindu has ~100 articles
+                elif spider_name == 'africanews':
+                    query = "news"
+                    limit = 50  # Single feed
+                elif spider_name == 'bangkokpost':
+                    query = "news"
+                    limit = 200  # Multiple feeds aggregated
+                elif spider_name == 'rt':
+                    query = "news"
+                    limit = 150  # Full feed (100+)
                 else:
                     # Gaming sources (IGN, PC Gamer)
                     query = "gaming"
