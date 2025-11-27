@@ -185,7 +185,7 @@ export default function TrendCard({ trend, index }: TrendCardProps) {
     <div
       className={`
         group relative overflow-hidden rounded-lg
-        bg-dark-card border-2 ${colors.border}
+        border-2 ${colors.border}
         hover:${colors.shadow} hover:scale-105
         transition-all duration-300
         ${colors.bg}
