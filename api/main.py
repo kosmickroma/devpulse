@@ -88,11 +88,12 @@ async def scan_stream(
             'stocks': 'yahoo_finance',
             'crypto': 'coingecko',
             'ign': 'ign',
-            'pcgamer': 'pcgamer'
+            'pcgamer': 'pcgamer',
+            'bbc': 'bbc'
         }
 
         # Sources that use unified search interface (not Scrapy)
-        unified_sources = {'ign', 'pcgamer'}
+        unified_sources = {'ign', 'pcgamer', 'bbc'}
 
         if source_param == "all":
             spiders = list(source_to_spider.values())

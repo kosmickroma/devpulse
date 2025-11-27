@@ -10,6 +10,7 @@ from api.services.sources.hackernews_source import HackerNewsSource
 from api.services.sources.devto_source import DevToSource
 from api.services.sources.stocks_source import StocksSource
 from api.services.sources.crypto_source import CryptoSource
+from api.services.sources.bbc_news_source import BBCNewsSource
 
 __all__ = [
     'GitHubSource',
@@ -17,5 +18,6 @@ __all__ = [
     'HackerNewsSource',
     'DevToSource',
     'StocksSource',
-    'CryptoSource'
+    'CryptoSource',
+    'BBCNewsSource'
 ]
