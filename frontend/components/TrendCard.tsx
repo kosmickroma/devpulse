@@ -101,6 +101,27 @@ const sourceColors = {
     shadow: 'shadow-neon-indigo-chronicle',
     icon: '📰',
   },
+  africanews: {
+    bg: 'bg-[#C6FF00]/10',
+    border: 'border-[#C6FF00]',
+    text: 'text-[#C6FF00]',
+    shadow: 'shadow-neon-lime',
+    icon: '📰',
+  },
+  bangkokpost: {
+    bg: 'bg-[#1A4E8A]/10',
+    border: 'border-[#1A4E8A]',
+    text: 'text-[#1A4E8A]',
+    shadow: 'shadow-neon-bangkok-blue',
+    icon: '📰',
+  },
+  rt: {
+    bg: 'bg-[#6CCF00]/10',
+    border: 'border-[#6CCF00]',
+    text: 'text-[#6CCF00]',
+    shadow: 'shadow-neon-signal-green',
+    icon: '📰',
+  },
 }
 
 export default function TrendCard({ trend, index }: TrendCardProps) {

@@ -20,6 +20,9 @@ const ALL_SOURCES = [
   { id: 'bbc', label: 'BBC NEWS', color: 'crimson' },
   { id: 'deutschewelle', label: 'DEUTSCHE WELLE', color: 'transmitter-blue' },
   { id: 'thehindu', label: 'THE HINDU', color: 'indigo-chronicle' },
+  { id: 'africanews', label: 'AFRICANEWS', color: 'lime' },
+  { id: 'bangkokpost', label: 'BANGKOK POST', color: 'bangkok-blue' },
+  { id: 'rt', label: 'RT', color: 'signal-green' },
 ]
 
 export default function SimpleFilterBar({ onSourceSelect, activeSources, prioritySource }: SimpleFilterBarProps) {
@@ -82,6 +85,18 @@ export default function SimpleFilterBar({ onSourceSelect, activeSources, priorit
     'indigo-chronicle': {
       active: 'border-[#2A3C67] text-[#2A3C67] shadow-[0_0_10px_rgba(42,60,103,0.5)] bg-[#2A3C67]/10',
       inactive: 'border-[#2A3C67]/30 text-[#2A3C67]/40 hover:border-[#2A3C67]/50 hover:text-[#2A3C67]/60'
+    },
+    'lime': {
+      active: 'border-[#C6FF00] text-[#C6FF00] shadow-neon-lime bg-[#C6FF00]/10',
+      inactive: 'border-[#C6FF00]/30 text-[#C6FF00]/40 hover:border-[#C6FF00]/50 hover:text-[#C6FF00]/60'
+    },
+    'bangkok-blue': {
+      active: 'border-[#1A4E8A] text-[#1A4E8A] shadow-neon-bangkok-blue bg-[#1A4E8A]/10',
+      inactive: 'border-[#1A4E8A]/30 text-[#1A4E8A]/40 hover:border-[#1A4E8A]/50 hover:text-[#1A4E8A]/60'
+    },
+    'signal-green': {
+      active: 'border-[#6CCF00] text-[#6CCF00] shadow-neon-signal-green bg-[#6CCF00]/10',
+      inactive: 'border-[#6CCF00]/30 text-[#6CCF00]/40 hover:border-[#6CCF00]/50 hover:text-[#6CCF00]/60'
     },
   }
 
