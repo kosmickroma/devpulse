@@ -17,6 +17,7 @@ const AVAILABLE_SOURCES = [
   { id: 'crypto', label: 'Crypto', icon: '₿', description: 'Trending cryptocurrencies' },
   { id: 'ign', label: 'IGN', icon: '🎮', description: 'Gaming news and reviews' },
   { id: 'pcgamer', label: 'PC Gamer', icon: '🖥️', description: 'PC gaming news and reviews' },
+  { id: 'bbc', label: 'BBC News', icon: '📰', description: 'World and UK news from BBC' },
 ]
 
 export default function SettingsPage() {
@@ -24,7 +25,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto', 'ign', 'pcgamer'])
+  const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto', 'ign', 'pcgamer', 'bbc'])
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
