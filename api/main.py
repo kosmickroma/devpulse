@@ -125,12 +125,21 @@ async def scan_stream(
         generators = []
         for spider_name in spiders:
             if spider_name in unified_sources:
-                # Use unified source runner for IGN, PC Gamer, etc.
+                # Use unified source runner for IGN, PC Gamer, BBC, etc.
+                # Set appropriate query and limit per source
+                if spider_name == 'bbc':
+                    query = "news"
+                    limit = 88
+                else:
+                    # Gaming sources (IGN, PC Gamer)
+                    query = "gaming"
+                    limit = 30
+
                 generators.append(
                     spider_runner.run_unified_source_async(
                         source_name=spider_name,
-                        query="gaming",
-                        limit=30
+                        query=query,
+                        limit=limit
                     )
                 )
             else:
