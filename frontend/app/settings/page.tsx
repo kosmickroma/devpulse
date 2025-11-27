@@ -20,6 +20,9 @@ const AVAILABLE_SOURCES = [
   { id: 'bbc', label: 'BBC News', icon: '📰', description: 'World and UK news from BBC' },
   { id: 'deutschewelle', label: 'Deutsche Welle', icon: '📰', description: 'International news from Germany' },
   { id: 'thehindu', label: 'The Hindu', icon: '📰', description: 'National news from India' },
+  { id: 'africanews', label: 'Africanews', icon: '📰', description: 'African news and current events' },
+  { id: 'bangkokpost', label: 'Bangkok Post', icon: '📰', description: 'News from Thailand and Southeast Asia' },
+  { id: 'rt', label: 'RT', icon: '📰', description: 'Russian news and international coverage' },
 ]
 
 export default function SettingsPage() {
@@ -27,7 +30,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto', 'ign', 'pcgamer', 'bbc', 'deutschewelle', 'thehindu'])
+  const [selectedSources, setSelectedSources] = useState<string[]>(['github', 'hackernews', 'devto', 'reddit', 'stocks', 'crypto', 'ign', 'pcgamer', 'bbc', 'deutschewelle', 'thehindu', 'africanews', 'bangkokpost', 'rt'])
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)

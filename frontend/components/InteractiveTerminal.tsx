@@ -310,7 +310,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
     }
 
     const bootLines = [
-      { id: '1', text: '> DevPulse Terminal v4.7 - SYNTH AI Edition', type: 'output' as const, timestamp: Date.now() },
+      { id: '1', text: '> DevPulse Terminal v4.8 - SYNTH AI Edition', type: 'output' as const, timestamp: Date.now() },
       { id: '2', text: '> Initializing systems...', type: 'output' as const, timestamp: Date.now() + 300 },
       { id: '3', text: '> [✓] GitHub API: ONLINE', type: 'success' as const, timestamp: Date.now() + 600 },
       { id: '4', text: '> [✓] Hacker News: ONLINE', type: 'success' as const, timestamp: Date.now() + 900 },
@@ -323,12 +323,15 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
       { id: '10.5', text: '> [✓] BBC News: ONLINE', type: 'success' as const, timestamp: Date.now() + 2850 },
       { id: '10.6', text: '> [✓] Deutsche Welle: ONLINE', type: 'success' as const, timestamp: Date.now() + 3000 },
       { id: '10.7', text: '> [✓] The Hindu: ONLINE', type: 'success' as const, timestamp: Date.now() + 3150 },
-      { id: '11', text: '> [✓] SYNTH AI: READY', type: 'success' as const, timestamp: Date.now() + 3300 },
-      { id: '12', text: operatorLine, type: 'success' as const, timestamp: Date.now() + 3600 },
-      ...(lastUpdatedLine ? [{ id: '13', text: lastUpdatedLine, type: 'output' as const, timestamp: Date.now() + 3900 }] : []),
-      { id: '14', text: '> ', type: 'output' as const, timestamp: Date.now() + 4200 },
-      { id: '15', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 4500 },
-      { id: '16', text: '> ', type: 'output' as const, timestamp: Date.now() + 4800 },
+      { id: '10.8', text: '> [✓] Africanews: ONLINE', type: 'success' as const, timestamp: Date.now() + 3300 },
+      { id: '10.9', text: '> [✓] Bangkok Post: ONLINE', type: 'success' as const, timestamp: Date.now() + 3450 },
+      { id: '11.0', text: '> [✓] RT: ONLINE', type: 'success' as const, timestamp: Date.now() + 3600 },
+      { id: '11', text: '> [✓] SYNTH AI: READY', type: 'success' as const, timestamp: Date.now() + 3750 },
+      { id: '12', text: operatorLine, type: 'success' as const, timestamp: Date.now() + 4050 },
+      ...(lastUpdatedLine ? [{ id: '13', text: lastUpdatedLine, type: 'output' as const, timestamp: Date.now() + 4350 }] : []),
+      { id: '14', text: '> ', type: 'output' as const, timestamp: Date.now() + 4650 },
+      { id: '15', text: '> 💡 Pro tip: Type "synth mode" or just talk naturally like "hey synth, find arcade games"', type: 'output' as const, timestamp: Date.now() + 4950 },
+      { id: '16', text: '> ', type: 'output' as const, timestamp: Date.now() + 5250 },
     ]
 
     bootLines.forEach((line, index) => {
@@ -341,7 +344,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
     // Trigger cache check after boot completes
     setTimeout(() => {
       setHasAutoScanned(true)
-    }, 4800)
+    }, 5250)
   }, [isSystemReady, profile, backfillStatus])
 
   // Play sound helper with cloning for rapid-fire beeps
