@@ -286,6 +286,8 @@ app.include_router(codequest.router, prefix='/api/arcade/codequest', tags=['code
 # Backfill endpoint
 @app.post("/api/backfill")
 async def backfill_trends():
+    from api.services.demo_cache_service import DemoCacheService
+
     start_time = datetime.now()
     print(f"[{start_time}] Scheduled backfill started")
 
@@ -295,17 +297,28 @@ async def backfill_trends():
 
     all_results = []
     errors = []
+    source_results = {}  # Track results per source for caching
 
     try:
         # Run Scrapy sources
         for spider_name in scrapy_sources:
             try:
                 print(f"[{datetime.now()}] Running {spider_name}...")
+                source_items = []
                 async for event in spider_runner.run_spider_async(spider_name):
                     if event['type'] == 'item':
                         all_results.append(event['data'])
+                        source_items.append(event['data'])
                     elif event['type'] == 'error':
                         errors.append(f"{spider_name}: {event['message']}")
+
+                # Store results for this source
+                if source_items:
+                    # Normalize source name (github_api -> github, etc.)
+                    cache_source = spider_name.replace('_api', '').replace('yahoo_finance', 'stocks').replace('coingecko', 'crypto')
+                    source_results[cache_source] = source_items
+                    await DemoCacheService.store_scan_results(cache_source, source_items)
+
             except Exception as e:
                 errors.append(f"{spider_name}: {str(e)}")
                 print(f"[ERROR] {spider_name}: {str(e)}")
@@ -338,6 +351,7 @@ async def backfill_trends():
                     limit = 30
 
                 print(f"[{datetime.now()}] Running {source_name} (unified)...")
+                source_items = []
                 async for event in spider_runner.run_unified_source_async(
                     source_name=source_name,
                     query=query,
@@ -345,8 +359,15 @@ async def backfill_trends():
                 ):
                     if event['type'] == 'item':
                         all_results.append(event['data'])
+                        source_items.append(event['data'])
                     elif event['type'] == 'error':
                         errors.append(f"{source_name}: {event['message']}")
+
+                # Store results for this source
+                if source_items:
+                    source_results[source_name] = source_items
+                    await DemoCacheService.store_scan_results(source_name, source_items)
+
             except Exception as e:
                 errors.append(f"{source_name}: {str(e)}")
                 print(f"[ERROR] {source_name}: {str(e)}")
@@ -367,6 +388,7 @@ async def backfill_trends():
 
         duration = (datetime.now() - start_time).total_seconds()
         print(f"Backfill finished — {len(all_results)} trends in {duration:.2f}s")
+        print(f"✅ Cached {len(source_results)} sources to database for instant loading")
 
         return {
             "status": "success" if not errors else "partial",
