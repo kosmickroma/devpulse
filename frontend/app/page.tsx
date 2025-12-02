@@ -11,7 +11,7 @@ import OperatorProfileModal from '@/components/OperatorProfileModal'
 import Footer from '@/components/Footer'
 import AutoDemoController from '@/components/AutoDemoController'
 import { TrendingItem } from '@/lib/types'
-import { loadTodaysScanResults } from '@/lib/db'
+import { loadCachedResults } from '@/lib/db'
 import { supabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
@@ -79,7 +79,7 @@ export default function Home() {
 
     // Load cached results on mount (in addition to terminal auto-scan)
     console.log('[PAGE] Loading cached results on page mount...')
-    loadTodaysScanResults().then(cachedItems => {
+    loadCachedResults().then(cachedItems => {
       if (cachedItems.length > 0) {
         console.log(`[PAGE] ✅ Loaded ${cachedItems.length} cached items on mount`)
         setTrends(cachedItems)

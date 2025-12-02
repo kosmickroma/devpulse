@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, KeyboardEvent, forwardRef, useImperativeHandle } from 'react'
 import { TrendingItem } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
-import { loadTodaysScanResults, saveScanResults } from '@/lib/db'
+import { loadCachedResults, saveScanResults } from '@/lib/db'
 import { getMyProfile, type UserProfile } from '@/lib/profile'
 import GameOverlay from './GameOverlay'
 import SynthAvatar from './SynthAvatar'
@@ -1409,7 +1409,7 @@ const InteractiveTerminal = forwardRef<InteractiveTerminalHandle, InteractiveTer
   useEffect(() => {
     if (hasAutoScanned && !isScanning && !isDemoMode) {
       // Try to load cached results first
-      loadTodaysScanResults().then(cachedItems => {
+      loadCachedResults().then(cachedItems => {
         if (cachedItems.length > 0) {
           // We have cached results! Show them and skip auto-scan
           addLine(`> Loading cached results from today...`, 'output')

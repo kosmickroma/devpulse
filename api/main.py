@@ -286,119 +286,167 @@ app.include_router(codequest.router, prefix='/api/arcade/codequest', tags=['code
 # Backfill endpoint
 @app.post("/api/backfill")
 async def backfill_trends():
+    """
+    Backfill cache with latest trending items from all sources.
+    Uses batched processing to stay under 512MB memory limit.
+    """
+    import gc
     from api.services.demo_cache_service import DemoCacheService
 
     start_time = datetime.now()
-    print(f"[{start_time}] Scheduled backfill started")
+    print(f"[BACKFILL] Starting at {start_time}")
 
-    # ALL 14 sources - Scrapy + Unified
-    scrapy_sources = ['github_api', 'hackernews', 'devto', 'reddit_api', 'yahoo_finance', 'coingecko']
-    unified_sources = ['ign', 'pcgamer', 'bbc', 'deutschewelle', 'thehindu', 'africanews', 'bangkokpost', 'rt']
+    # Define batches to manage memory usage
+    # Batch 5 has Bangkok Post (heaviest: 5 feeds, 200 items)
+    batches = [
+        {
+            'name': 'Core Tech Sources',
+            'scrapy': ['github_api', 'reddit_api', 'hackernews', 'devto'],
+            'unified': []
+        },
+        {
+            'name': 'Finance Sources',
+            'scrapy': ['yahoo_finance', 'coingecko'],
+            'unified': []
+        },
+        {
+            'name': 'Gaming Sources',
+            'scrapy': [],
+            'unified': ['ign', 'pcgamer']
+        },
+        {
+            'name': 'News Sources (Batch 1)',
+            'scrapy': [],
+            'unified': ['bbc', 'deutschewelle', 'thehindu']
+        },
+        {
+            'name': 'News Sources (Batch 2 - Heavy)',
+            'scrapy': [],
+            'unified': ['africanews', 'bangkokpost', 'rt']
+        }
+    ]
 
     all_results = []
+    source_results = {}
     errors = []
-    source_results = {}  # Track results per source for caching
 
-    try:
-        # Run Scrapy sources
-        for spider_name in scrapy_sources:
+    # Process each batch sequentially
+    for batch_num, batch in enumerate(batches, 1):
+        print(f"\n[BACKFILL] === Processing Batch {batch_num}/{len(batches)}: {batch['name']} ===")
+        batch_start = datetime.now()
+
+        # Process Scrapy sources in this batch
+        for spider_name in batch['scrapy']:
+            source_items = []
             try:
-                print(f"[{datetime.now()}] Running {spider_name}...")
-                source_items = []
-                async for event in spider_runner.run_spider_async(spider_name):
-                    if event['type'] == 'item':
-                        all_results.append(event['data'])
-                        source_items.append(event['data'])
-                    elif event['type'] == 'error':
-                        errors.append(f"{spider_name}: {event['message']}")
+                print(f"[{datetime.now()}] Running {spider_name} (scrapy)...")
 
-                # Store results for this source
+                async for event in spider_runner.run_spider_async(spider_name):
+                    if event.get('type') == 'item':
+                        source_items.append(event['data'])
+                    elif event.get('type') == 'error':
+                        errors.append(f"{spider_name}: {event.get('message')}")
+
                 if source_items:
-                    # Normalize source name (github_api -> github, etc.)
                     cache_source = spider_name.replace('_api', '').replace('yahoo_finance', 'stocks').replace('coingecko', 'crypto')
                     source_results[cache_source] = source_items
+                    all_results.extend(source_items)
                     await DemoCacheService.store_scan_results(cache_source, source_items)
+                    print(f"✅ [{datetime.now()}] {spider_name}: Completed with {len(source_items)} items")
+                else:
+                    print(f"⚠️ [{datetime.now()}] {spider_name}: No items returned")
 
             except Exception as e:
                 errors.append(f"{spider_name}: {str(e)}")
-                print(f"[ERROR] {spider_name}: {str(e)}")
+                print(f"❌ Error running {spider_name}: {str(e)}")
 
-        # Run Unified sources with appropriate query and limits
-        for source_name in unified_sources:
+        # Process Unified sources in this batch
+        for source_name in batch['unified']:
+            source_items = []
             try:
-                # Set query and limit based on source type
-                if source_name == 'bbc':
-                    query = "news"
-                    limit = 88
-                elif source_name == 'deutschewelle':
-                    query = "news"
+                print(f"[{datetime.now()}] Running {source_name} (unified)...")
+
+                # Set source-specific limits
+                if source_name == 'bangkokpost':
+                    limit = 200  # Bangkok Post has 5 feeds
+                elif source_name in ['deutschewelle', 'rt']:
                     limit = 150
-                elif source_name == 'thehindu':
-                    query = "news"
+                elif source_name in ['thehindu']:
                     limit = 120
-                elif source_name == 'africanews':
-                    query = "news"
+                elif source_name == 'bbc':
+                    limit = 88
+                elif source_name in ['africanews']:
                     limit = 50
-                elif source_name == 'bangkokpost':
-                    query = "news"
-                    limit = 200
-                elif source_name == 'rt':
-                    query = "news"
-                    limit = 150
                 else:
-                    # Gaming sources (IGN, PC Gamer)
-                    query = "gaming"
                     limit = 30
 
-                print(f"[{datetime.now()}] Running {source_name} (unified)...")
-                source_items = []
                 async for event in spider_runner.run_unified_source_async(
                     source_name=source_name,
-                    query=query,
+                    query="news",
                     limit=limit
                 ):
-                    if event['type'] == 'item':
-                        all_results.append(event['data'])
+                    if event.get('type') == 'item':
                         source_items.append(event['data'])
-                    elif event['type'] == 'error':
-                        errors.append(f"{source_name}: {event['message']}")
+                    elif event.get('type') == 'error':
+                        errors.append(f"{source_name}: {event.get('message')}")
 
-                # Store results for this source
                 if source_items:
                     source_results[source_name] = source_items
+                    all_results.extend(source_items)
                     await DemoCacheService.store_scan_results(source_name, source_items)
+                    print(f"✅ [{datetime.now()}] {source_name}: Completed with {len(source_items)} items")
+                else:
+                    print(f"⚠️ [{datetime.now()}] {source_name}: No items returned")
 
             except Exception as e:
                 errors.append(f"{source_name}: {str(e)}")
-                print(f"[ERROR] {source_name}: {str(e)}")
+                print(f"❌ Error running {source_name}: {str(e)}")
 
+        # CRITICAL: Free memory after each batch
+        batch_duration = (datetime.now() - batch_start).total_seconds()
+        print(f"[BACKFILL] Batch {batch_num} completed in {batch_duration:.2f}s")
+        print(f"[BACKFILL] Running garbage collection...")
+        gc.collect()
+        print(f"[BACKFILL] Memory freed, ready for next batch\n")
+
+    # Calculate final stats
+    duration = (datetime.now() - start_time).total_seconds()
+
+    # Store metadata
+    try:
         if supabase:
-            try:
-                all_sources = scrapy_sources + unified_sources
-                metadata = {
-                    'last_updated': start_time.isoformat(),
-                    'total_trends': len(all_results),
-                    'sources_included': all_sources,
-                    'status': 'success' if not errors else 'partial',
-                    'error_message': '; '.join(errors) if errors else None
-                }
-                supabase.table('backfill_metadata').insert(metadata).execute()
-            except Exception as e:
-                print(f"[ERROR] Failed to save metadata: {e}")
+            metadata = {
+                'total_items': len(all_results),
+                'sources_count': len(source_results),
+                'duration_seconds': duration,
+                'sources_breakdown': {k: len(v) for k, v in source_results.items()}
+            }
 
-        duration = (datetime.now() - start_time).total_seconds()
-        print(f"Backfill finished — {len(all_results)} trends in {duration:.2f}s")
-        print(f"✅ Cached {len(source_results)} sources to database for instant loading")
-
-        return {
-            "status": "success" if not errors else "partial",
-            "count": len(all_results),
-            "duration_seconds": duration,
-            "message": f"Backfill completed with {len(all_results)} trends"
-        }
+            supabase.table('backfill_metadata').insert({
+                'run_at': start_time.isoformat(),
+                'total_items': len(all_results),
+                'sources_count': len(source_results),
+                'duration_seconds': duration,
+                'metadata': metadata
+            }).execute()
 
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        print(f"❌ Error storing metadata: {e}")
+
+    print(f"\n{'='*60}")
+    print(f"Backfill finished — {len(all_results)} trends in {duration:.2f}s")
+    print(f"✅ Cached {len(source_results)} sources to database for instant loading")
+    print(f"{'='*60}\n")
+
+    return {
+        "success": True,
+        "status": "success" if not errors else "partial",
+        "items": len(all_results),
+        "sources": len(source_results),
+        "duration": duration,
+        "breakdown": {k: len(v) for k, v in source_results.items()},
+        "errors": errors if errors else None
+    }
 
 
 @app.get("/api/backfill/status")
@@ -412,6 +460,49 @@ async def get_backfill_status():
         return {"last_updated": None, "total_trends": 0, "message": "No backfill runs yet"}
     except Exception as e:
         return {"error": str(e)}
+
+
+@app.get("/api/cache/health")
+async def cache_health():
+    """
+    Check cache health: freshness, item counts, source coverage.
+    Returns detailed statistics about cached items for monitoring.
+    """
+    from api.services.demo_cache_service import DemoCacheService
+    from datetime import timezone
+
+    try:
+        stats = await DemoCacheService.get_cache_stats()
+
+        # Check if cache is stale (older than 6 hours)
+        if stats.get('newest'):
+            try:
+                newest_dt = datetime.fromisoformat(stats['newest'].replace('Z', '+00:00'))
+                age_hours = (datetime.now(timezone.utc) - newest_dt).total_seconds() / 3600
+                is_stale = age_hours > 6
+            except Exception:
+                is_stale = True
+                age_hours = None
+        else:
+            is_stale = True
+            age_hours = None
+
+        return {
+            "healthy": not is_stale and stats.get('total', 0) > 500,
+            "cache_age_hours": round(age_hours, 2) if age_hours else None,
+            "is_stale": is_stale,
+            "total_items": stats.get('total', 0),
+            "sources_cached": len(stats.get('by_source', {})),
+            "expected_sources": 14,
+            "breakdown": stats.get('by_source', {}),
+            "oldest": stats.get('oldest'),
+            "newest": stats.get('newest')
+        }
+    except Exception as e:
+        return {
+            "healthy": False,
+            "error": str(e)
+        }
 
 
 # ============================================

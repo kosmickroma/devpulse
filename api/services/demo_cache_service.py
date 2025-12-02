@@ -27,7 +27,15 @@ class DemoCacheService:
 
     ITEMS_PER_SOURCE = 60
     CACHE_DURATION_HOURS = 3
-    SOURCES = ['github', 'reddit', 'hackernews', 'devto', 'stocks', 'crypto']
+    SOURCES = [
+        # Tech/Dev sources (6)
+        'github', 'reddit', 'hackernews', 'devto', 'stocks', 'crypto',
+        # Gaming sources (2)
+        'ign', 'pcgamer',
+        # News sources (6)
+        'bbc', 'deutschewelle', 'thehindu',
+        'africanews', 'bangkokpost', 'rt'
+    ]
 
     @staticmethod
     async def get_cached_items_shuffled() -> List[Dict[str, Any]]:
@@ -120,7 +128,14 @@ class DemoCacheService:
             return False
 
         except Exception as e:
-            print(f"❌ Error storing cached items for {source}: {e}")
+            error_msg = str(e)
+            if 'cached_demo_items_source_check' in error_msg:
+                print(f"❌ CONSTRAINT VIOLATION for {source}: Source not allowed in database!")
+                print(f"   Current source: '{source}'")
+                print(f"   Allowed sources: {DemoCacheService.SOURCES}")
+                print(f"   ACTION REQUIRED: Update database constraint to include '{source}'")
+            else:
+                print(f"❌ Error storing cached items for {source}: {e}")
             return False
 
     @staticmethod

@@ -100,6 +100,86 @@ export async function loadTodaysScanResults(): Promise<TrendingItem[]> {
 }
 
 /**
+ * Load cached results with fallback priority:
+ * 1. Today's scan_results (freshest)
+ * 2. cached_demo_items from backfill (always available)
+ * 3. Empty array (triggers auto-scan)
+ */
+export async function loadCachedResults(): Promise<TrendingItem[]> {
+  try {
+    console.log('[DB] Loading cached results with fallback strategy...')
+
+    // Priority 1: Check scan_results from today
+    const todayResults = await loadTodaysScanResults()
+    if (todayResults.length > 0) {
+      console.log(`[DB] ✅ Using today's scan results: ${todayResults.length} items`)
+      return todayResults
+    }
+
+    // Priority 2: Fall back to cached_demo_items (backfill)
+    console.log('[DB] No scan results today, checking backfill cache...')
+    const demoCache = await loadDemoCacheItems()
+    if (demoCache.length > 0) {
+      console.log(`[DB] ✅ Using backfill cache: ${demoCache.length} items`)
+      return demoCache
+    }
+
+    // Priority 3: No cached data available
+    console.log('[DB] ℹ️ No cached data available, will trigger auto-scan')
+    return []
+  } catch (err) {
+    console.error('[DB] ❌ Exception in loadCachedResults:', err)
+    return []
+  }
+}
+
+/**
+ * Load items from cached_demo_items (backfill cache)
+ */
+async function loadDemoCacheItems(): Promise<TrendingItem[]> {
+  try {
+    const { data, error} = await supabase
+      .from('cached_demo_items')
+      .select('*')
+      .order('rank', { ascending: true })
+      .limit(840) // 60 items × 14 sources
+
+    if (error) {
+      console.error('[DB] ❌ Failed to load demo cache:', error.message)
+      return []
+    }
+
+    if (!data || data.length === 0) {
+      console.log('[DB] ℹ️ No demo cache items found')
+      return []
+    }
+
+    // Map cached_demo_items format to TrendingItem
+    const items: TrendingItem[] = data.map(row => {
+      const itemData = row.item_data as any
+      return {
+        id: itemData.id || row.id,
+        source: row.source,
+        title: itemData.title,
+        url: itemData.url,
+        description: itemData.description || '',
+        author: itemData.author || '',
+        stars: itemData.stars || 0,
+        language: itemData.language || '',
+        category: itemData.category || 'repository',
+        scrapedAt: new Date(row.scraped_at || row.created_at)
+      }
+    })
+
+    console.log(`[DB] ✅ Loaded ${items.length} items from demo cache`)
+    return items
+  } catch (err) {
+    console.error('[DB] ❌ Exception loading demo cache:', err)
+    return []
+  }
+}
+
+/**
  * Load user preferences (optional - returns defaults on failure)
  */
 export async function loadUserPreferences() {
